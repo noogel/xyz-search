@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>畅文全索</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
+        function fetch_data(obj) {
+            const href = obj.href;
+            fetch(href).then(r => r.json())
+                .then(function (data) {
+                    // document.querySelector("#offcanvasFileInfo").textContent = data.resName;  // 右边窗标题
+                    document.querySelector("#fileInfoName").textContent = data.resName;
+                    document.querySelector("#fileInfoPath").textContent = data.resPath;
+                    document.querySelector("#fileInfoContentType").textContent = data.contentType;
+                    document.querySelector("#fileInfoSize").textContent = data.resSize;
+                    document.querySelector("#fileInfoModifiedAt").textContent = data.modifiedAt;
+                    document.querySelector("#fileInfoHighlight").innerHTML = data.highlightHtml;
+                    document.querySelector("#fileDownloadBtn").href = "/file/download?resHash=" + data.resHash;
+                    document.querySelector("#fileViewBtn").href = "/file/view?resHash=" + data.resHash;
+                    // 是否支持查看
+                    if (data.supportView) {
+                        document.querySelector("#fileViewBtnParent").setAttribute("class", "btn btn-outline-info");
+                    } else {
+                        document.querySelector("#fileViewBtnParent").setAttribute("class", "btn btn-outline-info disabled");
+                    }
+                }).catch(function (err) {
+                    console.log(err);
+            });
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="row text-center">
+                <p class="popout">
+                    <span>畅</span>
+                    <span>文</span>
+                    <span>全</span>
+                    <span>索</span>
+                </p>
+            </div>
+            <form action="/" id="searchForm" method="get">
+                <div class="row g-3 center">
+                    <!-- 搜索框 -->
+                    <div class="input-group col-auto">
+                        <input id="search" type="text" name="search" class="form-control" placeholder="输入内容，回车搜索！"
+                               autofocus aria-label="输入内容，回车搜索！" th:value="${result.paging.query.search}">
+                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseAdvance" aria-expanded="false"
+                                aria-controls="collapseAdvance">高级</button>
+                    </div>
+                    <!-- 高级搜索选项 -->
+                    <div class="col-12">
+                        <div class="collapse custom-mb-15" id="collapseAdvance">
+                            <div class="card card-body">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <fieldset>
+                                            <legend>文件大小</legend>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resSize"
+                                                       id="resSizeNone" value=""
+                                                       th:checked="${#strings.isEmpty(result.paging.query.resSize)} ? 'checked'">
+                                                <label class="form-check-label" for="resSizeNone">
+                                                    不限制
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resSize"
+                                                       id="resSizeLt1048576" value="LT:1048576"
+                                                       th:checked="(${result.paging.query.resSize} == 'LT:1048576') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeLt1048576">
+                                                    小于 1MB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resSize"
+                                                       id="resSizeLt10485760" value="LT:10485760"
+                                                       th:checked="(${result.paging.query.resSize} == 'LT:10485760') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeLt10485760">
+                                                    小于 10MB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resSize"
+                                                       id="resSizeLt104857600" value="LT:104857600"
+                                                       th:checked="(${result.paging.query.resSize} == 'LT:104857600') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeLt104857600">
+                                                    小于 100MB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resSize"
+                                                       id="resSizeGt1048576" value="GT:1048576"
+                                                       th:checked="(${result.paging.query.resSize} == 'GT:1048576') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeGt1048576">
+                                                    大于 1MB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resSize"
+                                                       id="resSizeGt10485760" value="GT:10485760"
+                                                       th:checked="(${result.paging.query.resSize} == 'GT:10485760') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeGt10485760">
+                                                    大于 10MB
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-auto">
+                                        <fieldset>
+                                            <legend>修改时间</legend>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="modifiedAt"
+                                                       id="latestModifiedAtNone" value=""
+                                                       th:checked="${#strings.isEmpty(result.paging.query.modifiedAt)} ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtNone">
+                                                    不限制
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="modifiedAt"
+                                                       id="latestModifiedAtLt7Day" value="GT:604800"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:604800') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtLt7Day">
+                                                    七天内
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="modifiedAt"
+                                                       id="latestModifiedAtLt1Month" value="GT:2678400"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:2678400') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtLt1Month">
+                                                    一个月内
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="modifiedAt"
+                                                       id="latestModifiedAtLt6Month" value="GT:16070400"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:16070400') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtLt6Month">
+                                                    半年内
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="modifiedAt"
+                                                       id="latestModifiedAtGt7Day" value="LT:604800"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'LT:604800') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtGt7Day">
+                                                    七天前
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="modifiedAt"
+                                                       id="latestModifiedAtGt1Month" value="LT:2678400"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'LT:2678400') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtGt1Month">
+                                                    一个月前
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-auto">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 数据 -->
+                <table class="table table-striped table-bordered">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th scope="col">文件名</th>
+                            <th scope="col">大小</th>
+                            <th scope="col">修改时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="m:${result.data}">
+                            <td>
+                                <a data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
+                                   th:id="${m.resHash}" aria-controls="offcanvasRight" onclick="fetch_data(this)"
+                                   th:href="@{/file(resHash=${m.resHash}, search=${result.paging.query.search})}" th:text="${m.resName}"></a>
+                            </td>
+                            <td th:text="${m.resSize}"></td>
+                            <td th:text="${m.modifiedAt}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 分页 -->
+                <nav aria-label="...">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item">
+                            <a class="page-link" th:href="'/?' + ${result.paging.getStartPageQuery()}">首页</a></li>
+                        <li class="page-item">
+                            <a class="page-link" th:href="'/?' + ${result.paging.getPrevPageQuery()}">上一页</a></li>
+                        <li class="page-item disabled">
+                            <span class="page-link" th:text="${result.paging.getPageDesc()}"></span></li>
+                        <li class="page-item">
+                            <a class="page-link" th:href="'/?' + ${result.paging.getNextPageQuery()}">下一页</a></li>
+                        <li class="page-item">
+                            <a class="page-link" th:href="'/?' + ${result.paging.getEndPageQuery()}">尾页</a></li>
+                    </ul>
+                </nav>
+            </form>
+        </div>
+        <div class="col-12">
+            <!-- 右边栏 弹出式-->
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight"
+                 aria-labelledby="offcanvasFileInfo" style="--bs-offcanvas-width: 600px">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasFileInfo">文件详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="my-3 row justify-content-start">
+                        <!-- 文件内容结果列表 -->
+                        <div id="fileInfoHighlight" class="col-12">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    匹配内容
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="my-3 row justify-content-end">
+                        <!-- 文件内容结果列表 操作 -->
+                        <div class="col-auto">
+                            <button id="fileViewBtnParent" type="button" class="btn btn-outline-info">
+                                <a class="page-link" id="fileViewBtn" href="#" target="_blank">查看</a>
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-primary">
+                                <a class="page-link" id="fileDownloadBtn" href="#" target="_blank">下载</a>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="my-3 row justify-content-start">
+                        <div class="col-12">
+                            <!-- 文件内容结果 文件信息 -->
+                            <table class="table table-sm table-condensed">
+                                <tbody>
+                                <tr>
+                                    <th scope="row" class="custom-width-100">名称</th>
+                                    <td id="fileInfoName">文件名称</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">路径</th>
+                                    <td id="fileInfoPath">文件路径</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">大小</th>
+                                    <td id="fileInfoSize">文件大小</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">文件类型</th>
+                                    <td id="fileInfoContentType">文件类型</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">修改时间</th>
+                                    <td id="fileInfoModifiedAt">2022-10-02 12:00:12</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
