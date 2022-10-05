@@ -7,7 +7,7 @@ public class ResourceSimpleDto {
     /**
      * 资源 HASH
      */
-    private String resHash;
+    private String resId;
     /**
      * 资源名称
      */

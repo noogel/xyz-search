@@ -77,7 +77,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                 // 解析子文件
                 extServices.stream().filter(t -> t.supportFile(subFile)).findFirst()
                         .map(t -> t.parseFile(subFile, taskDto)).ifPresent(t -> {
-                            log.info("processTask.parseFile {} {} {}", t.getResHash(),
+                            log.info("processTask.parseFile {} {} {}", t.getResId(),
                                     subFile.getAbsolutePath(), taskDto);
                             ftsDao.upsertData(t);
                         });

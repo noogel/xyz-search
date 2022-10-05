@@ -31,7 +31,7 @@ public class SearchService {
         showDto.setPaging(pagingDto);
         showDto.setData(result.getData().stream().map(t -> {
             ResourceSimpleDto page = new ResourceSimpleDto();
-            page.setResHash(t.getResHash());
+            page.setResId(t.getResId());
             page.setResName(t.getResName());
             page.setResSize(FileHelper.formatFileSize(t.getResSize()));
             page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
@@ -40,14 +40,14 @@ public class SearchService {
         return showDto;
     }
 
-    public ResourcePageDto searchByResHash(String resHash, String search) {
-        ResourceHighlightHitsDto dto = dao.searchByResHash(resHash, search);
+    public ResourcePageDto searchByResId(String resId, String search) {
+        ResourceHighlightHitsDto dto = dao.searchByResId(resId, search);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(Objects.isNull(dto), "资源不存在");
         String highlightHtml = HTMLTemplateUtils.render("highlight.html",
                 Collections.singletonMap("highlight", dto.getHighlights()));
         ResourceModel t = dto.getResource();
         ResourcePageDto page = new ResourcePageDto();
-        page.setResHash(t.getResHash());
+        page.setResId(t.getResId());
         page.setResName(t.getResName());
         page.setResSize(FileHelper.formatFileSize(t.getResSize()));
         page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
@@ -68,7 +68,7 @@ public class SearchService {
         return page;
     }
 
-    public String getResourcePath(String resHash) {
-        return dao.findByResHash(resHash).calculateFullPath();
+    public String getResourcePath(String resId) {
+        return dao.findByResId(resId).calculateFullPath();
     }
 }

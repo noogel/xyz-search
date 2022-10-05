@@ -19,13 +19,15 @@
                     document.querySelector("#fileInfoSize").textContent = data.resSize;
                     document.querySelector("#fileInfoModifiedAt").textContent = data.modifiedAt;
                     document.querySelector("#fileInfoHighlight").innerHTML = data.highlightHtml;
-                    document.querySelector("#fileDownloadBtn").href = "/file/download?resHash=" + data.resHash;
-                    document.querySelector("#fileViewBtn").href = "/file/view?resHash=" + data.resHash;
+                    document.querySelector("#fileDownloadA").href = "/file/download?resId=" + data.resId;
+                    document.querySelector("#fileViewA").href = "/file/view?resId=" + data.resId;
                     // 是否支持查看
                     if (data.supportView) {
-                        document.querySelector("#fileViewBtnParent").setAttribute("class", "btn btn-outline-info");
+                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-outline-info");
+                        document.querySelector("#fileViewA").setAttribute("class", "page-link");
                     } else {
-                        document.querySelector("#fileViewBtnParent").setAttribute("class", "btn btn-outline-info disabled");
+                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-outline-info disabled");
+                        document.querySelector("#fileViewA").setAttribute("class", "page-link disabled");
                     }
                 }).catch(function (err) {
                     console.log(err);
@@ -187,8 +189,8 @@
                         <tr th:each="m:${result.data}">
                             <td>
                                 <a data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
-                                   th:id="${m.resHash}" aria-controls="offcanvasRight" onclick="fetch_data(this)"
-                                   th:href="@{/file(resHash=${m.resHash}, search=${result.paging.query.search})}" th:text="${m.resName}"></a>
+                                   th:id="${m.resId}" aria-controls="offcanvasRight" onclick="fetch_data(this)"
+                                   th:href="@{/file(resId=${m.resId}, search=${result.paging.query.search})}" th:text="${m.resName}"></a>
                             </td>
                             <td th:text="${m.resSize}"></td>
                             <td th:text="${m.modifiedAt}"></td>
@@ -235,14 +237,12 @@
                     <div class="my-3 row justify-content-end">
                         <!-- 文件内容结果列表 操作 -->
                         <div class="col-auto">
-                            <button id="fileViewBtnParent" type="button" class="btn btn-outline-info">
-                                <a class="page-link" id="fileViewBtn" href="#" target="_blank">查看</a>
-                            </button>
+                            <a class="page-link" id="fileViewA" href="#" target="_blank">
+                                <button id="fileViewBtn" type="button" class="btn btn-outline-info">查看</button></a>
                         </div>
                         <div class="col-auto">
-                            <button type="button" class="btn btn-outline-primary">
-                                <a class="page-link" id="fileDownloadBtn" href="#" target="_blank">下载</a>
-                            </button>
+                            <a class="page-link" id="fileDownloadA" href="#" target="_blank">
+                                <button type="button" class="btn btn-outline-primary">下载</button></a>
                         </div>
                     </div>
                     <div class="my-3 row justify-content-start">

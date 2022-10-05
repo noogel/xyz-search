@@ -49,16 +49,16 @@ public class IndexCtrl {
     @RequestMapping(value = "/file", method = RequestMethod.GET)
     public @ResponseBody
     ResourcePageDto file(@RequestParam(required = false) String search,
-                         @RequestParam(required = false) String resHash,
+                         @RequestParam(required = false) String resId,
                          @RequestParam(required = false, defaultValue = "5") int limit,
                          @RequestParam(required = false, defaultValue = "0") int offset) {
-        return searchService.searchByResHash(resHash, search);
+        return searchService.searchByResId(resId, search);
     }
 
     @RequestMapping(value = "/file/download", method = RequestMethod.GET)
-    public void fileDownload(@RequestParam(required = false) String resHash,
+    public void fileDownload(@RequestParam(required = false) String resId,
                          HttpServletResponse response) {
-        String resourcePath = searchService.getResourcePath(resHash);
+        String resourcePath = searchService.getResourcePath(resId);
         File file = new File(resourcePath);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
         try (InputStream inputStream = new FileInputStream(file)) {
@@ -79,9 +79,9 @@ public class IndexCtrl {
     }
 
     @RequestMapping(value = "/file/view", method = RequestMethod.GET)
-    public void fileView(@RequestParam(required = false) String resHash,
+    public void fileView(@RequestParam(required = false) String resId,
                          HttpServletResponse response) {
-        String resourcePath = searchService.getResourcePath(resHash);
+        String resourcePath = searchService.getResourcePath(resId);
         File file = new File(resourcePath);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
         try (InputStream inputStream = new FileInputStream(file)) {

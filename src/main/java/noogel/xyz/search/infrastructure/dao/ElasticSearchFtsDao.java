@@ -52,16 +52,22 @@ public class ElasticSearchFtsDao {
         }
     }
 
-    public boolean deleteIndexIfExist() {
+    /**
+     * 重置索引
+     * @return
+     */
+    public boolean resetIndex() {
         try {
             // Create the "products" index
             if (client.indices().exists(b -> b.index(indexName)).value()) {
                 DeleteIndexResponse delete = client.indices().delete(c -> c.index(indexName));
-                return delete.acknowledged();
+                log.info("resetIndex delete: {}", delete.acknowledged());
             }
-
+            CreateIndexResponse response = client.indices().create(c -> c
+                    .index(indexName).mappings(d -> d.properties(ResourceModel.generateEsMapping())));
+            return response.acknowledged();
         } catch (IOException ex) {
-            log.error("createIndex err", ex);
+            log.error("resetIndex err", ex);
         }
         return false;
     }
@@ -70,7 +76,7 @@ public class ElasticSearchFtsDao {
         try {
             IndexResponse response = client.index(i -> i
                     .index(indexName)
-                    .id(model.getResHash())
+                    .id(model.getResId())
                     .document(model)
             );
             return response.version() > 0;
@@ -81,9 +87,9 @@ public class ElasticSearchFtsDao {
 
     }
 
-    public boolean deleteByResHash(String resHash) {
+    public boolean deleteByResId(String resId) {
         try {
-            DeleteResponse delete = client.delete(b -> b.index(indexName).id(resHash));
+            DeleteResponse delete = client.delete(b -> b.index(indexName).id(resId));
             return delete.version() > 0;
         } catch (IOException ex) {
             log.error("deleteData err", ex);
@@ -91,9 +97,9 @@ public class ElasticSearchFtsDao {
         }
     }
 
-    public ResourceModel findByResHash(String resHash) {
+    public ResourceModel findByResId(String resId) {
         try {
-            GetResponse<ResourceModel> response = client.get(t -> t.index(indexName).id(resHash),
+            GetResponse<ResourceModel> response = client.get(t -> t.index(indexName).id(resId),
                     ResourceModel.class);
             return response.source();
         } catch (Exception ex) {
@@ -102,7 +108,7 @@ public class ElasticSearchFtsDao {
     }
 
     @Nullable
-    public ResourceHighlightHitsDto searchByResHash(String resHash, @Nullable String searchableText) {
+    public ResourceHighlightHitsDto searchByResId(String resId, @Nullable String searchableText) {
         try {
             BoolQuery.Builder builder = new BoolQuery.Builder();
             if (!StringUtils.isEmpty(searchableText)) {
@@ -110,14 +116,14 @@ public class ElasticSearchFtsDao {
                         .query(searchableText).analyzer("smartcn"))._toQuery();
                 builder.must(byName);
             }
-            Query byHash = TermQuery.of(m -> m.field("resHash").value(resHash))._toQuery();
-            builder.must(byHash);
+            Query redId = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
+            builder.must(redId);
 
             Highlight highlight = Highlight.of(t -> t.fields("searchableText", HighlightField.of(k -> k
                     .type("plain")
                     // 上下文内容
                     .fragmentSize(100)
-                    // 20 条
+                    // 30 条
                     .numberOfFragments(30)
                     // 高亮标记
                     .fragmenter(HighlighterFragmenter.Span))));
@@ -138,7 +144,7 @@ public class ElasticSearchFtsDao {
                 return dto;
             }
         } catch (IOException ex) {
-            log.error("findByResHash err", ex);
+            log.error("findByResId err", ex);
         }
         return null;
     }
@@ -157,12 +163,12 @@ public class ElasticSearchFtsDao {
                 )._toQuery();
                 builder.must(searchableText);
             }
-            if (!StringUtils.isEmpty(queryDto.getResHash())) {
-                Query resHash = TermQuery.of(m -> m
-                        .field("resHash")
-                        .value(queryDto.getResHash())
+            if (!StringUtils.isEmpty(queryDto.getResId())) {
+                Query resId = TermQuery.of(m -> m
+                        .field("resId")
+                        .value(queryDto.getResId())
                 )._toQuery();
-                builder.must(resHash);
+                builder.must(resId);
             }
             if (!StringUtils.isEmpty(queryDto.getResSize())) {
                 Query resSize = ElasticSearchQueryHelper.buildRangeQuery("resSize", queryDto.getResSize(), t -> t);

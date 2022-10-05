@@ -1,9 +1,6 @@
 package noogel.xyz.search.infrastructure.model;
 
-import co.elastic.clients.elasticsearch._types.mapping.IntegerNumberProperty;
-import co.elastic.clients.elasticsearch._types.mapping.LongNumberProperty;
-import co.elastic.clients.elasticsearch._types.mapping.Property;
-import co.elastic.clients.elasticsearch._types.mapping.TextProperty;
+import co.elastic.clients.elasticsearch._types.mapping.*;
 import lombok.Data;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
@@ -19,7 +16,7 @@ public class ResourceModel {
     /**
      * 资源完整路径 HASH
      */
-    private String resHash;
+    private String resId;
     /**
      * 资源名称
      */
@@ -29,15 +26,15 @@ public class ResourceModel {
      */
     private String resPath;
     /**
+     * 文件 HASH
+     */
+    private String resHash;
+    /**
      * 类型
      * FILE:EPUB
      * FILE:TXT
      */
     private String resType;
-    /**
-     * 文件 HASH
-     */
-    private String fileHash;
     /**
      * 资源大小
      */
@@ -73,16 +70,16 @@ public class ResourceModel {
 
     public static Map<String, Property> generateEsMapping() {
         Map<String, Property> documentMap = new HashMap<>();
-        documentMap.put("resHash", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
+        documentMap.put("resId", Property
+                .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resPath", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
         documentMap.put("resName", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
+        documentMap.put("resHash", Property
+                .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resType", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
-        documentMap.put("fileHash", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
+                .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resSize", Property
                 .of(p -> p.long_(LongNumberProperty.of(i -> i.index(true)))));
         documentMap.put("modifiedAt", Property
@@ -91,7 +88,7 @@ public class ResourceModel {
         documentMap.put("searchableText", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("smartcn")))));
         documentMap.put("textHash", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
+                .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("textSize", Property
                 .of(p -> p.integer(IntegerNumberProperty.of(i -> i.index(true)))));
 
@@ -109,12 +106,12 @@ public class ResourceModel {
      */
     public static ResourceModel buildBaseInfo(File file, String text, TaskDto task) {
         ResourceModel demo = new ResourceModel();
-        demo.setResHash(MD5Helper.getMD5(file.getAbsolutePath()));
+        demo.setResId(MD5Helper.getMD5(file.getAbsolutePath()));
         // 所在目录
         demo.setResPath(file.getParent());
         demo.setResName(file.getName());
         demo.setResType("FILE:" + FileHelper.getFileExtension(file.getName()).toUpperCase());
-        demo.setFileHash(MD5Helper.getMD5(file));
+        demo.setResHash(MD5Helper.getMD5(file));
         demo.setResSize(file.length());
         demo.setModifiedAt(file.lastModified());
 
