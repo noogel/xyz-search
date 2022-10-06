@@ -10,6 +10,7 @@ import co.elastic.clients.elasticsearch.core.search.*;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
 import noogel.xyz.search.infrastructure.dto.SearchQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @Repository
@@ -34,16 +36,16 @@ public class ElasticSearchFtsDao {
 
     @Resource
     private ElasticsearchClient client;
-
-    private static final String indexName = "xyz_fts_resources4";
+    @Resource
+    private SearchPropertyConfig.SearchConfig searchConfig;
 
     @PostConstruct
     public void createIndexIfNotExist() {
         try {
             // Create the "products" index
-            if (!client.indices().exists(b -> b.index(indexName)).value()) {
+            if (!client.indices().exists(b -> b.index(getIndexName())).value()) {
                 CreateIndexResponse response = client.indices().create(c -> c
-                        .index(indexName).mappings(d -> d.properties(ResourceModel.generateEsMapping())));
+                        .index(getIndexName()).mappings(d -> d.properties(ResourceModel.generateEsMapping())));
                 log.info("createIndexIfNotExist：" + response.acknowledged());
             }
 
@@ -53,18 +55,27 @@ public class ElasticSearchFtsDao {
     }
 
     /**
+     * 获取索引名称
+     * @return
+     */
+    private String getIndexName() {
+        return searchConfig.getFtsIndexName();
+    }
+
+    /**
      * 重置索引
+     *
      * @return
      */
     public boolean resetIndex() {
         try {
             // Create the "products" index
-            if (client.indices().exists(b -> b.index(indexName)).value()) {
-                DeleteIndexResponse delete = client.indices().delete(c -> c.index(indexName));
+            if (client.indices().exists(b -> b.index(getIndexName())).value()) {
+                DeleteIndexResponse delete = client.indices().delete(c -> c.index(getIndexName()));
                 log.info("resetIndex delete: {}", delete.acknowledged());
             }
             CreateIndexResponse response = client.indices().create(c -> c
-                    .index(indexName).mappings(d -> d.properties(ResourceModel.generateEsMapping())));
+                    .index(getIndexName()).mappings(d -> d.properties(ResourceModel.generateEsMapping())));
             return response.acknowledged();
         } catch (IOException ex) {
             log.error("resetIndex err", ex);
@@ -75,7 +86,7 @@ public class ElasticSearchFtsDao {
     public boolean upsertData(ResourceModel model) {
         try {
             IndexResponse response = client.index(i -> i
-                    .index(indexName)
+                    .index(getIndexName())
                     .id(model.getResId())
                     .document(model)
             );
@@ -89,22 +100,56 @@ public class ElasticSearchFtsDao {
 
     public boolean deleteByResId(String resId) {
         try {
-            DeleteResponse delete = client.delete(b -> b.index(indexName).id(resId));
-            return delete.version() > 0;
+            DeleteResponse delete = client.delete(b -> b.index(getIndexName()).id(resId));
+            boolean result = delete.version() > 0;
+            log.info("deleteByResId {} {}", resId, result);
+            return result;
         } catch (IOException ex) {
-            log.error("deleteData err", ex);
+            log.error("deleteByResId err", ex);
             return false;
         }
     }
 
     public ResourceModel findByResId(String resId) {
         try {
-            GetResponse<ResourceModel> response = client.get(t -> t.index(indexName).id(resId),
+            GetResponse<ResourceModel> response = client.get(t -> t.index(getIndexName()).id(resId),
                     ResourceModel.class);
             return response.source();
         } catch (Exception ex) {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
         }
+    }
+
+    public SearchResultDto searchOldRes(String resPathHash, Long taskOpAt) {
+        SearchResultDto resp = new SearchResultDto();
+        resp.setData(new ArrayList<>());
+
+        try {
+            BoolQuery.Builder builder = new BoolQuery.Builder();
+            Query q1 = TermQuery.of(m -> m.field("resPathHash").value(resPathHash))._toQuery();
+            builder.must(q1);
+            Query q2 = ElasticSearchQueryHelper.buildRangeQuery("taskOpAt",
+                    String.format("%s:%s", "LT", taskOpAt), t -> t);
+            builder.must(q2);
+            SearchResponse<ResourceModel> search = client.search(s -> s
+                            .index(getIndexName())
+                            .query(q -> q.bool(t -> builder))
+                            .source(l -> l.filter(m -> m.excludes("searchableText")))
+                            .size(10),
+                    ResourceModel.class);
+
+            TotalHits total = search.hits().total();
+            resp.setExactSize(total.relation() == TotalHitsRelation.Eq);
+            resp.setSize(total.value());
+
+            List<Hit<ResourceModel>> hits = search.hits().hits();
+            for (Hit<ResourceModel> hit : hits) {
+                resp.getData().add(hit.source());
+            }
+        } catch (IOException ex) {
+            log.error("searchOldRes err", ex);
+        }
+        return resp;
     }
 
     @Nullable
@@ -129,7 +174,7 @@ public class ElasticSearchFtsDao {
                     .fragmenter(HighlighterFragmenter.Span))));
 
             SearchResponse<ResourceModel> search = client.search(s -> s
-                            .index(indexName)
+                            .index(getIndexName())
                             .query(q -> q.bool(t -> builder))
                             .source(l -> l.filter(m -> m.excludes("searchableText")))
                             .highlight(highlight),
@@ -181,7 +226,7 @@ public class ElasticSearchFtsDao {
                 builder.must(modifiedAt);
             }
             SearchResponse<ResourceModel> search = client.search(s -> s
-                            .index(indexName)
+                            .index(getIndexName())
                             .query(q -> q.bool(t -> builder))
                             .source(l -> l.filter(m -> m.excludes("searchableText")))
                             .size(queryDto.getLimit())

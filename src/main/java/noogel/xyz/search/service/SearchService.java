@@ -7,7 +7,7 @@ import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
-import noogel.xyz.search.infrastructure.utils.HTMLTemplateUtils;
+import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -43,7 +43,7 @@ public class SearchService {
     public ResourcePageDto searchByResId(String resId, String search) {
         ResourceHighlightHitsDto dto = dao.searchByResId(resId, search);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(Objects.isNull(dto), "资源不存在");
-        String highlightHtml = HTMLTemplateUtils.render("highlight.html",
+        String highlightHtml = HTMLTemplateHelper.render("highlight.html",
                 Collections.singletonMap("highlight", dto.getHighlights()));
         ResourceModel t = dto.getResource();
         ResourcePageDto page = new ResourcePageDto();

@@ -26,6 +26,10 @@ public class ResourceModel {
      */
     private String resPath;
     /**
+     * 资源路径 HASH
+     */
+    private String resPathHash;
+    /**
      * 文件 HASH
      */
     private String resHash;
@@ -74,6 +78,8 @@ public class ResourceModel {
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resPath", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
+        documentMap.put("resPathHash", Property
+                .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resName", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
         documentMap.put("resHash", Property
@@ -109,6 +115,7 @@ public class ResourceModel {
         demo.setResId(MD5Helper.getMD5(file.getAbsolutePath()));
         // 所在目录
         demo.setResPath(file.getParent());
+        demo.setResPathHash(MD5Helper.getMD5(file.getParent()));
         demo.setResName(file.getName());
         demo.setResType("FILE:" + FileHelper.getFileExtension(file.getName()).toUpperCase());
         demo.setResHash(MD5Helper.getMD5(file));

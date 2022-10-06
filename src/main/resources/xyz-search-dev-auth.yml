@@ -1,0 +1,11 @@
+elasticsearchHost: "https://localhost:9200"
+elasticsearchUser: elastic
+elasticsearchPassword: z6T5fmGlBwzcdHmQ9UWw
+elasticsearchCAPath: /home/xyz/Debug/http_ca.crt
+elasticsearchConnectionTimeout: 1000
+elasticsearchSocketTimeout: 5000
+searchDirectories:
+  - /home/xyz/DockerSharingData/TestSearch
+configFilePath:
+logFilePath:
+ftsIndexName: xyz_fts_resources4

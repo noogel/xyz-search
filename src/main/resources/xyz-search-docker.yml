@@ -1,0 +1,11 @@
+elasticsearchHost: "http://localhost:9200"
+elasticsearchUser:
+elasticsearchPassword:
+elasticsearchCAPath:
+elasticsearchConnectionTimeout: 1000
+elasticsearchSocketTimeout: 5000
+searchDirectories:
+  - /data/share
+configFilePath: /data/config
+logFilePath: /data/log
+ftsIndexName: xyz_fts_resources4

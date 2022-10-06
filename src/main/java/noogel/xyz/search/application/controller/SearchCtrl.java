@@ -22,7 +22,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
 @Controller
-public class IndexCtrl {
+public class SearchCtrl {
 
     @Resource
     private SearchService searchService;
