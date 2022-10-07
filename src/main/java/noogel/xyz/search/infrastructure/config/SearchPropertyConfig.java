@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
+import noogel.xyz.search.infrastructure.utils.EnvHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
@@ -42,11 +43,6 @@ public class SearchPropertyConfig {
         搜索目录
          */
         private List<String> searchDirectories;
-
-        /**
-         * 配置版本
-         */
-        private long version = 1;
     }
 
     @Data
@@ -58,7 +54,7 @@ public class SearchPropertyConfig {
          */
         private String configFilePath;
         /**
-         * 配置文件路径
+         * 日志文件路径
          */
         private String logFilePath;
         /**
@@ -163,9 +159,8 @@ public class SearchPropertyConfig {
      */
     @Nullable
     public static SearchConfig readConfigByResource() {
-        String deployEnv = Optional.ofNullable(System.getenv("DEPLOY_ENV"))
-                .filter(StringUtils::isNoneBlank).orElse("dev").toLowerCase();
-        Resource resource = new DefaultResourceLoader().getResource(String.format("classpath:xyz-search-%s.yml", deployEnv));
+        Resource resource = new DefaultResourceLoader().getResource(
+                String.format("classpath:xyz-search-%s.yml", EnvHelper.DEPLOY_ENV));
         try (InputStream inputStream = resource.getInputStream()) {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 byte[] b = new byte[10240];

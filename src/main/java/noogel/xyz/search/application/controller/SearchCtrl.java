@@ -42,7 +42,6 @@ public class SearchCtrl {
         query.setOffset(offset);
         SearchResultShowDto result = searchService.search(query);
         mv.addObject("result", result);
-        mv.addObject("option", "checked");
         return mv;
     }
 

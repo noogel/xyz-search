@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>设置</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
+        window.onload=function(){
+            if (!judgeFalse([[${result?.show}]])) {
+                var resultModal = new bootstrap.Modal(document.getElementById('opResultModal'));
+                resultModal.show();
+            }
+        }
+        const judgeFalse = function (param) {
+            console.log(param)
+            return param === undefined || param === false;
+        }
+        const fetch_data = function (href) {
+            console.log(href);
+            document.querySelector("#opResultModalHeader").textContent = '重建索引';
+            fetch(href, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (data) {
+                if (data.ok) {
+                    document.querySelector("#opResultModalBody").textContent = '操作成功';
+                } else {
+                    document.querySelector("#opResultModalBody").textContent = '操作失败：' + data.statusText;
+                }
+            }).catch(function (err) {
+                console.log(err);
+                document.querySelector("#opResultModalBody").textContent = '操作失败：' + err.toString();
+            });
+            new bootstrap.Modal(document.getElementById('opResultModal')).show();
+        }
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="row text-center">
+                <p class="popout">
+                    <span>畅</span>
+                    <span>文</span>
+                    <span>全</span>
+                    <span>索</span>
+                </p>
+            </div>
+        </div>
+        <div class="col-12">
+            <h4 class="mb-3">设置</h4>
+            <form id="searchSettingForm" class="needs-validation" novalidate="" action="/settings" method="post">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="elasticsearchHost" class="form-label">Elasticsearch 地址</label>
+                        <div class="input-group has-validation">
+                            <span class="input-group-text">http[s]://</span>
+                            <input type="text" class="form-control" id="elasticsearchHost" name="elasticsearchHost"
+                                   placeholder="" required="" th:value="${searchConfig.elasticsearchHost}">
+                            <div class="invalid-feedback">
+                                Elasticsearch 地址不能为空
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="elasticsearchUser" class="form-label">Elasticsearch 用户名
+                            <span class="text-muted">（可选）</span></label>
+                        <input type="text" class="form-control" id="elasticsearchUser" name="elasticsearchUser"
+                               placeholder="elastic" th:value="${searchConfig.elasticsearchUser}">
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="elasticsearchPassword" class="form-label">Elasticsearch 密码
+                            <span class="text-muted">（可选）</span></label>
+                        <input type="password" class="form-control" id="elasticsearchPassword" name="elasticsearchPassword"
+                               placeholder="" th:value="${searchConfig.elasticsearchPassword}">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="elasticsearchCAPath" class="form-label">Elasticsearch 证书路径
+                            <span class="text-muted">（可选）</span></label>
+                        <div class="input-group has-validation">
+                            <input type="text" class="form-control" id="elasticsearchCAPath" name="elasticsearchCAPath"
+                                   placeholder="" th:value="${searchConfig.elasticsearchCAPath}">
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="ftsIndexName" class="form-label">Elasticsearch 索引名称
+                            <span class="text-muted">（只读）</span></label>
+                        <input type="text" class="form-control" id="ftsIndexName" name="ftsIndexName"
+                               placeholder="" th:value="${searchConfig.ftsIndexName}" disabled>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="searchDirectories" class="form-label">索引目录
+                            <span class="text-muted">（可选）</span><span class="text-muted" th:if="${env == 'docker'}">（只读）</span></label>
+                        <div class="input-group">
+                            <textarea class="form-control" id="searchDirectories" name="searchDirectories" th:readonly="${env == 'docker'}"
+                                      aria-label="With textarea" th:text="${searchConfig.searchDirectories}"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="configFilePath" class="form-label">配置文件目录
+                            <span class="text-muted">（只读）</span></label>
+                        <input type="text" class="form-control" id="configFilePath" name="configFilePath"
+                               placeholder="" th:value="${searchConfig.configFilePath}" disabled>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="logFilePath" class="form-label">日志文件目录
+                            <span class="text-muted">（只读）</span></label>
+                        <input type="text" class="form-control" id="logFilePath" name="logFilePath"
+                               placeholder="" th:value="${searchConfig.logFilePath}" disabled>
+                    </div>
+                </div>
+
+                <div class="row justify-content-end my-4">
+                    <div class="col-auto">
+                        <button class="btn btn-primary" type="submit">保存</button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-warning" onclick="fetch_data('/admin/data/reset')">重建索引</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-12">
+            <footer class="py-3 my-4">
+                <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+                    <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
+                    <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
+                    <li class="nav-item"><a href="/transfer" class="nav-link px-2 text-muted">中转</a></li>
+                </ul>
+                <p class="text-center text-muted">© 2015 – 2022 <span style="font-size: 0.8rem">❤</span> noogel</p>
+            </footer>
+        </div>
+
+        <!-- The Modal -->
+        <div class="modal" id="opResultModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="opResultModalHeader" th:text="${result?.header}"></h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body" id="opResultModalBody" th:text="${result?.body}">
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

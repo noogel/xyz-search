@@ -23,10 +23,10 @@
                     document.querySelector("#fileViewA").href = "/file/view?resId=" + data.resId;
                     // 是否支持查看
                     if (data.supportView) {
-                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-outline-info");
+                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-info");
                         document.querySelector("#fileViewA").setAttribute("class", "page-link");
                     } else {
-                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-outline-info disabled");
+                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-info disabled");
                         document.querySelector("#fileViewA").setAttribute("class", "page-link disabled");
                     }
                 }).catch(function (err) {
@@ -238,11 +238,11 @@
                         <!-- 文件内容结果列表 操作 -->
                         <div class="col-auto">
                             <a class="page-link" id="fileViewA" href="#" target="_blank">
-                                <button id="fileViewBtn" type="button" class="btn btn-outline-info">查看</button></a>
+                                <button id="fileViewBtn" type="button" class="btn btn-info">查看</button></a>
                         </div>
                         <div class="col-auto">
                             <a class="page-link" id="fileDownloadA" href="#" target="_blank">
-                                <button type="button" class="btn btn-outline-primary">下载</button></a>
+                                <button type="button" class="btn btn-primary">下载</button></a>
                         </div>
                     </div>
                     <div class="my-3 row justify-content-start">
@@ -276,6 +276,16 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="col-12">
+            <footer class="py-3 my-4">
+                <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+                    <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
+                    <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
+                    <li class="nav-item"><a href="/transfer" class="nav-link px-2 text-muted">中转</a></li>
+                </ul>
+                <p class="text-center text-muted">© 2015 – 2022 <span style="font-size: 0.8rem">❤</span> noogel</p>
+            </footer>
         </div>
     </div>
 </div>
