@@ -43,6 +43,11 @@ public class SearchPropertyConfig {
         搜索目录
          */
         private List<String> searchDirectories;
+
+        /**
+         * 是否已经初始化索引
+         */
+        private boolean initIndex;
     }
 
     @Data

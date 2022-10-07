@@ -16,4 +16,11 @@ public interface SettingService {
      * @return
      */
     SearchSettingDto update(SearchSettingDto cfg);
+
+    /**
+     * 测试链接
+     * @param cfg
+     * @return
+     */
+    boolean connectTesting(SearchSettingDto cfg);
 }

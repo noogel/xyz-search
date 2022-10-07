@@ -18,24 +18,16 @@
             console.log(param)
             return param === undefined || param === false;
         }
-        const fetch_data = function (href) {
-            console.log(href);
-            document.querySelector("#opResultModalHeader").textContent = '重建索引';
+        const fetch_data_post = function (href, obj) {
             fetch(href, {
                 method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            }).then(function (data) {
-                if (data.ok) {
-                    document.querySelector("#opResultModalBody").textContent = '操作成功';
-                } else {
-                    document.querySelector("#opResultModalBody").textContent = '操作失败：' + data.statusText;
-                }
+                body: new FormData(document.getElementById("searchSettingForm")),
+            }).then(r => r.json()).then(function (data) {
+                document.querySelector("#opResultModalBody").textContent = data.body;
+                document.querySelector("#opResultModalHeader").textContent = data.header;
             }).catch(function (err) {
-                console.log(err);
-                document.querySelector("#opResultModalBody").textContent = '操作失败：' + err.toString();
+                document.querySelector("#opResultModalBody").textContent = err.toString();
+                document.querySelector("#opResultModalHeader").textContent = '操作失败';
             });
             new bootstrap.Modal(document.getElementById('opResultModal')).show();
         }
@@ -130,7 +122,10 @@
                         <button class="btn btn-primary" type="submit">保存</button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-warning" onclick="fetch_data('/admin/data/reset')">重建索引</button>
+                        <button type="button" class="btn btn-warning" onclick="fetch_data_post('/settings/connect/testing', this)">测试连接</button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-warning" onclick="fetch_data_post('/settings/data/reset', this)">重建索引</button>
                     </div>
                 </div>
             </form>

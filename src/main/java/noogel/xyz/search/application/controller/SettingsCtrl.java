@@ -5,9 +5,11 @@ import noogel.xyz.search.infrastructure.dto.ModalInfoDto;
 import noogel.xyz.search.infrastructure.dto.SearchSettingDto;
 import noogel.xyz.search.infrastructure.utils.EnvHelper;
 import noogel.xyz.search.service.SettingService;
+import noogel.xyz.search.service.SynchronizeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
@@ -18,6 +20,8 @@ public class SettingsCtrl {
 
     @Resource
     private SettingService settingService;
+    @Resource
+    private SynchronizeService synchronizeService;
 
     @RequestMapping(value="/settings", method= RequestMethod.GET)
     public ModelAndView getSettings(){
@@ -42,4 +46,32 @@ public class SettingsCtrl {
         return mv;
     }
 
+    @RequestMapping(value="/settings/data/reset", method= RequestMethod.POST)
+    public @ResponseBody ModalInfoDto dataReset(){
+        try {
+            // 删除重建索引
+            synchronizeService.resetIndex();
+            // 同步目录数据
+            synchronizeService.asyncAll();
+            return ModalInfoDto.ofOk("重置索引");
+        } catch (Exception ex) {
+            log.error("dataReset", ex);
+            return ModalInfoDto.ofErr("重置索引：" + ex.getMessage());
+        }
+    }
+
+    @RequestMapping(value="/settings/connect/testing", method= RequestMethod.POST)
+    public @ResponseBody ModalInfoDto connectTesting(SearchSettingDto cfg){
+        try{
+            boolean res = settingService.connectTesting(cfg);
+            if (res) {
+                return ModalInfoDto.ofOk("测试连接");
+            } else {
+                return ModalInfoDto.ofErr("测试连接");
+            }
+        } catch (Exception ex) {
+            log.error("connectTesting {}", cfg, ex);
+            return ModalInfoDto.ofErr(ex.getMessage());
+        }
+    }
 }

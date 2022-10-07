@@ -58,6 +58,11 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         async(paths);
     }
 
+    @Override
+    public boolean resetIndex() {
+        return ftsDao.createIndex(true);
+    }
+
     private void processDirectory(File rootFile, TaskDto taskDto) {
         log.info("processTask will process {} {}", rootFile.getAbsolutePath(), taskDto);
         // 检查文件夹

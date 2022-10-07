@@ -14,4 +14,9 @@ public interface SynchronizeService {
      * 异步索引全部
      */
     void asyncAll();
+
+    /**
+     * 重置索引
+     */
+    boolean resetIndex();
 }

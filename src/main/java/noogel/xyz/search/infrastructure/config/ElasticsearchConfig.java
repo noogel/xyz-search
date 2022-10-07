@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -14,8 +15,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.net.ssl.SSLContext;
@@ -26,37 +26,63 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
+import java.util.Objects;
 
-@Configuration
-public class ElasticsearchClientConfig {
+@Component
+@Slf4j
+public class ElasticsearchConfig {
+
+    private ElasticsearchClient client = null;
 
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
-    @Bean
-    public ElasticsearchClient elasticsearchClient() {
+    /**
+     * 重新创建客户端
+     */
+    public void reloadClient() {
+        client = genClient(searchConfig);
+    }
+
+    /**
+     * 获取客户端
+     * @return
+     */
+    public ElasticsearchClient getClient() {
+        if (Objects.isNull(client)) {
+            client = genClient(searchConfig);
+        }
+        return client;
+    }
+
+    /**
+     * 生成客户端
+     * @param sc
+     * @return
+     */
+    public ElasticsearchClient genClient(SearchPropertyConfig.SearchConfig sc) {
 
         // Create the low-level client
         final RestClient restClient = RestClient
-                .builder(HttpHost.create(searchConfig.getElasticsearchHost()))
+                .builder(HttpHost.create(sc.getElasticsearchHost()))
                 // 超时设置
                 .setRequestConfigCallback(builder -> builder
-                        .setConnectTimeout(searchConfig.getElasticsearchConnectionTimeout())
-                        .setSocketTimeout(searchConfig.getElasticsearchSocketTimeout()))
+                        .setConnectTimeout(sc.getElasticsearchConnectionTimeout())
+                        .setSocketTimeout(sc.getElasticsearchSocketTimeout()))
                 .setHttpClientConfigCallback(builder -> {
                     // 如果开启了认证
-                    if (StringUtils.isNotBlank(searchConfig.getElasticsearchUser())
-                            && StringUtils.isNotBlank(searchConfig.getElasticsearchPassword())) {
+                    if (StringUtils.isNotBlank(sc.getElasticsearchUser())
+                            && StringUtils.isNotBlank(sc.getElasticsearchPassword())) {
                         // 认证
                         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
                         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(
-                                searchConfig.getElasticsearchUser(), searchConfig.getElasticsearchPassword()));
+                                sc.getElasticsearchUser(), sc.getElasticsearchPassword()));
                         builder.setDefaultCredentialsProvider(credentialsProvider);
                     }
                     // CA 证书
-                    if (StringUtils.isNotBlank(searchConfig.getElasticsearchCAPath())) {
+                    if (StringUtils.isNotBlank(sc.getElasticsearchCAPath())) {
                         try {
-                            Path caCertificatePath = Paths.get(searchConfig.getElasticsearchCAPath());
+                            Path caCertificatePath = Paths.get(sc.getElasticsearchCAPath());
                             CertificateFactory factory = CertificateFactory.getInstance("X.509");
                             Certificate trustedCa;
                             try (InputStream is = Files.newInputStream(caCertificatePath)) {
