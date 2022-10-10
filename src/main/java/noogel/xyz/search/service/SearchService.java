@@ -59,7 +59,6 @@ public class SearchService {
         try {
             String contentType = Files.probeContentType(file.toPath());
             page.setContentType(contentType);
-
             String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
             page.setSupportView(CommonsConstConfig.SUPPORT_VIEW_EXT.contains(fileExtension));
         } catch (IOException e) {

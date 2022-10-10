@@ -20,7 +20,12 @@
                     document.querySelector("#fileInfoModifiedAt").textContent = data.modifiedAt;
                     document.querySelector("#fileInfoHighlight").innerHTML = data.highlightHtml;
                     document.querySelector("#fileDownloadA").href = "/file/download?resId=" + data.resId;
-                    document.querySelector("#fileViewA").href = "/file/view?resId=" + data.resId;
+                    if (data.resType == 'FILE:PDF') {
+                        document.querySelector("#fileViewA").href = "/pdf.js/web/view?file=/file/download?resId=" + data.resId;
+                    } else {
+                        document.querySelector("#fileViewA").href = "/file/view?resId=" + data.resId;
+                    }
+
                     // 是否支持查看
                     if (data.supportView) {
                         document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-info");
