@@ -34,6 +34,7 @@ public class SettingsCtrl {
     @RequestMapping(value="/settings", method= RequestMethod.POST)
     public ModelAndView postSettings(SearchSettingDto cfg){
         ModelAndView mv = new ModelAndView("settings");
+        mv.addObject("env", EnvHelper.DEPLOY_ENV);
         try {
             SearchSettingDto dto = settingService.update(cfg);
             mv.addObject("searchConfig", dto);
