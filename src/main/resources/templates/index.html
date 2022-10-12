@@ -12,14 +12,16 @@
             const href = obj.href;
             fetch(href).then(r => r.json())
                 .then(function (data) {
+                    console.log(encodeURIComponent(data.relativeResDir));
                     // document.querySelector("#offcanvasFileInfo").textContent = data.resName;  // 右边窗标题
                     document.querySelector("#fileInfoName").textContent = data.resName;
-                    document.querySelector("#fileInfoPath").textContent = data.resPath;
+                    document.querySelector("#fileInfoPath").textContent = data.relativeResPath;
                     document.querySelector("#fileInfoContentType").textContent = data.contentType;
                     document.querySelector("#fileInfoSize").textContent = data.resSize;
                     document.querySelector("#fileInfoModifiedAt").textContent = data.modifiedAt;
                     document.querySelector("#fileInfoHighlight").innerHTML = data.highlightHtml;
                     document.querySelector("#fileDownloadA").href = "/file/download?resId=" + data.resId;
+                    document.querySelector("#dirViewA").href = "/?resId=" + data.resId + "&relativeResDir=" + encodeURIComponent(data.relativeResDir);
                     if (data.resType == 'FILE:PDF') {
                         document.querySelector("#fileViewA").href = "/pdf.js/web/view?file=/file/download?resId=" + data.resId;
                     } else {
@@ -58,6 +60,8 @@
                     <div class="input-group col-auto">
                         <input id="search" type="text" name="search" class="form-control" placeholder="输入内容，回车搜索！"
                                autofocus aria-label="输入内容，回车搜索！" th:value="${result.paging.query.search}">
+                        <input type="hidden" name="relativeResDir" th:value="${result.paging.query.relativeResDir}">
+                        <input type="hidden" name="resId" th:value="${result.paging.query.resId}">
                         <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapseAdvance" aria-expanded="false"
                                 aria-controls="collapseAdvance">高级</button>
@@ -181,6 +185,21 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 路径 -->
+                <div class="row g-5 center" th:if="${result.showBreadCrumb()}">
+                    <div class="bd-code-snippet">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item" th:each="m:${result.breadcrumb.items}">
+                                    <a th:href="'/?' + ${m.getUrlQuery()}" th:text="${m.text}" th:if="${m.show}"></a>
+                                    <span th:text="${m.text}" th:unless="${m.show}"></span>
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
                 <!-- 数据 -->
                 <table class="table table-striped table-bordered">
                     <thead class="table-secondary">
@@ -244,6 +263,10 @@
                         <div class="col-auto">
                             <a class="page-link" id="fileViewA" href="#" target="_blank">
                                 <button id="fileViewBtn" type="button" class="btn btn-info">查看</button></a>
+                        </div>
+                        <div class="col-auto">
+                            <a class="page-link" id="dirViewA" href="#" target="_blank">
+                                <button id="dirViewBtn" type="button" class="btn btn-info">目录</button></a>
                         </div>
                         <div class="col-auto">
                             <a class="page-link" id="fileDownloadA" href="#" target="_blank">

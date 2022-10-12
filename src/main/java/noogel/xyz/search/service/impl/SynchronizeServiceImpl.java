@@ -105,9 +105,9 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         long oldCount = oldRes.getSize();
         while (!oldRes.getData().isEmpty()) {
             for (ResourceModel res : oldRes.getData()) {
-                File file = new File(res.calculateFullPath());
+                File file = new File(res.calculateAbsolutePath());
                 if (file.exists()) {
-                    log.warn("delayCleanOldRes fileExist {}", res.calculateFullPath());
+                    log.warn("delayCleanOldRes fileExist {}", res.calculateAbsolutePath());
                 }
                 ftsDao.deleteByResId(res.getResId());
             }

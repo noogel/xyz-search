@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
-import noogel.xyz.search.infrastructure.dto.SearchQueryDto;
+import noogel.xyz.search.infrastructure.dto.SearchBaseQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
@@ -52,7 +52,12 @@ public class ElasticSearchFtsDao {
             if (!indexExist || deleteIfExist) {
                 // 创建索引和 mapping
                 CreateIndexResponse response = config.getClient().indices().create(c -> c
-                        .index(getIndexName()).mappings(d -> d.properties(ResourceModel.generateEsMapping())));
+                        .index(getIndexName()).mappings(d -> d.properties(ResourceModel.generateEsMapping()))
+                        .settings(s ->
+                                s.analysis(k ->
+                                        // 自定义路径分词工具
+                                        k.analyzer("path_tokenizer", a->
+                                                a.custom(l-> l.tokenizer("path_hierarchy"))))));
                 log.info("CreateIndexResponse delete: {}", response.acknowledged());
                 // 持久化配置
                 searchConfig.setInitIndex(true);
@@ -79,6 +84,20 @@ public class ElasticSearchFtsDao {
             if (!searchConfig.isInitIndex()) {
                 createIndex(false);
             }
+            /** Demo
+             * ResourceModel(resId=4997a7dd90fe3d4c81f7d8802ae553f4,
+             * resName=43丨Socket通信：遇上特大项目，要学会和其他公司合作.html,
+             * resDir=/home/xyz/DockerSharingData/TestSearch/极客时间/15-趣谈Linux操作系统/09-核心原理篇：第八部分 网络系统 (7讲),
+             * resHash=9a9c4bd4d34faa4fd6ce726cdc6a532d,
+             * resType=FILE:HTML,
+             * resSize=1657045,
+             * modifiedAt=1664959701496,
+             * searchableText=极客时间 | 趣谈Linux操作系统,
+             * textHash=dfb16b1b5ba04b745b51b48e16959c4a,
+             * textSize=5287,
+             * taskId=1665580844,
+             * taskOpAt=1665580844)
+             */
             IndexResponse response = config.getClient().index(i -> i
                     .index(getIndexName())
                     .id(model.getResId())
@@ -117,43 +136,20 @@ public class ElasticSearchFtsDao {
     public SearchResultDto searchOldRes(String resPathHash, Long taskOpAt) {
         SearchResultDto resp = new SearchResultDto();
         resp.setData(new ArrayList<>());
-
-        try {
-            BoolQuery.Builder builder = new BoolQuery.Builder();
-            Query q1 = TermQuery.of(m -> m.field("resPathHash").value(resPathHash))._toQuery();
-            builder.must(q1);
-            Query q2 = ElasticSearchQueryHelper.buildRangeQuery("taskOpAt",
-                    String.format("%s:%s", "LT", taskOpAt), t -> t);
-            builder.must(q2);
-            SearchResponse<ResourceModel> search = config.getClient().search(s -> s
-                            .index(getIndexName())
-                            .query(q -> q.bool(t -> builder))
-                            .source(l -> l.filter(m -> m.excludes("searchableText")))
-                            .size(10),
-                    ResourceModel.class);
-
-            TotalHits total = search.hits().total();
-            resp.setExactSize(total.relation() == TotalHitsRelation.Eq);
-            resp.setSize(total.value());
-
-            List<Hit<ResourceModel>> hits = search.hits().hits();
-            for (Hit<ResourceModel> hit : hits) {
-                resp.getData().add(hit.source());
-            }
-        } catch (IOException ex) {
-            log.error("searchOldRes err", ex);
-        }
+        // TODO: 2022/10/13 fix
         return resp;
     }
 
     @Nullable
-    public ResourceHighlightHitsDto searchByResId(String resId, @Nullable String searchableText) {
+    public ResourceHighlightHitsDto searchByResId(String resId, @Nullable String text) {
         try {
             BoolQuery.Builder builder = new BoolQuery.Builder();
-            if (!StringUtils.isEmpty(searchableText)) {
-                Query byName = MatchQuery.of(m -> m.field("searchableText")
-                        .query(searchableText).analyzer("smartcn"))._toQuery();
-                builder.must(byName);
+            if (!StringUtils.isEmpty(text)) {
+                Query searchableText = MatchQuery.of(m -> m.field("searchableText")
+                        .query(text).analyzer("smartcn"))._toQuery();
+                Query resName = MatchQuery.of(m -> m.field("resName")
+                        .query(text).analyzer("smartcn"))._toQuery();
+                builder.should(searchableText, resName);
             }
             Query redId = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
             builder.must(redId);
@@ -188,12 +184,13 @@ public class ElasticSearchFtsDao {
         return null;
     }
 
-    public SearchResultDto search(SearchQueryDto queryDto) {
+    public SearchResultDto search(SearchBaseQueryDto queryDto) {
         SearchResultDto resp = new SearchResultDto();
         resp.setData(new ArrayList<>());
 
         try {
             BoolQuery.Builder builder = new BoolQuery.Builder();
+
             if (!StringUtils.isEmpty(queryDto.getSearch())) {
                 Query searchableText = MatchQuery.of(m -> m
                         .field("searchableText")
@@ -202,10 +199,10 @@ public class ElasticSearchFtsDao {
                 )._toQuery();
                 builder.must(searchableText);
             }
-            if (!StringUtils.isEmpty(queryDto.getResId())) {
+            if (!StringUtils.isEmpty(queryDto.getResDirPrefix())) {
                 Query resId = TermQuery.of(m -> m
-                        .field("resId")
-                        .value(queryDto.getResId())
+                        .field("resDir")
+                        .value(queryDto.getResDirPrefix())
                 )._toQuery();
                 builder.must(resId);
             }

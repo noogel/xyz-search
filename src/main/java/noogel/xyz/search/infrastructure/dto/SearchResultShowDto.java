@@ -1,8 +1,10 @@
 package noogel.xyz.search.infrastructure.dto;
 
 import lombok.Data;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
 public class SearchResultShowDto {
@@ -14,4 +16,15 @@ public class SearchResultShowDto {
      * 分页
      */
     private PagingDto paging;
+    /**
+     * 导航条
+     */
+    private BreadcrumbDto breadcrumb;
+
+    public boolean showBreadCrumb() {
+        return Objects.nonNull(breadcrumb) && !CollectionUtils.isEmpty(breadcrumb.getItems());
+    }
+    public boolean showSearchBar() {
+        return !showBreadCrumb();
+    }
 }

@@ -7,8 +7,7 @@ import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public class ResourceModel {
@@ -24,11 +23,7 @@ public class ResourceModel {
     /**
      * 资源路径
      */
-    private String resPath;
-    /**
-     * 资源路径 HASH
-     */
-    private String resPathHash;
+    private String resDir;
     /**
      * 文件 HASH
      */
@@ -76,12 +71,10 @@ public class ResourceModel {
         Map<String, Property> documentMap = new HashMap<>();
         documentMap.put("resId", Property
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
-        documentMap.put("resPath", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
-        documentMap.put("resPathHash", Property
-                .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
+        documentMap.put("resDir", Property
+                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("path_tokenizer")))));
         documentMap.put("resName", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true)))));
+                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("smartcn")))));
         documentMap.put("resHash", Property
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resType", Property
@@ -114,8 +107,7 @@ public class ResourceModel {
         ResourceModel demo = new ResourceModel();
         demo.setResId(MD5Helper.getMD5(file.getAbsolutePath()));
         // 所在目录
-        demo.setResPath(file.getParent());
-        demo.setResPathHash(MD5Helper.getMD5(file.getParent()));
+        demo.setResDir(file.getParent());
         demo.setResName(file.getName());
         demo.setResType("FILE:" + FileHelper.getFileExtension(file.getName()).toUpperCase());
         demo.setResHash(MD5Helper.getMD5(file));
@@ -136,7 +128,36 @@ public class ResourceModel {
      * 计算完整路径
      * @return
      */
-    public String calculateFullPath() {
-        return String.format("%s/%s", resPath, resName);
+    public String calculateAbsolutePath() {
+        return String.format("%s/%s", resDir, resName);
+    }
+
+    /**
+     * 计算相对路径
+     * @return
+     */
+    public String calculateRelativePath(List<String> searchDirs) {
+        String absolutePath = calculateAbsolutePath();
+        searchDirs = Optional.ofNullable(searchDirs).orElse(Collections.emptyList());
+        for (String searchPath : searchDirs) {
+            if (absolutePath.startsWith(searchPath)) {
+                return absolutePath.substring(searchPath.length());
+            }
+        }
+        return absolutePath;
+    }
+    /**
+     * 计算相对目录
+     * @return
+     */
+    public String calculateRelativeDir(List<String> searchDirs) {
+        String absoluteDir = this.resDir;
+        searchDirs = Optional.ofNullable(searchDirs).orElse(Collections.emptyList());
+        for (String searchPath : searchDirs) {
+            if (absoluteDir.startsWith(searchPath)) {
+                return absoluteDir.substring(searchPath.length());
+            }
+        }
+        return absoluteDir;
     }
 }

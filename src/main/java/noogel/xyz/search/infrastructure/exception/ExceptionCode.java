@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 public enum ExceptionCode {
     FILE_ACCESS_ERROR("读写错误：%s", 1001),
     CONFIG_ERROR("配置错误：%s", 1002),
+    PARAM_ERROR("参数错误：%s", 1003),
     ;
 
     private final String msg;

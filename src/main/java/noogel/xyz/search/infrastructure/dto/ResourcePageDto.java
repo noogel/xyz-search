@@ -4,8 +4,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.util.List;
-
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
@@ -13,7 +11,11 @@ public class ResourcePageDto extends ResourceSimpleDto {
     /**
      * 资源路径
      */
-    private String resPath;
+    private String relativeResPath;
+    /**
+     * 资源相对目录
+     */
+    private String relativeResDir;
     /**
      * 字与
      * DIR:DIR

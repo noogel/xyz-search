@@ -1,29 +1,22 @@
 package noogel.xyz.search.infrastructure.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.Objects;
+import static noogel.xyz.search.infrastructure.utils.UrlHelper.ct;
 
 @Data
-public class SearchQueryDto {
-    private String search;
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class SearchQueryDto extends SearchBaseQueryDto {
+    private String relativeResDir;
     private String resId;
-    private String resSize;
-    private String modifiedAt;
-    private Integer limit = 10;
-    private Integer offset = 0;
 
     public String getUrlQuery(long offset) {
-        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s",
-                ct(search), ct(resId), ct(resSize), ct(modifiedAt), ct(limit), ct(offset));
+        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s&relativeResDir=%s",
+                ct(getSearch()), ct(resId), ct(getResSize()), ct(getModifiedAt()),
+                ct(getLimit()), ct(offset), ct(relativeResDir));
     }
 
-    private static String ct(Object obj) {
-        if (Objects.nonNull(obj)) {
-            return URLEncoder.encode(obj.toString(), Charset.defaultCharset());
-        }
-        return "";
-    }
 }
