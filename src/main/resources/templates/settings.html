@@ -104,18 +104,16 @@
 
                     <div class="col-sm-6">
                         <label for="username" class="form-label">登录名
-                            <span class="text-muted">（可选）</span></label>
+                            <span class="text-muted">（只读）</span></label>
                         <input type="text" class="form-control" id="username" name="username"
-                               placeholder="elastic" th:value="${searchConfig.username}">
+                               placeholder="elastic" th:value="${searchConfig.username}" disabled>
                     </div>
 
                     <div class="col-sm-6">
-                        <label for="password" class="form-label">密码
-                            <span class="text-muted">（可选）</span></label>
+                        <label for="password" class="form-label">密码</label>
                         <input type="password" class="form-control" id="password" name="password"
                                placeholder="" th:value="${searchConfig.password}">
                     </div>
-
 
                     <div class="col-12">
                         <label for="configFilePath" class="form-label">配置文件目录
@@ -155,6 +153,7 @@
                     <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
                     <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
                     <li class="nav-item"><a href="/transfer" class="nav-link px-2 text-muted">中转</a></li>
+                    <li class="nav-item"><a href="/logout" class="nav-link px-2 text-muted">登出</a></li>
                 </ul>
                 <p class="text-center text-muted">© 2015 – 2022 <span style="font-size: 0.8rem">❤</span> noogel</p>
             </footer>

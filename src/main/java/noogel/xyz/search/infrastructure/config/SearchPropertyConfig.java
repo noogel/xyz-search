@@ -1,5 +1,6 @@
 package noogel.xyz.search.infrastructure.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.Data;
@@ -28,6 +29,7 @@ public class SearchPropertyConfig {
     private static final ObjectMapper YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory());
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class PropertyConfig {
         /*
         elasticSearch 配置
@@ -59,6 +61,7 @@ public class SearchPropertyConfig {
     @Data
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SearchConfig extends PropertyConfig {
         /**
          * 配置文件路径
