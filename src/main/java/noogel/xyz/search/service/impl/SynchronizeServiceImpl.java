@@ -32,6 +32,25 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void async(List<String> paths) {
+        CommonsConstConfig.EXECUTOR_SERVICE.submit(() -> syncProcessDirectory(paths));
+    }
+
+    @Override
+    public void asyncAll() {
+        List<String> paths = searchConfig.getSearchDirectories();
+        if (CollectionUtils.isEmpty(paths)) {
+            return;
+        }
+        CommonsConstConfig.EXECUTOR_SERVICE.submit(() -> syncProcessDirectory(paths));
+    }
+
+    @Override
+    public boolean resetIndex() {
+        return ftsDao.createIndex(true);
+    }
+
+
+    private void syncProcessDirectory(List<String> paths) {
         TaskDto taskDto = TaskDto.generateTask();
         for (String path : paths) {
             // 只允许索引配置的文件夹或子文件夹
@@ -45,22 +64,10 @@ public class SynchronizeServiceImpl implements SynchronizeService {
             if (!file.exists()) {
                 continue;
             }
-            CommonsConstConfig.EXECUTOR_SERVICE.submit(() -> processDirectory(file, taskDto));
+            processDirectory(file, taskDto);
         }
-    }
-
-    @Override
-    public void asyncAll() {
-        List<String> paths = searchConfig.getSearchDirectories();
-        if (CollectionUtils.isEmpty(paths)) {
-            return;
-        }
-        async(paths);
-    }
-
-    @Override
-    public boolean resetIndex() {
-        return ftsDao.createIndex(true);
+        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(
+                ()-> delayCleanOldRes("", taskDto.getTaskOpAt()), 10, TimeUnit.SECONDS);
     }
 
     private void processDirectory(File rootFile, TaskDto taskDto) {
@@ -80,14 +87,23 @@ public class SynchronizeServiceImpl implements SynchronizeService {
             try {
                 // 解析子文件
                 extServices.stream().filter(t -> t.supportFile(subFile)).findFirst()
-                        .map(t -> t.parseFile(subFile, taskDto)).ifPresent(t -> {
-                            log.info("processTask.parseFile {} {} {}", t.getResId(),
+                        .ifPresent(t -> {
+                            ResourceModel res = ftsDao.findByResId(MD5Helper.getMD5(subFile.getAbsolutePath()));
+                            // 优先判断文件更新时间和大小
+                            if (Objects.nonNull(res)
+                                    && subFile.lastModified() == res.getModifiedAt()
+                                    && subFile.length() == res.getResSize()) {
+                                res.updateTask(taskDto);
+                            } else {
+                                res = t.parseFile(subFile, taskDto);
+                            }
+                            log.info("processTask.parseFile {} {} {}", res.getResId(),
                                     subFile.getAbsolutePath(), taskDto);
-                            ftsDao.upsertData(t);
+                            ftsDao.upsertData(res);
                         });
+                // 子目录索引
                 if (subFile.isDirectory()) {
-                    // 处理文件夹
-                    CommonsConstConfig.EXECUTOR_SERVICE.submit(() -> processDirectory(subFile, taskDto));
+                    processDirectory(subFile, taskDto);
                 }
             } catch (Exception ex) {
                 log.error("processTask error {}", subFile.getAbsolutePath(), ex);
@@ -99,25 +115,24 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                 ()-> delayCleanOldRes(rootPath, taskOpAt), 10, TimeUnit.SECONDS);
     }
 
-    private void delayCleanOldRes(String rootPath, Long taskOpAt) {
-        String rootPathHash = MD5Helper.getMD5(rootPath);
-        SearchResultDto oldRes = ftsDao.searchOldRes(rootPathHash, taskOpAt);
-        long oldCount = oldRes.getSize();
+    private void delayCleanOldRes(String rootDir, Long taskOpAt) {
+        log.info("delayCleanOldRes entry path:{}", rootDir);
+        SearchResultDto oldRes = ftsDao.searchOldRes(rootDir, taskOpAt);
         while (!oldRes.getData().isEmpty()) {
             for (ResourceModel res : oldRes.getData()) {
                 File file = new File(res.calculateAbsolutePath());
                 if (file.exists()) {
                     log.warn("delayCleanOldRes fileExist {}", res.calculateAbsolutePath());
                 }
-                ftsDao.deleteByResId(res.getResId());
+                ftsDao.deleteByResId(res);
             }
-            oldRes = ftsDao.searchOldRes(rootPathHash, taskOpAt);
-            if (oldRes.getSize() >= oldCount) {
-                break;
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-            log.info("processDirectory deleteOldRes path:{} left:{}", rootPath, oldRes.getSize());
+            oldRes = ftsDao.searchOldRes(rootDir, taskOpAt);
         }
-        log.info("processDirectory deleteOldRes path:{} ok", rootPath);
     }
 
 }

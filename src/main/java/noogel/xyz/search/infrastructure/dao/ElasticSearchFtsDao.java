@@ -17,8 +17,8 @@ import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
 import noogel.xyz.search.infrastructure.utils.ElasticSearchQueryHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
-import org.thymeleaf.util.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
@@ -111,11 +111,11 @@ public class ElasticSearchFtsDao {
 
     }
 
-    public boolean deleteByResId(String resId) {
+    public boolean deleteByResId(ResourceModel res) {
         try {
-            DeleteResponse delete = config.getClient().delete(b -> b.index(getIndexName()).id(resId));
+            DeleteResponse delete = config.getClient().delete(b -> b.index(getIndexName()).id(res.getResId()));
             boolean result = delete.version() > 0;
-            log.info("deleteByResId {} {}", resId, result);
+            log.info("deleteByResId {}", res.calculateAbsolutePath());
             return result;
         } catch (IOException ex) {
             log.error("deleteByResId err", ex);
@@ -133,10 +133,36 @@ public class ElasticSearchFtsDao {
         }
     }
 
-    public SearchResultDto searchOldRes(String resPathHash, Long taskOpAt) {
+    public SearchResultDto searchOldRes(String resDir, Long taskOpAt) {
         SearchResultDto resp = new SearchResultDto();
         resp.setData(new ArrayList<>());
-        // TODO: 2022/10/13 fix
+        try {
+            BoolQuery.Builder builder = new BoolQuery.Builder();
+            if (StringUtils.isNotBlank(resDir)) {
+                Query q1 = TermQuery.of(m -> m.field("resDir").value(resDir))._toQuery();
+                builder.must(q1);
+            }
+            Query q2 = ElasticSearchQueryHelper.buildRangeQuery("taskOpAt",
+                    String.format("%s:%s", "LT", taskOpAt), t -> t);
+            builder.must(q2);
+            SearchResponse<ResourceModel> search = config.getClient().search(s -> s
+                            .index(getIndexName())
+                            .query(q -> q.bool(t -> builder))
+                            .source(l -> l.filter(m -> m.excludes("searchableText")))
+                            .size(100),
+                    ResourceModel.class);
+
+            TotalHits total = search.hits().total();
+            resp.setExactSize(total.relation() == TotalHitsRelation.Eq);
+            resp.setSize(total.value());
+
+            List<Hit<ResourceModel>> hits = search.hits().hits();
+            for (Hit<ResourceModel> hit : hits) {
+                resp.getData().add(hit.source());
+            }
+        } catch (IOException ex) {
+            log.error("searchOldRes err", ex);
+        }
         return resp;
     }
 

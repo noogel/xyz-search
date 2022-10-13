@@ -71,10 +71,10 @@ public class ResourceModel {
         Map<String, Property> documentMap = new HashMap<>();
         documentMap.put("resId", Property
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
-        documentMap.put("resDir", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("path_tokenizer")))));
         documentMap.put("resName", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("smartcn")))));
+        documentMap.put("resDir", Property
+                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("path_tokenizer")))));
         documentMap.put("resHash", Property
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resType", Property
@@ -104,10 +104,11 @@ public class ResourceModel {
      * @return
      */
     public static ResourceModel buildBaseInfo(File file, String text, TaskDto task) {
+        File fileDir = new File(file.getParent());
         ResourceModel demo = new ResourceModel();
         demo.setResId(MD5Helper.getMD5(file.getAbsolutePath()));
         // 所在目录
-        demo.setResDir(file.getParent());
+        demo.setResDir(fileDir.getAbsolutePath());
         demo.setResName(file.getName());
         demo.setResType("FILE:" + FileHelper.getFileExtension(file.getName()).toUpperCase());
         demo.setResHash(MD5Helper.getMD5(file));
@@ -122,6 +123,17 @@ public class ResourceModel {
         demo.setTaskOpAt(task.getTaskOpAt());
 
         return demo;
+    }
+
+    /**
+     * 更新 task 信息
+     * @param taskDto
+     * @return
+     */
+    public ResourceModel updateTask(TaskDto taskDto) {
+        taskId = taskDto.getTaskId();
+        taskOpAt = taskDto.getTaskOpAt();
+        return this;
     }
 
     /**

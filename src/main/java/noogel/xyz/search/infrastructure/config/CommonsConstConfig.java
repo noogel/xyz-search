@@ -7,8 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class CommonsConstConfig {
     public static final Set<String> SUPPORT_VIEW_EXT = Set.of("xhtml", "html", "txt", "pdf");
-    public static final ExecutorService EXECUTOR_SERVICE = Executors.newWorkStealingPool();
-    public static final ScheduledExecutorService DELAY_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(
-            Runtime.getRuntime().availableProcessors());
+    public static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
+    public static final ScheduledExecutorService DELAY_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
 
 }

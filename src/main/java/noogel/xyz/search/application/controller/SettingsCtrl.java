@@ -3,16 +3,21 @@ package noogel.xyz.search.application.controller;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.ModalInfoDto;
 import noogel.xyz.search.infrastructure.dto.SearchSettingDto;
+import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.EnvHelper;
+import noogel.xyz.search.service.SearchService;
 import noogel.xyz.search.service.SettingService;
 import noogel.xyz.search.service.SynchronizeService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 
 @Controller
 @Slf4j
@@ -20,6 +25,8 @@ public class SettingsCtrl {
 
     @Resource
     private SettingService settingService;
+    @Resource
+    private SearchService searchService;
     @Resource
     private SynchronizeService synchronizeService;
 
@@ -45,6 +52,27 @@ public class SettingsCtrl {
             mv.addObject("result", ModalInfoDto.ofErr(ex.getMessage()));
         }
         return mv;
+    }
+
+    @RequestMapping(value="/settings/data/sync", method= RequestMethod.POST)
+    public @ResponseBody ModalInfoDto dataSync(@RequestParam(required = false) String relativeResDir,
+                                               @RequestParam(required = false) String resId){
+        try {
+            // path search
+            if (StringUtils.isNotBlank(relativeResDir)) {
+                ExceptionCode.PARAM_ERROR.throwOn(StringUtils.isBlank(resId), "资源 ID 不存在");
+                String absPath = searchService.getResourcePath(resId);
+                String resDirPrefix = absPath.substring(0, absPath.indexOf(relativeResDir) + relativeResDir.length());
+                synchronizeService.async(Collections.singletonList(resDirPrefix));
+            } else {
+                // 同步目录数据
+                synchronizeService.asyncAll();
+            }
+            return ModalInfoDto.ofOk("更新索引");
+        } catch (Exception ex) {
+            log.error("dataSync", ex);
+            return ModalInfoDto.ofErr("更新索引：" + ex.getMessage());
+        }
     }
 
     @RequestMapping(value="/settings/data/reset", method= RequestMethod.POST)

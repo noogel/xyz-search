@@ -30,7 +30,7 @@ public class PagingDto {
         dto.nextOffset = Math.min(currentPage + 1, totalPage) * query.getLimit() - query.getLimit();
         dto.endOffset = totalPage * query.getLimit() - query.getLimit();
         // 页面的描述
-        dto.pageDesc = String.format("第 %s 页 / 共 %s 页", currentPage, totalPage);
+        dto.pageDesc = String.format("第 %s 页 / 共 %s 页 | %s 条", currentPage, totalPage, total);
         // 禁用的计算
         dto.prevPageDisable = currentPage == 1;
         dto.nextPageDisable = currentPage == totalPage;
