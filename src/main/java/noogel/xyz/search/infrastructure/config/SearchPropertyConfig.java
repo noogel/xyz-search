@@ -44,6 +44,12 @@ public class SearchPropertyConfig {
          */
         private List<String> searchDirectories;
 
+        /*
+        服务账号密码
+         */
+        private String username;
+        private String password;
+
         /**
          * 是否已经初始化索引
          */

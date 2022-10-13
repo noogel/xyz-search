@@ -9,3 +9,5 @@ searchDirectories:
 configFilePath: /data/config
 logFilePath: /data/log
 ftsIndexName: xyz_fts_resources4
+username: xyz
+password: search

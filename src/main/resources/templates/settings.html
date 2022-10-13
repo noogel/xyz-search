@@ -102,6 +102,21 @@
                         </div>
                     </div>
 
+                    <div class="col-sm-6">
+                        <label for="username" class="form-label">登录名
+                            <span class="text-muted">（可选）</span></label>
+                        <input type="text" class="form-control" id="username" name="username"
+                               placeholder="elastic" th:value="${searchConfig.username}">
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="password" class="form-label">密码
+                            <span class="text-muted">（可选）</span></label>
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="" th:value="${searchConfig.password}">
+                    </div>
+
+
                     <div class="col-12">
                         <label for="configFilePath" class="form-label">配置文件目录
                             <span class="text-muted">（只读）</span></label>

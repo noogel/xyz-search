@@ -12,6 +12,7 @@ import noogel.xyz.search.service.SynchronizeService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -43,15 +44,24 @@ public class SettingServiceImpl implements SettingService {
     @Override
     public SearchSettingDto update(SearchSettingDto cfg) {
         SearchPropertyConfig.SearchConfig sc = validateAndCopyToNewConfig(cfg);
-        // XXX 移除 diff 代码
+        // 旧目录
+        List<String> oldDirList = new ArrayList<>(searchConfig.getSearchDirectories());
+        // 新增目录
+        List<String> newDirList = new ArrayList<>(sc.getSearchDirectories());
+        // 把新目录移除 = 剩下旧目录
+        oldDirList.removeAll(newDirList);
+        // 把旧目录移除 = 剩下新增的目录
+        newDirList.removeAll(searchConfig.getSearchDirectories());
         // 拷贝到全局对象
         BeanUtils.copyProperties(sc, searchConfig);
         // 保存配置
         searchConfig.saveToFile();
         // 更新 es client bean
         elasticsearchConfig.reloadClient();
-        // 同步新目录
-        synchronizeService.asyncAll();
+        if (!CollectionUtils.isEmpty(oldDirList) && !CollectionUtils.isEmpty(newDirList)) {
+            // 同步新目录
+            synchronizeService.asyncAll();
+        }
         return query();
     }
 
@@ -76,6 +86,10 @@ public class SettingServiceImpl implements SettingService {
         // 校验数据
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(cfg.getElasticsearchHost()),
                 "Elasticsearch host 不能为空");
+        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(cfg.getUsername()),
+                "登录名不能为空");
+        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(cfg.getPassword()),
+                "密码不能为空");
         // 校验证书
         if (StringUtils.isNotBlank(cfg.getElasticsearchCAPath())) {
             File file = new File(cfg.getElasticsearchCAPath());
@@ -106,6 +120,8 @@ public class SettingServiceImpl implements SettingService {
         sc.setElasticsearchPassword(cfg.getElasticsearchPassword());
         sc.setElasticsearchCAPath(cfg.getElasticsearchCAPath());
         sc.setSearchDirectories(searchDirectories);
+        sc.setUsername(cfg.getUsername());
+        sc.setPassword(cfg.getPassword());
         return sc;
     }
 }
