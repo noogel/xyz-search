@@ -43,14 +43,7 @@ public class SettingServiceImpl implements SettingService {
     @Override
     public SearchSettingDto update(SearchSettingDto cfg) {
         SearchPropertyConfig.SearchConfig sc = validateAndCopyToNewConfig(cfg);
-        // 旧目录
-        List<String> oldDirList = new ArrayList<>(searchConfig.getSearchDirectories());
-        // 新增目录
-        List<String> newDirList = new ArrayList<>(sc.getSearchDirectories());
-        // 把新目录移除 = 剩下旧目录
-        oldDirList.removeAll(newDirList);
-        // 把旧目录移除 = 剩下新增的目录
-        newDirList.removeAll(searchConfig.getSearchDirectories());
+        // XXX 移除 diff 代码
         // 拷贝到全局对象
         BeanUtils.copyProperties(sc, searchConfig);
         // 保存配置
@@ -58,9 +51,7 @@ public class SettingServiceImpl implements SettingService {
         // 更新 es client bean
         elasticsearchConfig.reloadClient();
         // 同步新目录
-        synchronizeService.async(newDirList);
-        // TODO: 2022/10/7 删除被移除的目录
-        // do...
+        synchronizeService.asyncAll();
         return query();
     }
 

@@ -55,19 +55,10 @@ public class SettingsCtrl {
     }
 
     @RequestMapping(value="/settings/data/sync", method= RequestMethod.POST)
-    public @ResponseBody ModalInfoDto dataSync(@RequestParam(required = false) String relativeResDir,
-                                               @RequestParam(required = false) String resId){
+    public @ResponseBody ModalInfoDto dataSync(){
         try {
-            // path search
-            if (StringUtils.isNotBlank(relativeResDir)) {
-                ExceptionCode.PARAM_ERROR.throwOn(StringUtils.isBlank(resId), "资源 ID 不存在");
-                String absPath = searchService.getResourcePath(resId);
-                String resDirPrefix = absPath.substring(0, absPath.indexOf(relativeResDir) + relativeResDir.length());
-                synchronizeService.async(Collections.singletonList(resDirPrefix));
-            } else {
-                // 同步目录数据
-                synchronizeService.asyncAll();
-            }
+            // 同步目录数据
+            synchronizeService.asyncAll();
             return ModalInfoDto.ofOk("更新索引");
         } catch (Exception ex) {
             log.error("dataSync", ex);

@@ -94,11 +94,13 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                                     && subFile.lastModified() == res.getModifiedAt()
                                     && subFile.length() == res.getResSize()) {
                                 res.updateTask(taskDto);
+                                log.info("processTask.useExistRes {} {} {}", res.getResId(),
+                                        subFile.getAbsolutePath(), taskDto);
                             } else {
                                 res = t.parseFile(subFile, taskDto);
+                                log.info("processTask.parseFile {} {} {}", res.getResId(),
+                                        subFile.getAbsolutePath(), taskDto);
                             }
-                            log.info("processTask.parseFile {} {} {}", res.getResId(),
-                                    subFile.getAbsolutePath(), taskDto);
                             ftsDao.upsertData(res);
                         });
                 // 子目录索引
