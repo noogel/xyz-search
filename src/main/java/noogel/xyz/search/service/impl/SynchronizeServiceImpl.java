@@ -67,7 +67,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
             processDirectory(file, taskDto);
         }
         CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(
-                ()-> delayCleanOldRes("", taskDto.getTaskOpAt()), 10, TimeUnit.SECONDS);
+                ()-> delayCleanOldRes("", taskDto.getTaskOpAt()), 60, TimeUnit.SECONDS);
     }
 
     private void processDirectory(File rootFile, TaskDto taskDto) {
@@ -118,7 +118,6 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     }
 
     private void delayCleanOldRes(String rootDir, Long taskOpAt) {
-        log.info("delayCleanOldRes entry path:{}", rootDir);
         SearchResultDto oldRes = ftsDao.searchOldRes(rootDir, taskOpAt);
         while (!oldRes.getData().isEmpty()) {
             for (ResourceModel res : oldRes.getData()) {

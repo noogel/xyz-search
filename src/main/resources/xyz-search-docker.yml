@@ -2,8 +2,8 @@ elasticsearchHost: "http://localhost:9200"
 elasticsearchUser:
 elasticsearchPassword:
 elasticsearchCAPath:
-elasticsearchConnectionTimeout: 1000
-elasticsearchSocketTimeout: 5000
+elasticsearchConnectionTimeout: 6000
+elasticsearchSocketTimeout: 18000
 searchDirectories:
   - /data/share
   - /data/share2
