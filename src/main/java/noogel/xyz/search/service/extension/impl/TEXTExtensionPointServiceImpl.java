@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,7 +39,8 @@ public class TEXTExtensionPointServiceImpl implements ExtensionPointService {
         Path path = Paths.get(file.toURI());
         String text = "";
         try {
-            text = Files.readString(path);
+            Charset charset = FileHelper.detectCharset(file);
+            text = Files.readString(path, charset);
         } catch (IOException e) {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }

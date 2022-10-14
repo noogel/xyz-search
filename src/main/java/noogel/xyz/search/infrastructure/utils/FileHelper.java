@@ -2,7 +2,11 @@ package noogel.xyz.search.infrastructure.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,6 +78,7 @@ public class FileHelper {
 
     /**
      * 删除文件或目录
+     *
      * @param file
      */
     public static void deleteFile(File file) {
@@ -90,5 +95,72 @@ public class FileHelper {
                 file.delete();//删除文件夹
             }
         }
+    }
+
+    public static Charset detectCharset(File file) {
+        Charset charset = Charset.forName("GBK");
+        byte[] first3Bytes = new byte[3];
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+            boolean checked = false;
+            bis.mark(0);
+            int read = bis.read(first3Bytes, 0, 3);
+            if (read == -1) {
+                //文件编码为 ANSI
+                return charset;
+            } else if (first3Bytes[0] == (byte) 0xFF && first3Bytes[1] == (byte) 0xFE) {
+                //文件编码为 Unicode
+                charset = StandardCharsets.UTF_16LE;
+                checked = true;
+            } else if (first3Bytes[0] == (byte) 0xFE && first3Bytes[1] == (byte) 0xFF) {
+                //文件编码为 Unicode big endian
+                charset = StandardCharsets.UTF_16BE;
+                checked = true;
+            } else if (first3Bytes[0] == (byte) 0xEF && first3Bytes[1] == (byte) 0xBB
+                    && first3Bytes[2] == (byte) 0xBF) {
+                //文件编码为 UTF-8
+                charset = StandardCharsets.UTF_8;
+                checked = true;
+            }
+            bis.reset();
+            if (!checked) {
+                int loc = 0;
+                while ((read = bis.read()) != -1) {
+                    loc++;
+                    if (read >= 0xF0) {
+                        break;
+                    }
+                    // 单独出现BF以下的，也算是GBK
+                    if (0x80 <= read && read <= 0xBF) {
+                        break;
+                    }
+                    if (0xC0 <= read && read <= 0xDF) {
+                        read = bis.read();
+                        // 双字节 (0xC0 - 0xDF)
+                        if (0x80 <= read && read <= 0xBF) {
+                            // (0x80 - 0xBF),也可能在GB编码内
+                            continue;
+                        } else {
+                            break;
+                        }
+                    } else if (0xE0 <= read && read <= 0xEF) {// 也有可能出错，但是几率较小
+                        read = bis.read();
+                        if (0x80 <= read && read <= 0xBF) {
+                            read = bis.read();
+                            if (0x80 <= read && read <= 0xBF) {
+                                charset = StandardCharsets.UTF_8;
+                                break;
+                            } else {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return charset;
     }
 }

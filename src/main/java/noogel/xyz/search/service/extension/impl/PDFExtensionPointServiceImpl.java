@@ -7,6 +7,7 @@ import noogel.xyz.search.infrastructure.model.ResourceModel;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +47,10 @@ public class PDFExtensionPointServiceImpl implements ExtensionPointService {
             PDFTextStripper textStripper = new PDFTextStripper();
             return textStripper.getText(doc);
         } catch (Exception e) {
+            if (e instanceof InvalidPasswordException) {
+                log.warn("parsePdf InvalidPasswordException {}", inputFile.getAbsoluteFile());
+                return e.getMessage();
+            }
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
     }
