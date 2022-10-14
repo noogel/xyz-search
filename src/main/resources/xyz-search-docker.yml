@@ -6,6 +6,7 @@ elasticsearchConnectionTimeout: 1000
 elasticsearchSocketTimeout: 5000
 searchDirectories:
   - /data/share
+  - /data/share2
 configFilePath: /data/config
 logFilePath: /data/log
 ftsIndexName: xyz_fts_resources4
