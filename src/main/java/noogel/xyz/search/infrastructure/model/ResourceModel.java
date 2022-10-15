@@ -150,26 +150,33 @@ public class ResourceModel {
      */
     public String calculateRelativePath(List<String> searchDirs) {
         String absolutePath = calculateAbsolutePath();
+        String resp = absolutePath;
         searchDirs = Optional.ofNullable(searchDirs).orElse(Collections.emptyList());
         for (String searchPath : searchDirs) {
             if (absolutePath.startsWith(searchPath)) {
-                return absolutePath.substring(searchPath.length());
+                String substring = absolutePath.substring(searchPath.length());
+                if (substring.length() < resp.length()) {
+                    resp = substring;
+                }
             }
         }
-        return absolutePath;
+        return resp;
     }
     /**
      * 计算相对目录
      * @return
      */
     public String calculateRelativeDir(List<String> searchDirs) {
-        String absoluteDir = this.resDir;
+        String resp = this.resDir;
         searchDirs = Optional.ofNullable(searchDirs).orElse(Collections.emptyList());
         for (String searchPath : searchDirs) {
-            if (absoluteDir.startsWith(searchPath)) {
-                return absoluteDir.substring(searchPath.length());
+            if (this.resDir.startsWith(searchPath)) {
+                String substring = this.resDir.substring(searchPath.length());
+                if (substring.length() < resp.length()) {
+                    resp = substring;
+                }
             }
         }
-        return absoluteDir;
+        return resp;
     }
 }
