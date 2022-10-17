@@ -30,10 +30,10 @@
 
                     // 是否支持查看
                     if (data.supportView) {
-                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-info");
+                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success");
                         document.querySelector("#fileViewA").setAttribute("class", "page-link");
                     } else {
-                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-info disabled");
+                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success disabled");
                         document.querySelector("#fileViewA").setAttribute("class", "page-link disabled");
                     }
                 }).catch(function (err) {
@@ -249,31 +249,6 @@
                 </div>
                 <div class="offcanvas-body">
                     <div class="my-3 row justify-content-start">
-                        <!-- 文件内容结果列表 -->
-                        <div id="fileInfoHighlight" class="col-12">
-                            <ul class="list-group">
-                                <li class="list-group-item">
-                                    匹配内容
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="my-3 row justify-content-end">
-                        <!-- 文件内容结果列表 操作 -->
-                        <div class="col-auto">
-                            <a class="page-link" id="fileViewA" href="#" target="_blank">
-                                <button id="fileViewBtn" type="button" class="btn btn-info">查看</button></a>
-                        </div>
-                        <div class="col-auto">
-                            <a class="page-link" id="dirViewA" href="#" target="_blank">
-                                <button id="dirViewBtn" type="button" class="btn btn-info">目录</button></a>
-                        </div>
-                        <div class="col-auto">
-                            <a class="page-link" id="fileDownloadA" href="#" target="_blank">
-                                <button type="button" class="btn btn-primary">下载</button></a>
-                        </div>
-                    </div>
-                    <div class="my-3 row justify-content-start">
                         <div class="col-12">
                             <!-- 文件内容结果 文件信息 -->
                             <table class="table table-sm table-condensed">
@@ -300,6 +275,31 @@
                                 </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    <div class="my-3 row justify-content-end">
+                        <!-- 文件内容结果列表 操作 -->
+                        <div class="col-auto">
+                            <a class="page-link" id="fileViewA" href="#" target="_blank">
+                                <button id="fileViewBtn" type="button" class="btn btn-success">查看</button></a>
+                        </div>
+                        <div class="col-auto">
+                            <a class="page-link" id="dirViewA" href="#" target="_blank">
+                                <button id="dirViewBtn" type="button" class="btn btn-info">目录</button></a>
+                        </div>
+                        <div class="col-auto">
+                            <a class="page-link" id="fileDownloadA" href="#" target="_blank">
+                                <button type="button" class="btn btn-primary">下载</button></a>
+                        </div>
+                    </div>
+                    <div class="my-3 row justify-content-start">
+                        <!-- 文件内容结果列表 -->
+                        <div id="fileInfoHighlight" class="col-12">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    匹配内容
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
