@@ -15,8 +15,10 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -81,40 +83,59 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         if (Objects.isNull(subFiles)) {
             return;
         }
-
-        // 处理所有文件和文件夹
+        List<CompletableFuture<Void>> subResFutureList = new ArrayList<>();
+        List<File> subDirList = new ArrayList<>();
+        // 分类
         for (File subFile : subFiles) {
-            try {
-                // 解析子文件
-                extServices.stream().filter(t -> t.supportFile(subFile)).findFirst()
-                        .ifPresent(t -> {
-                            ResourceModel res = ftsDao.findByResId(MD5Helper.getMD5(subFile.getAbsolutePath()));
-                            // 优先判断文件更新时间和大小
-                            if (Objects.nonNull(res)
-                                    && subFile.lastModified() == res.getModifiedAt()
-                                    && subFile.length() == res.getResSize()) {
-                                res.updateTask(taskDto);
-                                log.info("processTask.useExistRes {} {} {}", res.getResId(),
-                                        subFile.getAbsolutePath(), taskDto);
-                            } else {
-                                res = t.parseFile(subFile, taskDto);
-                                log.info("processTask.parseFile {} {} {}", res.getResId(),
-                                        subFile.getAbsolutePath(), taskDto);
-                            }
-                            ftsDao.upsertData(res);
-                        });
-                // 子目录索引
-                if (subFile.isDirectory()) {
-                    processDirectory(subFile, taskDto);
-                }
-            } catch (Exception ex) {
-                log.error("processTask error {}", subFile.getAbsolutePath(), ex);
+            if (subFile.isFile()) {
+                subResFutureList.add(CompletableFuture.runAsync(()-> this.processFile(subFile, taskDto),
+                        CommonsConstConfig.MULTI_EXECUTOR_SERVICE));
+            } else if (subFile.isDirectory()) {
+                subDirList.add(subFile);
             }
         }
+        // 并发阻塞
+        CompletableFuture.allOf(subResFutureList.toArray(CompletableFuture[]::new)).join();
+
+        // 同步
+        for (File subDir : subDirList) {
+            try{
+                // 子目录索引
+                processDirectory(subDir, taskDto);
+            } catch (Exception ex) {
+                log.error("processTask error {}", subDir.getAbsolutePath(), ex);
+            }
+        }
+
         String rootPath = rootFile.getAbsolutePath();
         Long taskOpAt = taskDto.getTaskOpAt();
         CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(
                 ()-> delayCleanOldRes(rootPath, taskOpAt), 10, TimeUnit.SECONDS);
+    }
+
+    private void processFile(File subFile, TaskDto taskDto) {
+        try {
+            // 解析子文件
+            extServices.stream().filter(t -> t.supportFile(subFile)).findFirst()
+                    .ifPresent(t -> {
+                        ResourceModel res = ftsDao.findByResId(MD5Helper.getMD5(subFile.getAbsolutePath()));
+                        // 优先判断文件更新时间和大小
+                        if (Objects.nonNull(res)
+                                && subFile.lastModified() == res.getModifiedAt()
+                                && subFile.length() == res.getResSize()) {
+                            res.updateTask(taskDto);
+                            log.info("processTask.useExistRes {} {} {}", res.getResId(),
+                                    subFile.getAbsolutePath(), taskDto);
+                        } else {
+                            res = t.parseFile(subFile, taskDto);
+                            log.info("processTask.parseFile {} {} {}", res.getResId(),
+                                    subFile.getAbsolutePath(), taskDto);
+                        }
+                        ftsDao.upsertData(res);
+                    });
+        } catch (Exception ex) {
+            log.error("processTask error {}", subFile.getAbsolutePath(), ex);
+        }
     }
 
     private void delayCleanOldRes(String rootDir, Long taskOpAt) {
