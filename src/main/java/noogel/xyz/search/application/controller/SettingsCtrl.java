@@ -3,21 +3,17 @@ package noogel.xyz.search.application.controller;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.ModalInfoDto;
 import noogel.xyz.search.infrastructure.dto.SearchSettingDto;
-import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.EnvHelper;
 import noogel.xyz.search.service.SearchService;
 import noogel.xyz.search.service.SettingService;
 import noogel.xyz.search.service.SynchronizeService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 
 @Controller
 @Slf4j

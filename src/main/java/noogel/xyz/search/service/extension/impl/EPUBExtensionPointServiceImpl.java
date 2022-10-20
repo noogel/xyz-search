@@ -1,6 +1,7 @@
 package noogel.xyz.search.service.extension.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
@@ -16,10 +17,7 @@ import javax.annotation.Resource;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -97,6 +95,8 @@ public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
     @Override
     public ResourceModel parseFile(File file, TaskDto task) {
         String text = parseFileToText(file);
-        return ResourceModel.buildBaseInfo(file, text, task);
+        ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
+        String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
+        return ResourceModel.buildBaseInfo(file, text, title, task);
     }
 }

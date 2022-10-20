@@ -11,7 +11,7 @@ public class ResourceSimpleDto {
     /**
      * 资源名称
      */
-    private String resName;
+    private String resTitle;
     /**
      * 资源大小
      */

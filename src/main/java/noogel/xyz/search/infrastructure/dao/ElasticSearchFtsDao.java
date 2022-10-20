@@ -173,9 +173,9 @@ public class ElasticSearchFtsDao {
             if (!StringUtils.isEmpty(text)) {
                 Query searchableText = MatchQuery.of(m -> m.field("searchableText")
                         .query(text).analyzer("smartcn"))._toQuery();
-                Query resName = MatchQuery.of(m -> m.field("resName")
+                Query resTitle = MatchQuery.of(m -> m.field("resTitle")
                         .query(text).analyzer("smartcn"))._toQuery();
-                builder.should(searchableText, resName);
+                builder.should(searchableText, resTitle);
             }
             Query redId = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
             builder.must(redId);

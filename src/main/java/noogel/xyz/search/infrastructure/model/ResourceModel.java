@@ -2,9 +2,11 @@ package noogel.xyz.search.infrastructure.model;
 
 import co.elastic.clients.elasticsearch._types.mapping.*;
 import lombok.Data;
+import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.*;
@@ -17,9 +19,14 @@ public class ResourceModel {
      */
     private String resId;
     /**
-     * 资源名称
+     * 资源文件名
      */
     private String resName;
+
+    /**
+     * 资源 meta 名称
+     */
+    private String resTitle;
     /**
      * 资源路径
      */
@@ -73,6 +80,8 @@ public class ResourceModel {
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resName", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("smartcn")))));
+        documentMap.put("resTitle", Property
+                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("smartcn")))));
         documentMap.put("resDir", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("path_tokenizer")))));
         documentMap.put("resHash", Property
@@ -104,12 +113,17 @@ public class ResourceModel {
      * @return
      */
     public static ResourceModel buildBaseInfo(File file, String text, TaskDto task) {
+        return buildBaseInfo(file, text, null, task);
+    }
+
+    public static ResourceModel buildBaseInfo(File file, String text, String title, TaskDto task) {
         File fileDir = new File(file.getParent());
         ResourceModel demo = new ResourceModel();
         demo.setResId(MD5Helper.getMD5(file.getAbsolutePath()));
         // 所在目录
         demo.setResDir(fileDir.getAbsolutePath());
         demo.setResName(file.getName());
+        demo.setResTitle(StringUtils.isBlank(title) ? file.getName(): title);
         demo.setResType("FILE:" + FileHelper.getFileExtension(file.getName()).toUpperCase());
         demo.setResHash(MD5Helper.getMD5(file));
         demo.setResSize(file.length());

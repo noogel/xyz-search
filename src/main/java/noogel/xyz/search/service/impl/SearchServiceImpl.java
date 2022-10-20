@@ -38,8 +38,9 @@ public class SearchServiceImpl implements SearchService {
         showDto.setData(result.getData().stream().map(t -> {
             ResourceSimpleDto page = new ResourceSimpleDto();
             page.setResId(t.getResId());
-            page.setResName(t.getResName());
-            page.setResSize(FileHelper.formatFileSize(t.getResSize()));
+            page.setResTitle(t.getResTitle());
+            page.setResSize(String.format("%s | %s", FileHelper.formatFileSize(t.getResSize()),
+                    FileHelper.formatFileSize(t.getTextSize())));
             page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
             return page;
         }).collect(Collectors.toList()));
@@ -55,7 +56,7 @@ public class SearchServiceImpl implements SearchService {
         ResourceModel t = dto.getResource();
         ResourcePageDto page = new ResourcePageDto();
         page.setResId(t.getResId());
-        page.setResName(t.getResName());
+        page.setResTitle(t.getResTitle());
         page.setResSize(FileHelper.formatFileSize(t.getResSize()));
         page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
         page.setRelativeResPath(t.calculateRelativePath(searchConfig.getSearchDirectories()));
