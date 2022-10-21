@@ -43,7 +43,7 @@ public class EpubViewCtrl {
     public ModelAndView fileEpubView(@RequestParam(required = true) String book) {
         if (!TMP_DIRS.containsKey(book)) {
             String resourcePath = searchService.getResourcePath(book);
-            TMP_DIRS.put(book, unzipEPub(resId, new File(resourcePath)));
+            TMP_DIRS.put(book, unzipEPub(book, new File(resourcePath)));
         }
         return new ModelAndView("epub/viewer");
     }
