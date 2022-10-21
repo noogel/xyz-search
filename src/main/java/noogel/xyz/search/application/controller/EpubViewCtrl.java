@@ -41,8 +41,10 @@ public class EpubViewCtrl {
      */
     @RequestMapping(value = "/epub/web/view", method = RequestMethod.GET)
     public ModelAndView fileEpubView(@RequestParam(required = true) String book) {
-        String resourcePath = searchService.getResourcePath(book);
-        TMP_DIRS.put(book, unzipEPub(new File(resourcePath)));
+        if (!TMP_DIRS.containsKey(book)) {
+            String resourcePath = searchService.getResourcePath(book);
+            TMP_DIRS.put(book, unzipEPub(resId, new File(resourcePath)));
+        }
         return new ModelAndView("epub/viewer");
     }
 
@@ -56,7 +58,7 @@ public class EpubViewCtrl {
         String resourcePath = null;
         if (!TMP_DIRS.containsKey(resId)) {
             resourcePath = searchService.getResourcePath(resId);
-            TMP_DIRS.put(resId, unzipEPub(new File(resourcePath)));
+            TMP_DIRS.put(resId, unzipEPub(resId, new File(resourcePath)));
         }
         String targetPath = request.getRequestURL().toString().split(resId)[1];
         String targetFullPath = TMP_DIRS.get(resId).getAbsolutePath() + targetPath;
@@ -79,7 +81,7 @@ public class EpubViewCtrl {
 
     }
 
-    private File unzipEPub(File zipFile) {
+    private File unzipEPub(String resId, File zipFile) {
         File tmp = null;
         try (ZipFile zip = new ZipFile(zipFile, Charset.defaultCharset())) {
             // 创建临时文件夹
@@ -117,14 +119,15 @@ public class EpubViewCtrl {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
         final File willDel = tmp;
-        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(()-> deleteTree(willDel), 1, TimeUnit.HOURS);
+        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(()-> deleteTree(resId, willDel), 1, TimeUnit.HOURS);
         return tmp;
     }
 
-    private void deleteTree(File tmp) {
+    private void deleteTree(String resId, File tmp) {
         // 删除临时目录
-        if (Objects.nonNull(tmp)) {
+        if (Objects.nonNull(tmp) && tmp.exists()) {
             FileHelper.deleteFile(tmp);
         }
+        TMP_DIRS.remove(resId);
     }
 }
