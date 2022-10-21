@@ -140,12 +140,9 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     private void delayCleanOldRes(String rootDir, Long taskOpAt) {
         SearchResultDto oldRes = ftsDao.searchOldRes(rootDir, taskOpAt);
+        log.info("delayCleanOldRes {} {}", rootDir, oldRes.getSize());
         while (!oldRes.getData().isEmpty()) {
             for (ResourceModel res : oldRes.getData()) {
-                File file = new File(res.calculateAbsolutePath());
-                if (file.exists()) {
-                    log.warn("delayCleanOldRes fileExist {}", res.calculateAbsolutePath());
-                }
                 ftsDao.deleteByResId(res);
             }
             try {
