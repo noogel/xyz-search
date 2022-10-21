@@ -24,6 +24,8 @@
                     document.querySelector("#dirViewA").href = "/?resId=" + data.resId + "&relativeResDir=" + encodeURIComponent(data.relativeResDir);
                     if (data.resType == 'FILE:PDF') {
                         document.querySelector("#fileViewA").href = "/pdf.js/web/view?file=/file/download?resId=" + data.resId;
+                    } else if (data.resType == 'FILE:EPUB') {
+                        document.querySelector("#fileViewA").href = "/epub/web/view?book=" + data.resId;
                     } else {
                         document.querySelector("#fileViewA").href = "/file/view?resId=" + data.resId;
                     }

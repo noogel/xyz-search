@@ -1,0 +1,130 @@
+package noogel.xyz.search.application.controller;
+
+import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.exception.ExceptionCode;
+import noogel.xyz.search.infrastructure.utils.FileHelper;
+import noogel.xyz.search.service.SearchService;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+@Controller
+public class EpubViewCtrl {
+
+    private static final Map<String, File> TMP_DIRS = new ConcurrentHashMap<>();
+
+    @Resource
+    private SearchService searchService;
+
+    /**
+     * epub 专用展示页面
+     *
+     * @param book
+     * @return
+     */
+    @RequestMapping(value = "/epub/web/view", method = RequestMethod.GET)
+    public ModelAndView fileEpubView(@RequestParam(required = true) String book) {
+        String resourcePath = searchService.getResourcePath(book);
+        TMP_DIRS.put(book, unzipEPub(new File(resourcePath)));
+        return new ModelAndView("epub/viewer");
+    }
+
+    /**
+     * epub 专用展示页面
+     *
+     * @return
+     */
+    @RequestMapping(value = "/bibi-bookshelf/{resId}/**", method = RequestMethod.GET)
+    public void bibiBookshelf(HttpServletRequest request, HttpServletResponse response, @PathVariable String resId) {
+        String resourcePath = null;
+        if (!TMP_DIRS.containsKey(resId)) {
+            resourcePath = searchService.getResourcePath(resId);
+            TMP_DIRS.put(resId, unzipEPub(new File(resourcePath)));
+        }
+        String targetPath = request.getRequestURL().toString().split(resId)[1];
+        String targetFullPath = TMP_DIRS.get(resId).getAbsolutePath() + targetPath;
+        File targetFile = new File(targetFullPath);
+
+        try (InputStream inputStream = new FileInputStream(targetFile)) {
+            String contentType = Files.probeContentType(targetFile.toPath());
+            response.reset();
+            response.setContentType(contentType);
+            try (ServletOutputStream outputStream = response.getOutputStream()) {
+                byte[] b = new byte[1024];
+                int len;
+                while ((len = inputStream.read(b)) > 0) {
+                    outputStream.write(b, 0, len);
+                }
+            }
+        } catch (Exception ex) {
+            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
+        }
+
+    }
+
+    private File unzipEPub(File zipFile) {
+        File tmp = null;
+        try (ZipFile zip = new ZipFile(zipFile, Charset.defaultCharset())) {
+            // 创建临时文件夹
+            tmp = Files.createTempDirectory("tmp").toFile();
+            // 解压缩 epub 文件
+            for (Enumeration<? extends ZipEntry> entries = zip.entries(); entries.hasMoreElements(); ) {
+                ZipEntry entry = (ZipEntry) entries.nextElement();
+                String zipEntryName = entry.getName();
+                try (InputStream in = zip.getInputStream(entry)) {
+                    //指定解压后的文件夹+当前zip文件的名称
+                    String outPath = (tmp.getAbsolutePath() + "/" + zipEntryName).replace("/", File.separator);
+                    //判断路径是否存在,不存在则创建文件路径
+                    File file = new File(outPath.substring(0, outPath.lastIndexOf(File.separator)));
+                    if (!file.exists()) {
+                        file.mkdirs();
+                    }
+                    // 判断文件全路径是否为文件夹,如果是上面已经上传,不需要解压
+                    if (new File(outPath).isDirectory()) {
+                        continue;
+                    }
+                    try (OutputStream out = new FileOutputStream(outPath)) {
+                        byte[] buf1 = new byte[2048];
+                        int len;
+                        while ((len = in.read(buf1)) > 0) {
+                            out.write(buf1, 0, len);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            // 删除临时目录
+            if (Objects.nonNull(tmp)) {
+                FileHelper.deleteFile(tmp);
+            }
+            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
+        }
+        final File willDel = tmp;
+        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(()-> deleteTree(willDel), 1, TimeUnit.HOURS);
+        return tmp;
+    }
+
+    private void deleteTree(File tmp) {
+        // 删除临时目录
+        if (Objects.nonNull(tmp)) {
+            FileHelper.deleteFile(tmp);
+        }
+    }
+}

@@ -4,18 +4,13 @@ import noogel.xyz.search.infrastructure.dto.ResourcePageDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.service.SearchService;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
@@ -36,7 +31,7 @@ public class FileViewCtrl {
 
     @RequestMapping(value = "/file/download", method = RequestMethod.GET)
     public void fileDownload(@RequestParam(required = false) String resId,
-                         HttpServletResponse response) {
+                             HttpServletResponse response) {
         String resourcePath = searchService.getResourcePath(resId);
         File file = new File(resourcePath);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
@@ -80,6 +75,7 @@ public class FileViewCtrl {
 
     /**
      * PDF 专用展示页面
+     *
      * @param file
      * @return
      */
