@@ -11,8 +11,7 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
+import java.nio.file.Files;
 
 @Controller
 public class FileViewCtrl {
@@ -23,44 +22,26 @@ public class FileViewCtrl {
     @RequestMapping(value = "/file", method = RequestMethod.GET)
     public @ResponseBody
     ResourcePageDto file(@RequestParam(required = false) String search,
-                         @RequestParam(required = false) String resId,
-                         @RequestParam(required = false, defaultValue = "5") int limit,
-                         @RequestParam(required = false, defaultValue = "0") int offset) {
+                         @RequestParam(required = false) String resId) {
         return searchService.searchByResId(resId, search);
     }
 
-    @RequestMapping(value = "/file/download", method = RequestMethod.GET)
-    public void fileDownload(@RequestParam(required = false) String resId,
-                             HttpServletResponse response) {
+    @RequestMapping(value = "/file/{resId}", method = RequestMethod.GET)
+    public void fileOp(@PathVariable String resId,
+                       @RequestParam(required = false, defaultValue = "view") String type,
+                       HttpServletResponse response) {
         String resourcePath = searchService.getResourcePath(resId);
         File file = new File(resourcePath);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
         try (InputStream inputStream = new FileInputStream(file)) {
             response.reset();
-            response.setContentType("application/octet-stream");
-            response.addHeader("Content-Disposition", "attachment; filename="
-                    + URLEncoder.encode(file.getName(), Charset.defaultCharset()));
-            try (ServletOutputStream outputStream = response.getOutputStream()) {
-                byte[] b = new byte[1024];
-                int len;
-                while ((len = inputStream.read(b)) > 0) {
-                    outputStream.write(b, 0, len);
-                }
+            if ("download".equals(type)) {
+                response.setContentType("application/octet-stream");
+                response.addHeader("Content-Disposition", "attachment; filename=" + file.getName());
+            } else {
+                String contentType = Files.probeContentType(file.toPath());
+                response.setContentType(contentType);
             }
-        } catch (Exception ex) {
-            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
-        }
-    }
-
-    @RequestMapping(value = "/file/view", method = RequestMethod.GET)
-    public void fileView(@RequestParam(required = false) String resId,
-                         HttpServletResponse response) {
-        String resourcePath = searchService.getResourcePath(resId);
-        File file = new File(resourcePath);
-        ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
-        try (InputStream inputStream = new FileInputStream(file)) {
-            response.reset();
-            response.setContentType("text/html");
             try (ServletOutputStream outputStream = response.getOutputStream()) {
                 byte[] b = new byte[1024];
                 int len;
@@ -81,7 +62,7 @@ public class FileViewCtrl {
      */
     @RequestMapping(value = "/pdf.js/web/view", method = RequestMethod.GET)
     public ModelAndView filePdfView(@RequestParam(required = true) String file) {
-        ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.startsWith("/file/download?resId="), "资源不存在");
+        ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.startsWith("/file/"), "资源不存在");
         return new ModelAndView("pdf/viewer");
     }
 

@@ -29,15 +29,15 @@ Bibi.preset({
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
 "use-menubar"                : "yes", // "yes" or "no" or "desktop" or "mobile"
-"use-full-height"            : "yes", // "yes" or "no" or "desktop" or "mobile". If "use-menubar" is interpreted as "no", "use-full-height" is always treated as "yes".
+"use-full-height"            : "no", // "yes" or "no" or "desktop" or "mobile". If "use-menubar" is interpreted as "no", "use-full-height" is always treated as "yes".
 
-"use-arrows"                 : "yes", // "yes" or "no" or "desktop" or "mobile"
+"use-arrows"                 : "no", // "yes" or "no" or "desktop" or "mobile"
 "flipper-width"              : 0.25, // Number of ratio (less than 1) or pixel (1 or greater)
 
-"use-keys"                   : "yes", // "yes" or "no" or "desktop" or "mobile"
+"use-keys"                   : "yes", // "yes" or "no" or "desktop" or "mobile" 键盘左右快捷键
 
-"use-slider"                 : "yes", // "yes" or "no" or "desktop" or "mobile"
-"flip-pages-during-sliding"  : "yes", // "yes" or "no" or "desktop" or "mobile"
+"use-slider"                 : "no", // "yes" or "no" or "desktop" or "mobile" 点击缩放，难用
+"flip-pages-during-sliding"  : "no", // "yes" or "no" or "desktop" or "mobile" 滑动时翻页
 
 "use-nombre"                 : "yes", // "yes" or "no" or "desktop" or "mobile"
 
@@ -117,7 +117,7 @@ Bibi.preset({
 
 "default-page-progression-direction" : "ltr", // "ltr" or "rtl". Most of EPUBs have right property in itself, but....
 
-"accept-local-file"                  : "yes", // "yes" or "no" or "desktop" or "mobile". (If it is enabled, Bibi prepares UI for loading files. Conditions for acceptance are <03> at the bottom of this preset file.)
+"accept-local-file"                  : "no", // "yes" or "no" or "desktop" or "mobile". (If it is enabled, Bibi prepares UI for loading files. Conditions for acceptance are <03> at the bottom of this preset file.)
 "accept-bibizine"                    : true, // true or false (If true, Bibi accepts EPUB-like bibiZine formated book. If you are interested in it, please contact the author)
 "accept-blob-converted-data"         : true, // true or false (If true, Bibi accepts BLOB object converted from a EPUB File. If you are interested in it, please contact the author)
 "accept-base64-encoded-data"         : true, // true or false (If true, Bibi accepts Base64 string encoded from a EPUB File. If you are interested in it, please contact the author)
