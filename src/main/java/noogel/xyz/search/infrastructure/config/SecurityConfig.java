@@ -17,8 +17,8 @@ public class SecurityConfig {
         http.authorizeRequests()
                 .anyRequest().authenticated()
                 .and().formLogin().loginProcessingUrl("/login")
-                .and().logout().permitAll()
-                .and().csrf().disable();
+                .and().rememberMe().tokenValiditySeconds(7 * 24 * 3600)
+                .and().logout().permitAll();
         http.headers().frameOptions().sameOrigin();
         return http.build();
     }

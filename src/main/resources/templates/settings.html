@@ -50,6 +50,7 @@
         <div class="col-12">
             <h4 class="mb-3">设置</h4>
             <form id="searchSettingForm" class="needs-validation" novalidate="" action="/settings" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
                 <div class="row g-3">
                     <div class="col-12">
                         <label for="elasticsearchHost" class="form-label">Elasticsearch 地址</label>
