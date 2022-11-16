@@ -79,9 +79,9 @@ public class ResourceModel {
         documentMap.put("resId", Property
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("resName", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("smartcn")))));
+                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("ik_smart")))));
         documentMap.put("resTitle", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("smartcn")))));
+                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("ik_smart")))));
         documentMap.put("resDir", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("path_tokenizer")))));
         documentMap.put("resHash", Property
@@ -94,7 +94,7 @@ public class ResourceModel {
                 .of(p -> p.long_(LongNumberProperty.of(i -> i.index(true)))));
 
         documentMap.put("searchableText", Property
-                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("smartcn")))));
+                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("ik_smart")))));
         documentMap.put("textHash", Property
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("textSize", Property

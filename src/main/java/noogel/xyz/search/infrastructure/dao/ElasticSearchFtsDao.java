@@ -172,9 +172,9 @@ public class ElasticSearchFtsDao {
             BoolQuery.Builder builder = new BoolQuery.Builder();
             if (!StringUtils.isEmpty(text)) {
                 Query searchableText = MatchQuery.of(m -> m.field("searchableText")
-                        .query(text).analyzer("smartcn"))._toQuery();
+                        .query(text).analyzer("ik_smart"))._toQuery();
                 Query resTitle = MatchQuery.of(m -> m.field("resTitle")
-                        .query(text).analyzer("smartcn"))._toQuery();
+                        .query(text).analyzer("ik_smart"))._toQuery();
                 builder.should(searchableText, resTitle);
             }
             Query redId = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
@@ -221,7 +221,7 @@ public class ElasticSearchFtsDao {
                 Query searchableText = MatchQuery.of(m -> m
                         .field("searchableText")
                         .query(queryDto.getSearch())
-                        .analyzer("smartcn")
+                        .analyzer("ik_smart")
                 )._toQuery();
                 builder.must(searchableText);
             }
