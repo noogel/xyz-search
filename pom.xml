@@ -49,7 +49,7 @@
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.4.2</version>
+            <version>8.4.3</version>
         </dependency>
         <dependency>
             <groupId>jakarta.json</groupId>
@@ -109,6 +109,8 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <outputDirectory>docker/dep2</outputDirectory>
+                    <outputDirectory>docker/dep1</outputDirectory>
                     <includeSystemScope>true</includeSystemScope>
                 </configuration>
             </plugin>
@@ -116,11 +118,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>16</source>
-                    <target>16</target>
+                    <source>11</source>
+                    <target>11</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

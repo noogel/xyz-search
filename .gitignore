@@ -38,3 +38,4 @@ build/
 
 ### Custom ###
 **/property-config.json
+**/*.war

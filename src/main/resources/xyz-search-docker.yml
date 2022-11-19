@@ -7,8 +7,7 @@ elasticsearchSocketTimeout: 18000
 searchDirectories:
   - /data/share
   - /data/ebook
-configFilePath: /data/config
-logFilePath: /data/log
-ftsIndexName: xyz_fts_resources4
+configFilePath: /usr/share/xyz-search/data
+ftsIndexName: xyz_search
 username: xyz
 password: search

@@ -68,10 +68,6 @@ public class SearchPropertyConfig {
          */
         private String configFilePath;
         /**
-         * 日志文件路径
-         */
-        private String logFilePath;
-        /**
          * 索引名称
          */
         private String ftsIndexName;

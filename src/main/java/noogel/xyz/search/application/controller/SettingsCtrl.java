@@ -30,6 +30,7 @@ public class SettingsCtrl {
     public ModelAndView getSettings(){
         ModelAndView mv = new ModelAndView("settings");
         mv.addObject("env", EnvHelper.DEPLOY_ENV);
+        mv.addObject("env_ver", EnvHelper.DEPLOY_VER);
         mv.addObject("searchConfig", settingService.query());
         return mv;
     }
@@ -38,6 +39,7 @@ public class SettingsCtrl {
     public ModelAndView postSettings(SearchSettingDto cfg){
         ModelAndView mv = new ModelAndView("settings");
         mv.addObject("env", EnvHelper.DEPLOY_ENV);
+        mv.addObject("env_ver", EnvHelper.DEPLOY_VER);
         try {
             SearchSettingDto dto = settingService.update(cfg);
             mv.addObject("searchConfig", dto);

@@ -7,7 +7,6 @@ elasticsearchSocketTimeout: 5000
 searchDirectories:
   - /home/xyz/DockerSharingData/TestSearch
 configFilePath:
-logFilePath:
-ftsIndexName: xyz_fts_resources4
+ftsIndexName: xyz_search
 username: xyz
 password: search

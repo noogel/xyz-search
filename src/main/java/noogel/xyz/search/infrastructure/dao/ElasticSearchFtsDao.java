@@ -211,6 +211,11 @@ public class ElasticSearchFtsDao {
     }
 
     public SearchResultDto search(SearchBaseQueryDto queryDto) {
+        // 如果没有初始化索引，则创建。
+        if (!searchConfig.isInitIndex()) {
+            createIndex(false);
+        }
+        // 执行搜索
         SearchResultDto resp = new SearchResultDto();
         resp.setData(new ArrayList<>());
 

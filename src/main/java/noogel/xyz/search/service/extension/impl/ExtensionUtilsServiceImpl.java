@@ -52,7 +52,7 @@ public class ExtensionUtilsServiceImpl implements ExtensionUtilsService {
                         .map(JsonNode::toString).map(AuthorHelper::format).ifPresent(resTitle::append);
                 Optional.ofNullable(jsonNode).map(t -> t.get("metadata")).map(t -> t.get("creator"))
                         .ifPresent(t -> {
-                            if (!resTitle.isEmpty()) {
+                            if (resTitle.length() > 0) {
                                 resTitle.append(" - ");
                             }
                             List<String> authors = new ArrayList<>();
@@ -65,7 +65,7 @@ public class ExtensionUtilsServiceImpl implements ExtensionUtilsService {
                             }
                             resTitle.append(String.join(",", authors));
                         });
-                if (!resTitle.isEmpty()) {
+                if (resTitle.length() > 0) {
                     resTitle.append(".").append(FileHelper.getFileExtension(file.getName()));
                     dto.setTitle(resTitle.toString());
                 }

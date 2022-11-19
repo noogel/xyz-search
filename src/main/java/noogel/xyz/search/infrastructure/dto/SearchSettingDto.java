@@ -10,7 +10,6 @@ public class SearchSettingDto {
     private String elasticsearchCAPath;
     private String searchDirectories;
     private String configFilePath;
-    private String logFilePath;
     private String ftsIndexName;
     private String username;
     private String password;
