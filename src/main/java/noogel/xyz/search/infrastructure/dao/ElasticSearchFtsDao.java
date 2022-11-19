@@ -8,6 +8,8 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.*;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
+import co.elastic.clients.elasticsearch.indices.ForcemergeRequest;
+import co.elastic.clients.elasticsearch.indices.ForcemergeResponse;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
@@ -119,6 +121,18 @@ public class ElasticSearchFtsDao {
             return result;
         } catch (IOException ex) {
             log.error("deleteByResId err", ex);
+            return false;
+        }
+    }
+
+    public boolean forceMerge() {
+        ForcemergeRequest forcemergeRequest = ForcemergeRequest.of(t -> t.maxNumSegments(1L).onlyExpungeDeletes(true));
+        try {
+            log.info("run forceMerge");
+            config.getClient().indices().forcemerge(forcemergeRequest);
+            return true;
+        } catch (IOException e) {
+            log.error("forceMerge error.", e);
             return false;
         }
     }

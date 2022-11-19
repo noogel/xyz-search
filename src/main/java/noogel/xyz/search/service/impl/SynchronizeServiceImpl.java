@@ -13,8 +13,11 @@ import noogel.xyz.search.service.extension.ExtensionPointService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.File;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +34,25 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     private ElasticSearchFtsDao ftsDao;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
+
+    @PostConstruct
+    public void init() {
+        // 执行时间点
+        long dailyRunAt = 5 * 60 * 60;
+        // 一天时间
+        long oneDay = 24 * 60 * 60;
+        // 今天已经过去多久
+        long todayPast = LocalDateTime.now().getHour() * 3600 + LocalDateTime.now().getMinute() * 60 + LocalDateTime.now().getSecond();
+        long initialDelay = todayPast > dailyRunAt ? (oneDay - todayPast + dailyRunAt) : (dailyRunAt - todayPast);
+        log.info("auto forceMerge runDelay {}ms", initialDelay);
+        // 定时执行
+        CommonsConstConfig.COMMON_SCHEDULED_SERVICE.scheduleAtFixedRate(
+                ()-> ftsDao.forceMerge(),
+                initialDelay,
+                oneDay,
+                TimeUnit.SECONDS
+        );
+    }
 
     @Override
     public void async(List<String> paths) {
