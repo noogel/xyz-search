@@ -40,7 +40,7 @@ public class SearchCtrl {
         // path search
         if (StringUtils.isNotBlank(relativeResDir)) {
             ExceptionCode.PARAM_ERROR.throwOn(StringUtils.isBlank(resId), "资源 ID 不存在");
-            String absPath = searchService.getResourcePath(resId);
+            String absPath = searchService.getDownloadResource(resId).getAbsolutePath();
             String resDirPrefix = absPath.substring(0, absPath.indexOf(relativeResDir) + relativeResDir.length());
             // 设置参数
             query.setResDirPrefix(resDirPrefix);

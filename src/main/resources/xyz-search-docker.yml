@@ -6,7 +6,6 @@ elasticsearchConnectionTimeout: 6000
 elasticsearchSocketTimeout: 18000
 searchDirectories:
   - /data/share
-  - /data/ebook
 configFilePath: /usr/share/xyz-search/data
 ftsIndexName: xyz_search
 username: xyz

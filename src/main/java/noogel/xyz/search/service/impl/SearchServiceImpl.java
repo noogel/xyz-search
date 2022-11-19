@@ -77,7 +77,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public String getResourcePath(String resId) {
-        return dao.findByResId(resId).calculateAbsolutePath();
+    public ResourceDownloadDto getDownloadResource(String resId) {
+        ResourceDownloadDto dto = new ResourceDownloadDto();
+        ResourceModel res = dao.findByResId(resId);
+        dto.setResId(resId);
+        dto.setResTitle(res.getResTitle());
+        dto.setAbsolutePath(res.calculateAbsolutePath());
+        return dto;
     }
 }

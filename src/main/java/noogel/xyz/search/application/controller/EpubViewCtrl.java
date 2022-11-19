@@ -13,11 +13,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +40,7 @@ public class EpubViewCtrl {
     @RequestMapping(value = "/epub/web/view", method = RequestMethod.GET)
     public ModelAndView fileEpubView(@RequestParam(required = true) String book) {
         if (!TMP_DIRS.containsKey(book)) {
-            String resourcePath = searchService.getResourcePath(book);
+            String resourcePath = searchService.getDownloadResource(book).getAbsolutePath();
             TMP_DIRS.put(book, unzipEPub(book, new File(resourcePath)));
         }
         return new ModelAndView("epub/viewer");
@@ -57,7 +55,7 @@ public class EpubViewCtrl {
     public void bibiBookshelf(HttpServletRequest request, HttpServletResponse response, @PathVariable String resId) {
         String resourcePath = null;
         if (!TMP_DIRS.containsKey(resId)) {
-            resourcePath = searchService.getResourcePath(resId);
+            resourcePath = searchService.getDownloadResource(resId).getAbsolutePath();
             TMP_DIRS.put(resId, unzipEPub(resId, new File(resourcePath)));
         }
         String targetPath = request.getRequestURL().toString().split(resId)[1];

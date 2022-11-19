@@ -1,6 +1,6 @@
 FROM openjdk:17-alpine
 MAINTAINER noogel@163.com
-RUN mkdir -p /data/share /data/ebook /data/transfer /usr/share/xyz-search/data
+RUN mkdir -p /data/share /data/transfer /usr/share/xyz-search/data
 COPY xyz-search-*.war /usr/share/xyz-search/xyz-search.war
 WORKDIR /usr/share/xyz-search
 EXPOSE 8081

@@ -1,7 +1,9 @@
 package noogel.xyz.search.application.controller;
 
+import noogel.xyz.search.infrastructure.dto.ResourceDownloadDto;
 import noogel.xyz.search.infrastructure.dto.ResourcePageDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
+import noogel.xyz.search.infrastructure.utils.UrlHelper;
 import noogel.xyz.search.service.SearchService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -30,14 +32,15 @@ public class FileViewCtrl {
     public void fileOp(@PathVariable String resId,
                        @RequestParam(required = false, defaultValue = "view") String type,
                        HttpServletResponse response) {
-        String resourcePath = searchService.getResourcePath(resId);
-        File file = new File(resourcePath);
+        ResourceDownloadDto downloadResource = searchService.getDownloadResource(resId);
+        File file = new File(downloadResource.getAbsolutePath());
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
         try (InputStream inputStream = new FileInputStream(file)) {
             response.reset();
             if ("download".equals(type)) {
                 response.setContentType("application/octet-stream");
-                response.addHeader("Content-Disposition", "attachment; filename=" + file.getName());
+                response.addHeader("Content-Disposition", "attachment; filename="
+                        + UrlHelper.ct(downloadResource.getResTitle()));
             } else {
                 String contentType = Files.probeContentType(file.toPath());
                 response.setContentType(contentType);

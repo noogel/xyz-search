@@ -10,3 +10,12 @@ docker tag elasticsearch:8.4.3-alpha noogel/elasticsearch:8.4.3-alpha
 发包命令：
 
 docker push noogel/elasticsearch:8.4.3-alpha
+
+测试启动：
+
+docker run -d --name xyzEsAlpha --network xyz-bridge-net -p 9300:9300 -p 9200:9200 \
+-e "xpack.security.enabled=false" \
+-e "discovery.type=single-node" \
+-e ES_JAVA_OPTS="-Xms512m -Xmx1g" \
+-v /home/xyz/DockerSharingData/xyzEs2:/usr/share/elasticsearch/data \
+elasticsearch:8.4.3-alpha
