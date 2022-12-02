@@ -5,11 +5,15 @@
 构建命令:
 
 docker build -t elasticsearch:8.4.3-alpha .
-docker tag elasticsearch:8.4.3-alpha noogel/elasticsearch:8.4.3-alpha
+docker tag elasticsearch:8.4.3-alpha 10.168.1.102:8111/noogel/elasticsearch:8.4.3-alpha
 
 发包命令：
 
-docker push noogel/elasticsearch:8.4.3-alpha
+docker push 10.168.1.102:8111/noogel/elasticsearch:8.4.3-alpha
+
+拉取命令：
+
+docker pull 10.168.1.102:8111/noogel/elasticsearch:8.4.3-alpha
 
 测试启动：
 
