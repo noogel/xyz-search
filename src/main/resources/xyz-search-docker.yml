@@ -1,4 +1,4 @@
-elasticsearchHost: "http://localhost:9200"
+elasticsearchHost: "http://xyzEs:9200"
 elasticsearchUser:
 elasticsearchPassword:
 elasticsearchCAPath:
