@@ -39,6 +39,7 @@ public class SearchServiceImpl implements SearchService {
             ResourceSimpleDto page = new ResourceSimpleDto();
             page.setResId(t.getResId());
             page.setResTitle(t.getResTitle());
+            page.calculateSearchableResTitle();
             page.setResSize(String.format("%s | %s", FileHelper.formatFileSize(t.getResSize()),
                     FileHelper.formatFileSize(t.getTextSize())));
             page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
@@ -57,6 +58,7 @@ public class SearchServiceImpl implements SearchService {
         ResourcePageDto page = new ResourcePageDto();
         page.setResId(t.getResId());
         page.setResTitle(t.getResTitle());
+        page.calculateSearchableResTitle();
         page.setResSize(FileHelper.formatFileSize(t.getResSize()));
         page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
         page.setRelativeResPath(t.calculateRelativePath(searchConfig.getSearchDirectories()));

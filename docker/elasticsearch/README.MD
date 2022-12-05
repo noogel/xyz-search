@@ -22,4 +22,4 @@ docker run -d --name xyzEsAlpha --network xyz-bridge-net -p 9300:9300 -p 9200:92
 -e "discovery.type=single-node" \
 -e ES_JAVA_OPTS="-Xms512m -Xmx1g" \
 -v /home/xyz/DockerSharingData/xyzEs2:/usr/share/elasticsearch/data \
-elasticsearch:8.4.3-alpha
+10.168.1.102:8111/noogel/elasticsearch:8.4.3-alpha
