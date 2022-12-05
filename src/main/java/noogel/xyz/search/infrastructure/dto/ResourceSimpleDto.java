@@ -32,7 +32,7 @@ public class ResourceSimpleDto {
                 searchableTitle = splitTitle;
             }
         } else if (resTitle.contains(".")) {
-            searchableTitle = resTitle.substring(resTitle.lastIndexOf(".") + 1);
+            searchableTitle = resTitle.substring(0, resTitle.lastIndexOf("."));
         }
         this.searchableTitle = UrlHelper.ct(searchableTitle);
     }
