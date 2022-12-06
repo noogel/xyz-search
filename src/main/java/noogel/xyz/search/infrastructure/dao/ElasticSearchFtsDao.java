@@ -199,7 +199,7 @@ public class ElasticSearchFtsDao {
                     // 上下文内容
                     .fragmentSize(100)
                     // 30 条
-                    .numberOfFragments(30)
+                    .numberOfFragments(8)
                     // 高亮标记
                     .fragmenter(HighlighterFragmenter.Span))));
 
