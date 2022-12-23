@@ -15,6 +15,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeRequests()
+                .antMatchers("/favicon.ico", "/login").permitAll()
                 .anyRequest().authenticated()
                 .and().formLogin().loginProcessingUrl("/login")
                 .and().rememberMe().tokenValiditySeconds(7 * 24 * 3600)
