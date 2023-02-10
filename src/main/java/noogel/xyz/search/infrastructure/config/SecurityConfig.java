@@ -15,11 +15,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .anyRequest().authenticated()
-                .and().formLogin().loginProcessingUrl("/login")
-                .and().logout().permitAll()
-                .and().csrf().disable();
-        http.headers().frameOptions().sameOrigin();
+                .anyRequest().authenticated().and().httpBasic();
+//        http.authorizeRequests()
+//                .anyRequest().authenticated()
+//                .and().formLogin().loginProcessingUrl("/login")
+//                .and().logout().permitAll()
+//                .and().csrf().disable();
+//        http.headers().frameOptions().sameOrigin();
         return http.build();
     }
 
