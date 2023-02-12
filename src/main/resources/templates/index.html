@@ -10,40 +10,52 @@
     <script type="text/javascript">
         function fetch_data(obj) {
             const href = obj.href;
-            fetch(href).then(r => r.json())
-                .then(function (data) {
-                    console.log(encodeURIComponent(data.relativeResDir));
-                    // document.querySelector("#offcanvasFileInfo").textContent = data.resTitle;  // 右边窗标题
-                    document.querySelector("#fileInfoName").textContent = data.resTitle;
-                    document.querySelector("#fileInfoPath").textContent = data.relativeResPath;
-                    document.querySelector("#fileInfoContentType").textContent = data.contentType;
-                    document.querySelector("#fileInfoSize").textContent = data.resSize;
-                    document.querySelector("#fileInfoModifiedAt").textContent = data.modifiedAt;
-                    document.querySelector("#fileInfoHighlight").innerHTML = data.highlightHtml;
-                    document.querySelector("#fileDownloadA").href = "/file/" + data.resId + "?type=download";
-                    document.querySelector("#dirViewA").href = "/?resId=" + data.resId + "&relativeResDir=" + encodeURIComponent(data.relativeResDir);
-                    if (data.resType == 'FILE:PDF') {
-                        document.querySelector("#fileViewA").href = "/pdf.js/web/view?file=/file/" + data.resId;
-                    } else if (data.resType == 'FILE:EPUB') {
-                        document.querySelector("#fileViewA").href = "/epub/web/view?book=" + data.resId;
-                    } else {
-                        document.querySelector("#fileViewA").href = "/file/" + data.resId;
-                    }
+            fetch(href).then(function (r) {
+                if (!r.ok) {
+                    document.querySelector("#fileInfoName").textContent = '加载异常：' + r.status.toString() + " " + r.statusText;
+                    document.querySelector("#fileInfoPath").textContent = '';
+                    document.querySelector("#fileInfoContentType").textContent = '';
+                    document.querySelector("#fileInfoSize").textContent = '';
+                    document.querySelector("#fileInfoModifiedAt").textContent = '';
+                    document.querySelector("#fileInfoHighlight").innerHTML = '';
+                    document.querySelector("#fileDownloadA").href = '';
+                    document.querySelector("#dirViewA").href = '';
+                    document.querySelector("#fileViewA").href = '';
+                    throw 'Error';
+                }
+                return r.json()
+            }).then(function (data) {
+                document.querySelector("#fileInfoName").textContent = data.resTitle;
+                document.querySelector("#fileInfoPath").textContent = data.relativeResPath;
+                document.querySelector("#fileInfoContentType").textContent = data.contentType;
+                document.querySelector("#fileInfoSize").textContent = data.resSize;
+                document.querySelector("#fileInfoModifiedAt").textContent = data.modifiedAt;
+                document.querySelector("#fileInfoHighlight").innerHTML = data.highlightHtml;
+                document.querySelector("#fileDownloadA").href = "/file/" + data.resId + "?type=download";
+                document.querySelector("#dirViewA").href = "/?resId=" + data.resId + "&relativeResDir=" + encodeURIComponent(data.relativeResDir);
+                if (data.resType == 'FILE:PDF') {
+                    document.querySelector("#fileViewA").href = "/pdf.js/web/view?file=/file/" + data.resId;
+                } else if (data.resType == 'FILE:EPUB') {
+                    document.querySelector("#fileViewA").href = "/epub/web/view?book=" + data.resId;
+                } else {
+                    document.querySelector("#fileViewA").href = "/file/" + data.resId;
+                }
 
-                    // 是否支持查看
-                    if (data.supportView) {
-                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success");
-                        document.querySelector("#fileViewA").setAttribute("class", "page-link");
-                    } else {
-                        document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success disabled");
-                        document.querySelector("#fileViewA").setAttribute("class", "page-link disabled");
-                    }
+                // 是否支持查看
+                if (data.supportView) {
+                    document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success");
+                    document.querySelector("#fileViewA").setAttribute("class", "page-link");
+                } else {
+                    document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success disabled");
+                    document.querySelector("#fileViewA").setAttribute("class", "page-link disabled");
+                }
 
-                    document.querySelector("#linkCalibre").href = "http://10.168.1.102:8080/#library_id=%E7%94%B5%E5%AD%90%E4%B9%A6%E5%BA%93&panel=book_list&search=" + data.searchableTitle + "&sort=last_modified.desc";
-                    document.querySelector("#linkDouban").href = "https://m.douban.com/search/?query=" + data.searchableTitle;
-                    document.querySelector("#linkJd").href = "https://so.m.jd.com/ware/search.action?keyword=" + data.searchableTitle;
-                }).catch(function (err) {
-                    console.log(err);
+                document.querySelector("#linkCalibre").href = "http://10.168.1.102:8080/#library_id=%E7%94%B5%E5%AD%90%E4%B9%A6%E5%BA%93&panel=book_list&search=" + data.searchableTitle + "&sort=last_modified.desc";
+                document.querySelector("#linkDouban").href = "https://m.douban.com/search/?query=" + data.searchableTitle;
+                document.querySelector("#linkJd").href = "https://so.m.jd.com/ware/search.action?keyword=" + data.searchableTitle;
+                document.querySelector("#linkGG").href = "https://www.google.com/search?q=" + data.searchableTitle;
+            }).catch(function (err) {
+                console.log(err);
             });
         }
     </script>
@@ -322,7 +334,14 @@
                             <a class="page-link" id="linkJd" href="#" target="_blank">
                                 <button type="linkJdBtn" class="btn btn-link">京东</button></a>
                         </div>
+                        <div class="col-auto">
+                            <a class="page-link" id="linkGG" href="#" target="_blank">
+                                <button type="linkGGBtn" class="btn btn-link">谷歌</button></a>
+                        </div>
                     </div>
+                </div>
+                <div class="offcanvas-header justify-content-center">
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
             </div>
         </div>
