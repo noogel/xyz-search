@@ -196,7 +196,7 @@ public class ElasticSearchFtsDao {
             Highlight highlight = Highlight.of(t -> t.fields("searchableText", HighlightField.of(k -> k
                     .type("plain")
                     // 上下文内容
-                    .fragmentSize(100)
+                    .fragmentSize(200)
                     // 30 条
                     .numberOfFragments(8)
                     // 高亮标记
@@ -280,6 +280,7 @@ public class ElasticSearchFtsDao {
                             .source(l -> l.filter(m -> m.excludes("searchableText")))
                             .size(queryDto.getLimit())
                             .from(queryDto.getOffset()),
+                    // 排序文章 https://blog.csdn.net/qq_18984887/article/details/125701681
                     ResourceModel.class);
             TotalHits total = search.hits().total();
             resp.setExactSize(total.relation() == TotalHitsRelation.Eq);
