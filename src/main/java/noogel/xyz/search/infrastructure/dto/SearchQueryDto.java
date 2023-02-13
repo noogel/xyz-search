@@ -14,9 +14,9 @@ public class SearchQueryDto extends SearchBaseQueryDto {
     private String resId;
 
     public String getUrlQuery(long offset) {
-        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s&relativeResDir=%s",
+        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s&relativeResDir=%s&resType=%s",
                 ct(getSearch()), ct(resId), ct(getResSize()), ct(getModifiedAt()),
-                ct(getLimit()), ct(offset), ct(relativeResDir));
+                ct(getLimit()), ct(offset), ct(relativeResDir), ct(getResType()));
     }
 
 }

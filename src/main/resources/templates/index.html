@@ -197,6 +197,42 @@
                                     </div>
                                     <div class="col-auto">
 
+                                        <fieldset>
+                                            <legend>文件类型</legend>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resType"
+                                                       id="resTypeAtNone" value=""
+                                                       th:checked="${#strings.isEmpty(result.paging.query.resType)} ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtNone">
+                                                    不限制
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resType"
+                                                       id="resTypeAtPDF" value="FILE:PDF"
+                                                       th:checked="(${result.paging.query.resType} == 'FILE:PDF') ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtPDF">
+                                                    PDF
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resType"
+                                                       id="resTypeAtEPUB" value="FILE:EPUB"
+                                                       th:checked="(${result.paging.query.resType} == 'FILE:EPUB') ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtEPUB">
+                                                    EPUB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resType"
+                                                       id="resTypeAtHTML" value="FILE:HTML"
+                                                       th:checked="(${result.paging.query.resType} == 'FILE:HTML') ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtHTML">
+                                                    HTML
+                                                </label>
+                                            </div>
+                                        </fieldset>
+
                                     </div>
                                 </div>
                             </div>

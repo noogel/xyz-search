@@ -24,6 +24,7 @@ public class SearchCtrl {
                                @RequestParam(required = false) String relativeResDir,
                                @RequestParam(required = false) String resId,
                                @RequestParam(required = false) String resSize,
+                               @RequestParam(required = false) String resType,
                                @RequestParam(required = false) String modifiedAt,
                                @RequestParam(required = false, defaultValue = "20") int limit,
                                @RequestParam(required = false, defaultValue = "0") int offset) {
@@ -33,6 +34,7 @@ public class SearchCtrl {
         query.setSearch(search);
         query.setResSize(resSize);
         query.setModifiedAt(modifiedAt);
+        query.setResType(resType);
         // common
         query.setLimit(limit);
         query.setOffset(offset);

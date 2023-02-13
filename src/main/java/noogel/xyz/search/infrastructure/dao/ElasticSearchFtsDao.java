@@ -243,6 +243,13 @@ public class ElasticSearchFtsDao {
                 )._toQuery();
                 builder.must(searchableText);
             }
+            if (!StringUtils.isEmpty(queryDto.getResType())) {
+                Query resType = TermQuery.of(m -> m
+                        .field("resType")
+                        .value(queryDto.getResType())
+                )._toQuery();
+                builder.must(resType);
+            }
             if (!StringUtils.isEmpty(queryDto.getResDirPrefix())) {
                 Query resId = TermQuery.of(m -> m
                         .field("resDir")
