@@ -9,7 +9,6 @@ import co.elastic.clients.elasticsearch.core.search.*;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.elasticsearch.indices.ForcemergeRequest;
-import co.elastic.clients.elasticsearch.indices.ForcemergeResponse;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
@@ -263,7 +262,14 @@ public class ElasticSearchFtsDao {
             }
             SearchResponse<ResourceModel> search = config.getClient().search(s -> s
                             .index(getIndexName())
-                            .query(q -> q.bool(t -> builder))
+                            .query(q -> q.functionScore(r -> {
+                                if (queryDto.emptyQuery()) {
+                                    return r.query(t -> t.matchAll(k -> k))
+                                            .functions(FunctionScore.of(l -> l.randomScore(m -> m)));
+                                } else {
+                                    return r.query(l -> l.bool(t -> builder));
+                                }
+                            }))
                             .source(l -> l.filter(m -> m.excludes("searchableText")))
                             .size(queryDto.getLimit())
                             .from(queryDto.getOffset()),
