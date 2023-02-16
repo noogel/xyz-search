@@ -1,10 +1,9 @@
 package noogel.xyz.search.infrastructure.dao;
 
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
-import co.elastic.clients.elasticsearch.core.DeleteResponse;
-import co.elastic.clients.elasticsearch.core.GetResponse;
-import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.*;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
@@ -26,6 +25,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -202,12 +202,14 @@ public class ElasticSearchFtsDao {
                     // 高亮标记
                     .fragmenter(HighlighterFragmenter.Span))));
 
-            SearchResponse<ResourceModel> search = config.getClient().search(s -> s
-                            .index(getIndexName())
-                            .query(q -> q.bool(t -> builder))
-                            .source(l -> l.filter(m -> m.excludes("searchableText")))
-                            .highlight(highlight),
-                    ResourceModel.class);
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                    .index(getIndexName())
+                    .query(q -> q.bool(t -> builder))
+                    .source(l -> l.filter(m -> m.excludes("searchableText")))
+                    .highlight(highlight)
+            );
+            log.info("search:{}", searchRequest.toString());
+            SearchResponse<ResourceModel> search = config.getClient().search(searchRequest, ResourceModel.class);
 
             List<Hit<ResourceModel>> hits = search.hits().hits();
 
@@ -267,21 +269,22 @@ public class ElasticSearchFtsDao {
                         queryDto.getModifiedAt(), fn);
                 builder.must(modifiedAt);
             }
-            SearchResponse<ResourceModel> search = config.getClient().search(s -> s
-                            .index(getIndexName())
-                            .query(q -> q.functionScore(r -> {
-                                if (queryDto.emptyQuery()) {
-                                    return r.query(t -> t.matchAll(k -> k))
-                                            .functions(FunctionScore.of(l -> l.randomScore(m -> m)));
-                                } else {
-                                    return r.query(l -> l.bool(t -> builder));
-                                }
-                            }))
-                            .source(l -> l.filter(m -> m.excludes("searchableText")))
-                            .size(queryDto.getLimit())
-                            .from(queryDto.getOffset()),
-                    // 排序文章 https://blog.csdn.net/qq_18984887/article/details/125701681
-                    ResourceModel.class);
+            SearchRequest searchRequest = SearchRequest.of(s -> s.index(getIndexName())
+                    .query(q -> q.functionScore(r -> {
+                        if (queryDto.emptyQuery()) {
+                            return r.query(t -> t.matchAll(k -> k))
+                                    .functions(FunctionScore.of(l -> l.randomScore(m -> m)));
+                        } else {
+                            return r.query(l -> l.bool(t -> builder));
+                        }
+                    }))
+                    .source(l -> l.filter(m -> m.excludes("searchableText")))
+                    .sort(queryDto.dirQuery() ? Collections.singletonList(SortOptions
+                            .of(l -> l.field(m -> m.field("rank").order(SortOrder.Asc)))) : Collections.emptyList())
+                    .size(queryDto.getLimit())
+                    .from(queryDto.getOffset()));
+            log.info("search:{}", searchRequest.toString());
+            SearchResponse<ResourceModel> search = config.getClient().search(searchRequest, ResourceModel.class);
             TotalHits total = search.hits().total();
             resp.setExactSize(total.relation() == TotalHitsRelation.Eq);
             resp.setSize(total.value());

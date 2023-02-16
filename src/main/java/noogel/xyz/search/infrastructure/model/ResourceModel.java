@@ -6,6 +6,7 @@ import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
+import noogel.xyz.search.infrastructure.utils.RankHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -27,6 +28,10 @@ public class ResourceModel {
      * 资源 meta 名称
      */
     private String resTitle;
+    /**
+     * 根据资源名称计算的分数
+     */
+    private Long rank;
     /**
      * 资源路径
      */
@@ -82,6 +87,8 @@ public class ResourceModel {
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("ik_smart")))));
         documentMap.put("resTitle", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("ik_smart")))));
+        documentMap.put("rank", Property
+                .of(p -> p.long_(LongNumberProperty.of(i -> i.index(true)))));
         documentMap.put("resDir", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("path_tokenizer")))));
         documentMap.put("resHash", Property
@@ -124,6 +131,7 @@ public class ResourceModel {
         demo.setResDir(fileDir.getAbsolutePath());
         demo.setResName(file.getName());
         demo.setResTitle(StringUtils.isBlank(title) ? file.getName(): title);
+        demo.setRank(RankHelper.calcRank(StringUtils.isBlank(title) ? file.getName(): title));
         demo.setResType("FILE:" + FileHelper.getFileExtension(file.getName()).toUpperCase());
         demo.setResHash(MD5Helper.getMD5(file));
         demo.setResSize(file.length());

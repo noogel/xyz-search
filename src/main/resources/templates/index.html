@@ -40,6 +40,7 @@
                 } else {
                     document.querySelector("#fileViewA").href = "/file/" + data.resId;
                 }
+                // document.querySelector("#subPage").src = document.querySelector("#fileViewA").href;
 
                 // 是否支持查看
                 if (data.supportView) {
@@ -375,6 +376,9 @@
                                 <button type="linkGGBtn" class="btn btn-link">谷歌</button></a>
                         </div>
                     </div>
+<!--                    <div class="my-3 row justify-content-end">-->
+<!--                        <iframe id="subPage" src="#" height="600" width="auto" title=""></iframe>-->
+<!--                    </div>-->
                 </div>
                 <div class="offcanvas-header justify-content-center">
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
