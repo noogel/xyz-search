@@ -1,9 +1,9 @@
 package noogel.xyz.search.infrastructure.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
 import noogel.xyz.search.infrastructure.utils.IpUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RequestFilter implements Filter {
     private static final Map<String, Long> IP_TIME_MAP = new ConcurrentHashMap<>();
-    private static final long TIME_SHIFT = 3600 * 1000 * 3L; // 3 小时
+    private static final long TIME_SHIFT = 600 * 1000L; // 10 分钟
 
     @Scheduled(fixedRate = TIME_SHIFT)
     public void removeExpiredRecord() {
@@ -42,9 +42,10 @@ public class RequestFilter implements Filter {
         long nowTs = Instant.now().toEpochMilli();
         try {
             String remoteIP = IpUtils.getIpAddr(req);
-            // 存在 key 并且 时差小于 3 小时，则不发邮件。
+            // 存在 key 并且 时差小于 x，则不发邮件。
             if (IP_TIME_MAP.containsKey(remoteIP) && nowTs - IP_TIME_MAP.get(remoteIP) < TIME_SHIFT) {
-                IP_TIME_MAP.put(remoteIP, nowTs);
+                // x 时间内不重复通知，不随访问更新。
+                // IP_TIME_MAP.put(remoteIP, nowTs);
                 log.info("畅文全索请求更新，ip:{}， 访问路径：{} {}", remoteIP, req.getMethod(), req.getRequestURL());
             } else {
                 String subject = "畅文:" + remoteIP;
