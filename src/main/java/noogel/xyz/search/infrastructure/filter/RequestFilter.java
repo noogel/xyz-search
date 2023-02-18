@@ -2,6 +2,7 @@ package noogel.xyz.search.infrastructure.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -38,8 +39,8 @@ public class RequestFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         long nowTs = Instant.now().toEpochMilli();
-        String remoteIP = req.getRemoteAddr();
         try {
+            String remoteIP = getIp(req);
             // 存在 key 并且 时差小于 3 小时，则不发邮件。
             if (IP_TIME_MAP.containsKey(remoteIP) && nowTs - IP_TIME_MAP.get(remoteIP) < TIME_SHIFT) {
                 IP_TIME_MAP.put(remoteIP, nowTs);
@@ -55,5 +56,32 @@ public class RequestFilter implements Filter {
             log.error("畅文全索请求发送通知失败", ex);
         }
         filterChain.doFilter(servletRequest, servletResponse);
+    }
+
+    private static String getIp(HttpServletRequest request) {
+        // nginx 代理获取的真实用户ip
+        String ip = request.getHeader("X-Real-IP");
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Forwarded-For");
+        }
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        /*
+          对于通过多个代理的情况， 第一个IP为客户端真实IP,多个IP按照','分割 "***.***.***.***".length() =
+          15
+         */
+        if (ip != null && ip.length() > 15) {
+            if (ip.indexOf(",") > 0) {
+                ip = ip.substring(0, ip.indexOf(","));
+            }
+        }
+        return ip;
     }
 }
