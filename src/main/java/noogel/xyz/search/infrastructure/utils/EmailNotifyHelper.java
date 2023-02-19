@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 @Slf4j
 public class EmailNotifyHelper {
@@ -49,7 +48,7 @@ public class EmailNotifyHelper {
      * @param subject
      * @param message
      */
-    public static void send(String subject, String message, Runnable successRunnable) {
+    public static void send(String subject, String message, Supplier<Boolean> sendCondition, Runnable successRunnable) {
         String url = EnvHelper.FuncEnv.NOTIFY.getEnv();
         if (StringUtils.isBlank(url)) {
             return;
@@ -59,6 +58,9 @@ public class EmailNotifyHelper {
             return;
         }
         CommonsConstConfig.SHORT_EXECUTOR_SERVICE.submit(()-> {
+            if (!sendCondition.get()) {
+                return;
+            }
             NotifyDto dto = NotifyDto.of(List.of(receivers), subject, message);
             try {
                 String str = OBJECT_MAPPER.writeValueAsString(dto);

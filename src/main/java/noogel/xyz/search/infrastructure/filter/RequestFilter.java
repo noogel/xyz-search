@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @Component
@@ -46,13 +48,16 @@ public class RequestFilter implements Filter {
             if (IP_TIME_MAP.containsKey(remoteIP) && nowTs - IP_TIME_MAP.get(remoteIP) < TIME_SHIFT) {
                 // x 时间内不重复通知，不随访问更新。
                 // IP_TIME_MAP.put(remoteIP, nowTs);
-                log.info("畅文全索请求更新，ip:{}， 访问路径：{} {}", remoteIP, req.getMethod(), req.getRequestURL());
+                log.info("畅文全索请求更新，ip:{}， 访问路径：{} {} 访问参数：{}", remoteIP, req.getMethod(),
+                        req.getRequestURL(), req.getParameterMap());
             } else {
                 String subject = "畅文:" + remoteIP;
                 String msg = String.format("畅文全索请求通知：<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-                                "新 IP:%s，访问时间：%s，访问路径：%s %s",
-                        remoteIP, LocalDateTime.now(), req.getMethod(), req.getRequestURL());
-                EmailNotifyHelper.send(subject, msg, () -> IP_TIME_MAP.put(remoteIP, nowTs));
+                                "新 IP:%s，访问时间：%s，访问路径：%s %s，访问参数：%s",
+                        remoteIP, LocalDateTime.now(), req.getMethod(), req.getRequestURL(), req.getParameterMap());
+                EmailNotifyHelper.send(subject, msg,
+                        ()-> !IP_TIME_MAP.containsKey(remoteIP),
+                        () -> IP_TIME_MAP.put(remoteIP, nowTs));
             }
         } catch (Exception ex) {
             log.error("畅文全索请求发送通知失败", ex);
