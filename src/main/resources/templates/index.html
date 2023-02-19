@@ -101,14 +101,14 @@
                                                     不限制
                                                 </label>
                                             </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resSize"
-                                                       id="resSizeLt1048576" value="LT:1048576"
-                                                       th:checked="(${result.paging.query.resSize} == 'LT:1048576') ? 'checked'">
-                                                <label class="form-check-label" for="resSizeLt1048576">
-                                                    小于 1MB
-                                                </label>
-                                            </div>
+<!--                                            <div class="form-check small">-->
+<!--                                                <input class="form-check-input" type="radio" name="resSize"-->
+<!--                                                       id="resSizeLt1048576" value="LT:1048576"-->
+<!--                                                       th:checked="(${result.paging.query.resSize} == 'LT:1048576') ? 'checked'">-->
+<!--                                                <label class="form-check-label" for="resSizeLt1048576">-->
+<!--                                                    小于 1MB-->
+<!--                                                </label>-->
+<!--                                            </div>-->
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="resSize"
                                                        id="resSizeLt10485760" value="LT:10485760"
@@ -125,14 +125,14 @@
                                                     小于 100MB
                                                 </label>
                                             </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resSize"
-                                                       id="resSizeGt1048576" value="GT:1048576"
-                                                       th:checked="(${result.paging.query.resSize} == 'GT:1048576') ? 'checked'">
-                                                <label class="form-check-label" for="resSizeGt1048576">
-                                                    大于 1MB
-                                                </label>
-                                            </div>
+<!--                                            <div class="form-check small">-->
+<!--                                                <input class="form-check-input" type="radio" name="resSize"-->
+<!--                                                       id="resSizeGt1048576" value="GT:1048576"-->
+<!--                                                       th:checked="(${result.paging.query.resSize} == 'GT:1048576') ? 'checked'">-->
+<!--                                                <label class="form-check-label" for="resSizeGt1048576">-->
+<!--                                                    大于 1MB-->
+<!--                                                </label>-->
+<!--                                            </div>-->
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="resSize"
                                                        id="resSizeGt10485760" value="GT:10485760"
@@ -170,14 +170,14 @@
                                                     一个月内
                                                 </label>
                                             </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="modifiedAt"
-                                                       id="latestModifiedAtLt6Month" value="GT:16070400"
-                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:16070400') ? 'checked'">
-                                                <label class="form-check-label" for="latestModifiedAtLt6Month">
-                                                    半年内
-                                                </label>
-                                            </div>
+<!--                                            <div class="form-check small">-->
+<!--                                                <input class="form-check-input" type="radio" name="modifiedAt"-->
+<!--                                                       id="latestModifiedAtLt6Month" value="GT:16070400"-->
+<!--                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:16070400') ? 'checked'">-->
+<!--                                                <label class="form-check-label" for="latestModifiedAtLt6Month">-->
+<!--                                                    半年内-->
+<!--                                                </label>-->
+<!--                                            </div>-->
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="modifiedAt"
                                                        id="latestModifiedAtGt7Day" value="LT:604800"
@@ -230,6 +230,14 @@
                                                        th:checked="(${result.paging.query.resType} == 'FILE:HTML') ? 'checked'">
                                                 <label class="form-check-label" for="resTypeAtHTML">
                                                     HTML
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resType"
+                                                       id="resTypeAtMP4" value="FILE:MP4"
+                                                       th:checked="(${result.paging.query.resType} == 'FILE:MP4') ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtMP4">
+                                                    MP4
                                                 </label>
                                             </div>
                                         </fieldset>

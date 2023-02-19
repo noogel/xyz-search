@@ -1,6 +1,5 @@
 package noogel.xyz.search.infrastructure.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
 import noogel.xyz.search.infrastructure.utils.IpUtils;
@@ -15,8 +14,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @Component

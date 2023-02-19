@@ -25,7 +25,7 @@ import java.util.zip.ZipFile;
 @Slf4j
 public class OTHERExtensionPointServiceImpl implements ExtensionPointService {
 
-    private static final Set<String> SUPPORT = Set.of("mobi", "azw3", "azw");
+    private static final Set<String> SUPPORT = Set.of("mobi", "azw3", "azw", "mp4");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;
