@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,6 +59,14 @@ public class RequestFilter implements Filter {
                         ()-> !HASH_TIME_MAP.containsKey(hashKey),
                         () -> HASH_TIME_MAP.put(hashKey, nowTs));
             }
+            HashMap<String, String> headers = new HashMap<>();
+            Enumeration<String> headerNames = req.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+                String headerName = headerNames.nextElement();
+                String headerValue = req.getHeader(headerName);
+                headers.put(headerName, headerValue);
+            }
+            log.info("request headers: {}", headers);
         } catch (Exception ex) {
             log.error("畅文全索请求发送通知失败", ex);
         }
