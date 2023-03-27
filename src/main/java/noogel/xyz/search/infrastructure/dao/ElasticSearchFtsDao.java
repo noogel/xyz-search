@@ -243,7 +243,15 @@ public class ElasticSearchFtsDao {
                         .query(queryDto.getSearch())
                         .analyzer("ik_smart")
                 )._toQuery();
-                builder.must(searchableText);
+                Query resName = MatchQuery.of(m -> m
+                        .field("resName")
+                        .query(queryDto.getSearch())
+                        .boost(10.f)
+                        .analyzer("ik_smart")
+                )._toQuery();
+                BoolQuery.Builder orSearch = new BoolQuery.Builder();
+                orSearch.should(searchableText, resName);
+                builder.must(l-> l.bool(orSearch.build()));
             }
             if (!StringUtils.isEmpty(queryDto.getResType())) {
                 Query resType = TermQuery.of(m -> m
