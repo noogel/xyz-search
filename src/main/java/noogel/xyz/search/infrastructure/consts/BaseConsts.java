@@ -8,7 +8,7 @@ public class BaseConsts {
     public static final String APPLICATION_ATOM_XML = "application/atom+xml";
     public static final String APPLICATION_ATOM_XML_FEED_CATALOG = "application/atom+xml;type=feed;profile=opds-catalog";
     public static final String FEED_TYPE = "atom_1.0";
-    public static final int DEFAULT_LIMIT = 20;
+    public static final int DEFAULT_LIMIT = 50;
 
     public static final String OPDS_TYPE_NAV = "nav";
     public static final String OPDS_TYPE_FILE = "file";
