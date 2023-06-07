@@ -1,15 +1,18 @@
 package noogel.xyz.search.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
-import noogel.xyz.search.infrastructure.dto.*;
+import noogel.xyz.search.infrastructure.consts.CustomContentTypeEnum;
 import noogel.xyz.search.infrastructure.dao.ElasticSearchFtsDao;
+import noogel.xyz.search.infrastructure.dto.*;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
 import noogel.xyz.search.service.SearchService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -21,6 +24,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class SearchServiceImpl implements SearchService {
 
     @Resource
@@ -29,7 +33,7 @@ public class SearchServiceImpl implements SearchService {
     private SearchPropertyConfig.SearchConfig searchConfig;
 
     @Override
-    public SearchResultShowDto search(SearchQueryDto query) {
+    public SearchResultShowDto pageSearch(SearchQueryDto query) {
         SearchResultDto result = dao.search(query);
         SearchResultShowDto showDto = new SearchResultShowDto();
         PagingDto pagingDto = PagingDto.of(query, result.getSize());
@@ -49,6 +53,43 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    public OPDSResultShowDto opdsSearch(SearchQueryDto query) {
+        SearchResultDto result = dao.search(query);
+        OPDSResultShowDto showDto = new OPDSResultShowDto();
+        showDto.setSize(Math.toIntExact(result.getSize()));
+        showDto.setExactSize(result.isExactSize());
+        showDto.setData(result.getData().stream().map(t -> {
+            File file = new File(t.calculateAbsolutePath());
+            if (!file.exists()) {
+                return null;
+            }
+            String contentType = "";
+            try {
+                contentType = Files.probeContentType(file.toPath());
+            } catch (IOException ignored) {
+            }
+            if (StringUtils.isBlank(contentType)) {
+                String[] tmp = t.getResName().split("\\.");
+                String ext = tmp[tmp.length-1];
+                contentType = CustomContentTypeEnum.findByExt(ext)
+                        .map(CustomContentTypeEnum::getContentType).orElse("");
+            }
+
+            OPDSItemShowDto dto = new OPDSItemShowDto();
+            dto.setResId(t.getResId());
+            dto.setResName(t.getResName());
+            dto.setResTitle(t.getResTitle());
+            dto.setResSize(t.getResSize());
+            dto.setModifiedAt(t.getModifiedAt());
+            dto.setSearchableText(t.getSearchableText());
+            dto.setResDir(t.getResDir());
+            dto.setContentType(contentType);
+            return dto;
+        }).filter(Objects::nonNull).collect(Collectors.toList()));
+        return showDto;
+    }
+
+    @Override
     public ResourcePageDto searchByResId(String resId, String search) {
         ResourceHighlightHitsDto dto = dao.searchByResId(resId, search);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(Objects.isNull(dto), "资源不存在");
@@ -61,8 +102,8 @@ public class SearchServiceImpl implements SearchService {
         page.calculateSearchableResTitle();
         page.setResSize(FileHelper.formatFileSize(t.getResSize()));
         page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
-        page.setRelativeResPath(t.calculateRelativePath(searchConfig.getSearchDirectories()));
-        page.setRelativeResDir(t.calculateRelativeDir(searchConfig.getSearchDirectories()));
+        page.setRelativeResPath(t.calculateRelativePath(searchConfig.getApp().getSearchDirectories()));
+        page.setRelativeResDir(t.calculateRelativeDir(searchConfig.getApp().getSearchDirectories()));
         page.setResType(t.getResType());
         page.setHighlightHtml(highlightHtml);
         File file = new File(t.calculateAbsolutePath());
@@ -85,6 +126,7 @@ public class SearchServiceImpl implements SearchService {
         dto.setResId(resId);
         dto.setResTitle(res.getResTitle());
         dto.setAbsolutePath(res.calculateAbsolutePath());
+        dto.setResDir(res.getResDir());
         return dto;
     }
 }

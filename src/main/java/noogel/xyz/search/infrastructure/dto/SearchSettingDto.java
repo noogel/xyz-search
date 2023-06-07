@@ -1,16 +1,17 @@
 package noogel.xyz.search.infrastructure.dto;
 
 import lombok.Data;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
 
 @Data
 public class SearchSettingDto {
-    private String elasticsearchHost;
-    private String elasticsearchUser;
-    private String elasticsearchPassword;
-    private String elasticsearchCAPath;
-    private String searchDirectories;
-    private String configFilePath;
-    private String ftsIndexName;
+    /**
+     * 账户名不可更新
+     */
     private String username;
     private String password;
+    private String appConfig;
+    private List<Pair<String, String>> configDesc;
 }

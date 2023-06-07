@@ -61,7 +61,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void asyncAll() {
-        List<String> paths = searchConfig.getSearchDirectories();
+        List<String> paths = searchConfig.getApp().getSearchDirectories();
         if (CollectionUtils.isEmpty(paths)) {
             return;
         }
@@ -78,7 +78,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         TaskDto taskDto = TaskDto.generateTask();
         for (String path : paths) {
             // 只允许索引配置的文件夹或子文件夹
-            boolean match = searchConfig.getSearchDirectories().stream().anyMatch(t -> t.startsWith(path));
+            boolean match = searchConfig.getApp().getSearchDirectories().stream().anyMatch(t -> t.startsWith(path));
             if (!match) {
                 log.info("asyncPath not Configured: {}", path);
                 continue;

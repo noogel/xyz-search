@@ -13,7 +13,11 @@ public class ResourceDownloadDto {
      */
     private String resTitle;
     /**
-     * 资源大小
+     * 资源位置
      */
     private String absolutePath;
+    /**
+     * 资源目录
+     */
+    private String resDir;
 }

@@ -49,7 +49,7 @@ public class SearchCtrl {
             query.setRelativeResDir(relativeResDir);
             query.setResId(resId);
         }
-        SearchResultShowDto result = searchService.search(query);
+        SearchResultShowDto result = searchService.pageSearch(query);
         mv.addObject("result", result);
         return mv;
     }

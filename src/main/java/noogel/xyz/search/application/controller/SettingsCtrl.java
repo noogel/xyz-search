@@ -22,15 +22,12 @@ public class SettingsCtrl {
     @Resource
     private SettingService settingService;
     @Resource
-    private SearchService searchService;
-    @Resource
     private SynchronizeService synchronizeService;
 
     @RequestMapping(value="/settings", method= RequestMethod.GET)
     public ModelAndView getSettings(){
         ModelAndView mv = new ModelAndView("settings");
         mv.addObject("env", EnvHelper.DEPLOY_ENV);
-        mv.addObject("env_ver", EnvHelper.DEPLOY_VER);
         mv.addObject("searchConfig", settingService.query());
         return mv;
     }
@@ -39,7 +36,6 @@ public class SettingsCtrl {
     public ModelAndView postSettings(SearchSettingDto cfg){
         ModelAndView mv = new ModelAndView("settings");
         mv.addObject("env", EnvHelper.DEPLOY_ENV);
-        mv.addObject("env_ver", EnvHelper.DEPLOY_VER);
         try {
             SearchSettingDto dto = settingService.update(cfg);
             mv.addObject("searchConfig", dto);

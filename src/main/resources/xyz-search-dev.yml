@@ -1,12 +1,14 @@
-elasticsearchHost: "http://localhost:9200"
-elasticsearchUser:
-elasticsearchPassword:
-elasticsearchCAPath:
-elasticsearchConnectionTimeout: 1000
-elasticsearchSocketTimeout: 5000
-searchDirectories:
-  - /home/xyz/DockerSharingData/TestSearch
-configFilePath:
-ftsIndexName: xyz_search
-username: xyz
-password: search
+base:
+  configFilePath:
+  ftsIndexName: xyz_search
+  username: xyz
+  password: search
+app:
+  elasticsearchHost: "http://localhost:9200"
+  elasticsearchUser:
+  elasticsearchPassword:
+  elasticsearchCAPath:
+  elasticsearchConnectionTimeout: 1000
+  elasticsearchSocketTimeout: 5000
+  searchDirectories:
+    - /home/xyz/DockerSharingData/TestSearch

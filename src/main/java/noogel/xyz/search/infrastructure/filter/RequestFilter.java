@@ -1,11 +1,13 @@
 package noogel.xyz.search.infrastructure.filter;
 
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
 import noogel.xyz.search.infrastructure.utils.IpUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -18,10 +20,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-@Component
+//@Component
 public class RequestFilter implements Filter {
     private static final Map<String, Long> HASH_TIME_MAP = new ConcurrentHashMap<>();
     private static final long TIME_SHIFT = 600 * 1000L; // 10 分钟
+
+    @Resource
+    private SearchPropertyConfig.SearchConfig searchConfig;
 
     @Scheduled(fixedRate = TIME_SHIFT * 144)
     public void removeExpiredRecord() {
@@ -55,7 +60,7 @@ public class RequestFilter implements Filter {
                 String msg = String.format("畅文全索请求通知：<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
                                 "新 IP:%s，访问时间：%s，访问路径：%s %s，访问参数：%s",
                         remoteIP, LocalDateTime.now(), req.getMethod(), req.getRequestURL(), req.getParameterMap());
-                EmailNotifyHelper.send(subject, msg,
+                EmailNotifyHelper.send(searchConfig.getApp(), subject, msg,
                         ()-> !HASH_TIME_MAP.containsKey(hashKey),
                         () -> HASH_TIME_MAP.put(hashKey, nowTs));
             }

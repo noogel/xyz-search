@@ -7,6 +7,8 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
     <script src="js/bootstrap.bundle.min.js"></script>
+    <link href="css/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="js/jsoneditor.min.js"></script>
     <script type="text/javascript">
         window.onload=function(){
             if (!judgeFalse([[${result?.show}]])) {
@@ -48,69 +50,9 @@
             </div>
         </div>
         <div class="col-12">
-            <h4 class="mb-3">设置</h4>
             <form id="searchSettingForm" class="needs-validation" novalidate="" action="/settings" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
                 <div class="row g-3">
-                    <div class="col-12">
-                        <label for="elasticsearchHost" class="form-label">Elasticsearch 地址
-                            <span class="text-muted" th:if="${env == 'docker' && env_ver >= 2}">（只读）</span></label>
-                        <div class="input-group has-validation">
-                            <span class="input-group-text">http[s]://</span>
-                            <input type="text" class="form-control" id="elasticsearchHost" name="elasticsearchHost"
-                                   th:readonly="${env == 'docker' && env_ver >= 2}"
-                                   placeholder="" required="" th:value="${searchConfig.elasticsearchHost}">
-                            <div class="invalid-feedback">
-                                Elasticsearch 地址不能为空
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="elasticsearchUser" class="form-label">Elasticsearch 用户名
-                            <span class="text-muted">（可选）</span>
-                            <span class="text-muted" th:if="${env == 'docker' && env_ver >= 2}">（只读）</span></label>
-                        <input type="text" class="form-control" id="elasticsearchUser" name="elasticsearchUser"
-                               th:readonly="${env == 'docker' && env_ver >= 2}"
-                               placeholder="elastic" th:value="${searchConfig.elasticsearchUser}">
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="elasticsearchPassword" class="form-label">Elasticsearch 密码
-                            <span class="text-muted">（可选）</span>
-                            <span class="text-muted" th:if="${env == 'docker' && env_ver >= 2}">（只读）</span></label>
-                        <input type="password" class="form-control" id="elasticsearchPassword" name="elasticsearchPassword"
-                               th:readonly="${env == 'docker' && env_ver >= 2}"
-                               placeholder="" th:value="${searchConfig.elasticsearchPassword}">
-                    </div>
-
-                    <div class="col-12">
-                        <label for="elasticsearchCAPath" class="form-label">Elasticsearch 证书路径
-                            <span class="text-muted">（可选）</span>
-                            <span class="text-muted" th:if="${env == 'docker' && env_ver >= 2}">（只读）</span></label>
-                        <div class="input-group has-validation">
-                            <input type="text" class="form-control" id="elasticsearchCAPath" name="elasticsearchCAPath"
-                                   th:readonly="${env == 'docker' && env_ver >= 2}"
-                                   placeholder="" th:value="${searchConfig.elasticsearchCAPath}">
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <label for="ftsIndexName" class="form-label">Elasticsearch 索引名称
-                            <span class="text-muted">（只读）</span></label>
-                        <input type="text" class="form-control" id="ftsIndexName" name="ftsIndexName"
-                               placeholder="" th:value="${searchConfig.ftsIndexName}" disabled>
-                    </div>
-
-                    <div class="col-12">
-                        <label for="searchDirectories" class="form-label">索引目录
-                            <span class="text-muted">（可选）</span><span class="text-muted" th:if="${env == 'docker'}">（只读）</span></label>
-                        <div class="input-group">
-                            <textarea class="form-control" id="searchDirectories" name="searchDirectories" th:readonly="${env == 'docker'}"
-                                      aria-label="With textarea" th:text="${searchConfig.searchDirectories}"></textarea>
-                        </div>
-                    </div>
-
                     <div class="col-sm-6">
                         <label for="username" class="form-label">登录名
                             <span class="text-muted">（只读）</span></label>
@@ -123,16 +65,12 @@
                         <input type="password" class="form-control" id="password" name="password"
                                placeholder="" th:value="${searchConfig.password}">
                     </div>
-
                     <div class="col-12">
-                        <label for="configFilePath" class="form-label">配置文件目录
-                            <span class="text-muted">（只读）</span></label>
-                        <input type="text" class="form-control" id="configFilePath" name="configFilePath"
-                               placeholder="" th:value="${searchConfig.configFilePath}" disabled>
+                        <label class="form-label">应用配置</label>
+                        <div id="jsoneditor" style="width: auto; height: 600px;"></div>
+                        <input type="hidden" id="appConfig" name="appConfig" th:value="${searchConfig.appConfig}">
                     </div>
-
                 </div>
-
                 <div class="row justify-content-end my-4">
                     <div class="col-auto">
                         <button class="btn btn-primary" type="submit">保存</button>
@@ -145,6 +83,33 @@
                     </div>
                     <div class="col-auto">
                         <button type="button" class="btn btn-success" onclick="fetch_data_post('/settings/data/sync', this)">更新索引</button>
+                    </div>
+                </div>
+                <div class="accordion" id="accordionExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                配置描述
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">[类型] 字段</th>
+                                            <th scope="col">描述</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="m:${searchConfig.configDesc}">
+                                            <td th:text="${m.left}"></td>
+                                            <td th:text="${m.right}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -186,5 +151,21 @@
         </div>
     </div>
 </div>
+<script>
+    // create the editor
+    const container = document.getElementById("jsoneditor")
+    const options = {
+        "mode": "code",
+        "indentation": 2,
+        "enableSort": false,
+        "enableTransform": false,
+        "onChange": () => {
+            document.querySelector("#appConfig").value = JSON.stringify(editor.get());
+        }
+    }
+    const editor = new JSONEditor(container, options)
+    editor.set(JSON.parse(document.querySelector("#appConfig").value));
+
+</script>
 </body>
 </html>

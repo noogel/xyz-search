@@ -5,13 +5,12 @@ import co.elastic.clients.transport.endpoints.BooleanResponse;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
-import noogel.xyz.search.infrastructure.config.SecurityConfig;
 import noogel.xyz.search.infrastructure.dto.SearchSettingDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
+import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.service.SettingService;
 import noogel.xyz.search.service.SynchronizeService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +22,6 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -43,48 +41,53 @@ public class SettingServiceImpl implements SettingService {
     @Override
     public SearchSettingDto query() {
         SearchSettingDto dto = new SearchSettingDto();
-        BeanUtils.copyProperties(searchConfig, dto, "searchDirectories", "elasticsearchHost");
-        dto.setElasticsearchHost(searchConfig.getElasticsearchHost().split("://")[1]);
-        dto.setSearchDirectories(String.join("\n", Optional.ofNullable(searchConfig.getSearchDirectories())
-                .orElse(Collections.emptyList())));
+        dto.setUsername(searchConfig.getBase().getUsername());
+        dto.setPassword(searchConfig.getBase().getPassword());
+        dto.setAppConfig(Optional.ofNullable(searchConfig.getApp()).map(JsonHelper::toJson).orElse("{}"));
+        dto.setConfigDesc(SearchPropertyConfig.AppConfig.getNotes());
         return dto;
     }
 
     @Override
     public SearchSettingDto update(SearchSettingDto cfg) {
-        SearchPropertyConfig.SearchConfig sc = validateAndCopyToNewConfig(cfg);
-        // 旧目录
-        List<String> oldDirList = new ArrayList<>(searchConfig.getSearchDirectories());
-        // 新增目录
-        List<String> newDirList = new ArrayList<>(sc.getSearchDirectories());
-        // 把新目录移除 = 剩下旧目录
-        oldDirList.removeAll(newDirList);
-        // 把旧目录移除 = 剩下新增的目录
-        newDirList.removeAll(searchConfig.getSearchDirectories());
+        SearchPropertyConfig.AppConfig newApp = validateAndCopyToNewConfig(cfg);
+        SearchPropertyConfig.AppConfig oldApp = searchConfig.getApp();
         // 判断是否需要更新密码
-        boolean updateUserPass = !Objects.equals(sc.getPassword(), searchConfig.getPassword());
-        // 拷贝到全局对象
-        BeanUtils.copyProperties(sc, searchConfig);
-        // 保存配置
+        boolean updateUserPass = !Objects.equals(cfg.getPassword(), searchConfig.getBase().getPassword());
+
+        // 设置并保存配置
+        searchConfig.setApp(newApp);
+        searchConfig.getBase().setPassword(cfg.getPassword());
         searchConfig.saveToFile();
+
         // 更新 es client bean
         elasticsearchConfig.reloadClient();
+
+        // 计算并更新目录
+        List<String> oldDirList = new ArrayList<>(oldApp.getSearchDirectories());
+        // 新增目录
+        List<String> newDirList = new ArrayList<>(newApp.getSearchDirectories());
+        // 把新目录移除 = 剩下旧目录
+        oldDirList.removeAll(newApp.getSearchDirectories());
+        // 把旧目录移除 = 剩下新增的目录
+        newDirList.removeAll(oldApp.getSearchDirectories());
+        // 如果有变化则更新
+        if (!CollectionUtils.isEmpty(oldDirList) || !CollectionUtils.isEmpty(newDirList)) {
+            // 同步新目录
+            synchronizeService.asyncAll();
+        }
         // 更新 密码
         if (updateUserPass) {
             updateUserPassword();
-        }
-        if (!CollectionUtils.isEmpty(oldDirList) && !CollectionUtils.isEmpty(newDirList)) {
-            // 同步新目录
-            synchronizeService.asyncAll();
         }
         return query();
     }
 
     @Override
     public boolean connectTesting(SearchSettingDto cfg) {
-        SearchPropertyConfig.SearchConfig sc = validateAndCopyToNewConfig(cfg);
+        SearchPropertyConfig.AppConfig appConfig = validateAndCopyToNewConfig(cfg);
         try {
-            ElasticsearchClient elasticsearchClient = elasticsearchConfig.genClient(sc);
+            ElasticsearchClient elasticsearchClient = elasticsearchConfig.genClient(appConfig);
             BooleanResponse ping = elasticsearchClient.ping();
             return ping.value();
         } catch (IOException e) {
@@ -93,23 +96,28 @@ public class SettingServiceImpl implements SettingService {
     }
 
     public void updateUserPassword() {
-        UserDetails user = User.withUsername(searchConfig.getUsername())
-                .password(passwordEncoder.encode(searchConfig.getPassword()))
+        UserDetails user = User.withUsername(searchConfig.getBase().getUsername())
+                .password(passwordEncoder.encode(searchConfig.getBase().getPassword()))
                 .roles("USER")
                 .build();
         inMemoryUserDetailsManager.updateUser(user);
     }
     /**
      * 校验并且拷贝到新的配置对象中
-     * @param cfg
+     * @param scr
      * @return
      */
-    public SearchPropertyConfig.SearchConfig validateAndCopyToNewConfig(SearchSettingDto cfg) {
+    public SearchPropertyConfig.AppConfig validateAndCopyToNewConfig(SearchSettingDto scr) {
+        SearchPropertyConfig.AppConfig cfg = JsonHelper.fromJson(scr.getAppConfig(),
+                SearchPropertyConfig.AppConfig.class);
+        ExceptionCode.CONFIG_ERROR.throwOn(Objects.isNull(cfg), "配置对象不能为空");
         // 校验数据
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(cfg.getElasticsearchHost()),
                 "Elasticsearch host 不能为空");
-        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(cfg.getPassword()),
+        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(scr.getPassword()),
                 "密码不能为空");
+        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isNotBlank(cfg.getNotifyUrl())
+                && CollectionUtils.isEmpty(cfg.getNotifyReceivers()), "邮件通知接收人不能为空");
         // 校验证书
         if (StringUtils.isNotBlank(cfg.getElasticsearchCAPath())) {
             File file = new File(cfg.getElasticsearchCAPath());
@@ -117,31 +125,14 @@ public class SettingServiceImpl implements SettingService {
                     String.format("证书文件 %s 不存在", cfg.getElasticsearchCAPath()));
         }
         // 校验目录
-        String dirs = Optional.ofNullable(cfg.getSearchDirectories()).orElse("");
-        List<String> searchDirectories = Arrays.stream(dirs.split("[\n, \r]"))
+        Optional.ofNullable(cfg.getSearchDirectories()).orElse(Collections.emptyList()).stream()
                 .filter(StringUtils::isNotBlank)
-                .peek(k -> {
+                .forEach(k -> {
                     File file = new File(k);
                     ExceptionCode.CONFIG_ERROR.throwOn(!file.exists() || !file.isDirectory(),
                             String.format("目录 %s 不存在", k));
-                }).collect(Collectors.toList());
+                });
 
-        // 更新数据
-        StringBuilder esHost = new StringBuilder("http");
-        if (StringUtils.isNotBlank(cfg.getElasticsearchCAPath())) {
-            esHost.append("s");
-        }
-        esHost.append("://").append(cfg.getElasticsearchHost());
-
-        SearchPropertyConfig.SearchConfig sc = new SearchPropertyConfig.SearchConfig();
-        BeanUtils.copyProperties(searchConfig, sc);
-        // 这里只设置需要更新的字段
-        sc.setElasticsearchHost(esHost.toString());
-        sc.setElasticsearchUser(cfg.getElasticsearchUser());
-        sc.setElasticsearchPassword(cfg.getElasticsearchPassword());
-        sc.setElasticsearchCAPath(cfg.getElasticsearchCAPath());
-        sc.setSearchDirectories(searchDirectories);
-        sc.setPassword(cfg.getPassword());
-        return sc;
+        return cfg;
     }
 }

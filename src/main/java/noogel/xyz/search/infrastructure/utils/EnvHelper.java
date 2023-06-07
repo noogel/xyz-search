@@ -19,11 +19,6 @@ public class EnvHelper {
     @Getter
     public enum FuncEnv {
         AUTH("是否开启鉴权", "true"),
-        NOTIFY("网站访问后邮件通知", ""),
-        /**
-         * 多条逗号分割
-         */
-        NOTIFY_RECEIVERS("通知邮件收件方", ""),
         ;
 
         private final String desc;

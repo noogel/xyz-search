@@ -1,12 +1,14 @@
-elasticsearchHost: "http://xyzEs:9200"
-elasticsearchUser:
-elasticsearchPassword:
-elasticsearchCAPath:
-elasticsearchConnectionTimeout: 6000
-elasticsearchSocketTimeout: 18000
-searchDirectories:
-  - /data/share
-configFilePath: /usr/share/xyz-search/data
-ftsIndexName: xyz_search
-username: xyz
-password: search
+base:
+  configFilePath: /usr/share/xyz-search/data
+  ftsIndexName: xyz_search
+  username: xyz
+  password: search
+app:
+  elasticsearchHost: "http://xyzEs:9200"
+  elasticsearchUser:
+  elasticsearchPassword:
+  elasticsearchCAPath:
+  elasticsearchConnectionTimeout: 6000
+  elasticsearchSocketTimeout: 18000
+  searchDirectories:
+    - /data/share

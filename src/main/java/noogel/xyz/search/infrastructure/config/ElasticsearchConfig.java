@@ -41,7 +41,7 @@ public class ElasticsearchConfig {
      * 重新创建客户端
      */
     public void reloadClient() {
-        client = genClient(searchConfig);
+        client = genClient(searchConfig.getApp());
     }
 
     /**
@@ -50,7 +50,7 @@ public class ElasticsearchConfig {
      */
     public ElasticsearchClient getClient() {
         if (Objects.isNull(client)) {
-            client = genClient(searchConfig);
+            client = genClient(searchConfig.getApp());
         }
         return client;
     }
@@ -60,7 +60,7 @@ public class ElasticsearchConfig {
      * @param sc
      * @return
      */
-    public ElasticsearchClient genClient(SearchPropertyConfig.SearchConfig sc) {
+    public ElasticsearchClient genClient(SearchPropertyConfig.AppConfig sc) {
 
         // Create the low-level client
         final RestClient restClient = RestClient

@@ -61,7 +61,7 @@ public class ElasticSearchFtsDao {
                                                 a.custom(l-> l.tokenizer("path_hierarchy"))))));
                 log.info("CreateIndexResponse delete: {}", response.acknowledged());
                 // 持久化配置
-                searchConfig.setInitIndex(true);
+                searchConfig.getRuntime().setInitIndex(true);
                 searchConfig.saveToFile();
             }
             return true;
@@ -76,13 +76,13 @@ public class ElasticSearchFtsDao {
      * @return
      */
     private String getIndexName() {
-        return searchConfig.getFtsIndexName();
+        return searchConfig.getBase().getFtsIndexName();
     }
 
     public boolean upsertData(ResourceModel model) {
         try {
             // 如果没有初始化索引，则创建。
-            if (!searchConfig.isInitIndex()) {
+            if (!searchConfig.getRuntime().isInitIndex()) {
                 createIndex(false);
             }
             /** Demo
@@ -227,7 +227,7 @@ public class ElasticSearchFtsDao {
 
     public SearchResultDto search(SearchBaseQueryDto queryDto) {
         // 如果没有初始化索引，则创建。
-        if (!searchConfig.isInitIndex()) {
+        if (!searchConfig.getRuntime().isInitIndex()) {
             createIndex(false);
         }
         // 执行搜索
