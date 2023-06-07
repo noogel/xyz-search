@@ -63,7 +63,7 @@ public class EpubViewCtrl {
         File targetFile = new File(targetFullPath);
 
         try (InputStream inputStream = new FileInputStream(targetFile)) {
-            String contentType = Files.probeContentType(targetFile.toPath());
+            String contentType = FileHelper.getContentType(targetFile);
             response.reset();
             response.setContentType(contentType);
             try (ServletOutputStream outputStream = response.getOutputStream()) {

@@ -3,6 +3,7 @@ package noogel.xyz.search.application.controller;
 import noogel.xyz.search.infrastructure.dto.ResourceDownloadDto;
 import noogel.xyz.search.infrastructure.dto.ResourcePageDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
+import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.UrlHelper;
 import noogel.xyz.search.service.SearchService;
 import org.springframework.stereotype.Controller;
@@ -12,8 +13,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 @Controller
 public class FileViewCtrl {
@@ -42,7 +44,7 @@ public class FileViewCtrl {
                 response.addHeader("Content-Disposition", "attachment; filename="
                         + UrlHelper.ct(downloadResource.getResTitle()));
             } else {
-                String contentType = Files.probeContentType(file.toPath());
+                String contentType = FileHelper.getContentType(file);
                 response.setContentType(contentType);
             }
             try (ServletOutputStream outputStream = response.getOutputStream()) {

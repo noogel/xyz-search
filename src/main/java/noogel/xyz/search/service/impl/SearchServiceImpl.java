@@ -3,7 +3,6 @@ package noogel.xyz.search.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
-import noogel.xyz.search.infrastructure.consts.CustomContentTypeEnum;
 import noogel.xyz.search.infrastructure.dao.ElasticSearchFtsDao;
 import noogel.xyz.search.infrastructure.dto.*;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
@@ -12,13 +11,10 @@ import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
 import noogel.xyz.search.service.SearchService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -63,17 +59,7 @@ public class SearchServiceImpl implements SearchService {
             if (!file.exists()) {
                 return null;
             }
-            String contentType = "";
-            try {
-                contentType = Files.probeContentType(file.toPath());
-            } catch (IOException ignored) {
-            }
-            if (StringUtils.isBlank(contentType)) {
-                String[] tmp = t.getResName().split("\\.");
-                String ext = tmp[tmp.length-1];
-                contentType = CustomContentTypeEnum.findByExt(ext)
-                        .map(CustomContentTypeEnum::getContentType).orElse("");
-            }
+            String contentType = FileHelper.getContentType(file);
 
             OPDSItemShowDto dto = new OPDSItemShowDto();
             dto.setResId(t.getResId());
@@ -108,14 +94,10 @@ public class SearchServiceImpl implements SearchService {
         page.setHighlightHtml(highlightHtml);
         File file = new File(t.calculateAbsolutePath());
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
-        try {
-            String contentType = Files.probeContentType(file.toPath());
-            page.setContentType(contentType);
-            String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
-            page.setSupportView(CommonsConstConfig.SUPPORT_VIEW_EXT.contains(fileExtension));
-        } catch (IOException e) {
-            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
-        }
+        String contentType = FileHelper.getContentType(file);
+        page.setContentType(contentType);
+        String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
+        page.setSupportView(CommonsConstConfig.SUPPORT_VIEW_EXT.contains(fileExtension));
         return page;
     }
 

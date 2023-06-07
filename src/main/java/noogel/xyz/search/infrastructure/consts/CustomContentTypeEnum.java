@@ -14,9 +14,11 @@ public enum CustomContentTypeEnum {
     TPZ("application-x-topaz-ebook"),
     AZW2("application-x-kindle-application"),
     AZW3("application-x-mobi8-ebook"),
+    EPUB("application/epub+zip"),
+    PDF("application/pdf"),
     ;
 
-    private String contentType;
+    private final String contentType;
 
     public static Optional<CustomContentTypeEnum> findByExt(String ext) {
         for (CustomContentTypeEnum value : values()) {

@@ -8,6 +8,7 @@ import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.consts.BaseConsts;
 import noogel.xyz.search.infrastructure.dto.*;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
+import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.OPDSHelper;
 import noogel.xyz.search.infrastructure.utils.UrlHelper;
 import noogel.xyz.search.service.SearchService;
@@ -24,9 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -142,14 +141,9 @@ public class OPDSCtrl {
             if (Objects.isNull(metaData)) {
                 return null;
             }
-            String coverContentType = "";
-            try {
-                String coverDir = metaData.getAbsoluteDir() + metaData.getCover();
-                File file = new File(coverDir);
-                coverContentType = Files.probeContentType(file.toPath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            String coverDir = metaData.getAbsoluteDir() + metaData.getCover();
+            File file = new File(coverDir);
+            String coverContentType = FileHelper.getContentType(file);
 
             SyndLink syndLinkAcqui = new SyndLinkImpl();
             syndLinkAcqui.setType(t.getContentType());
@@ -176,12 +170,16 @@ public class OPDSCtrl {
             SyndEntry syndEntry = new SyndEntryImpl();
             syndEntry.setTitle(metaData.getTitle());
             syndEntry.setAuthor(String.join("；", metaData.getCreator()));
-            syndEntry.setUpdatedDate(Date.from(Instant.ofEpochSecond(t.getModifiedAt())));
-            syndEntry.setPublishedDate(Date.from(Instant.ofEpochSecond(t.getModifiedAt())));
+            syndEntry.setUpdatedDate(Date.from(Instant.ofEpochMilli(t.getModifiedAt())));
+            syndEntry.setPublishedDate(Date.from(Instant.ofEpochMilli(t.getModifiedAt())));
             syndEntry.setLinks(List.of(syndLinkImageThum, syndLinkCover, syndLinkImage, syndLinkThum, syndLinkAcqui));
             Optional.ofNullable(metaData.getDescription()).filter(StringUtils::isNotBlank).ifPresent(l -> {
+                String lContent = l.replace("\n", " ");
+                if (l.length() > 100) {
+                    lContent = lContent.substring(0, 100) + "...";
+                }
                 SyndContent syndContent = new SyndContentImpl();
-                syndContent.setValue(l);
+                syndContent.setValue(lContent);
                 syndEntry.setContents(Collections.singletonList(syndContent));
             });
             return syndEntry;
@@ -196,13 +194,9 @@ public class OPDSCtrl {
     public void download(String resPath, String title, HttpServletResponse response) {
         File file = new File(resPath);
         String contentType = "application/octet-stream";
-        try {
-            String probeContentType = Files.probeContentType(file.toPath());
-            if (StringUtils.isNotBlank(probeContentType)) {
-                contentType = probeContentType;
-            }
-        } catch (IOException e) {
-            log.warn("resource get contentType error.", e);
+        String probeContentType = FileHelper.getContentType(file);
+        if (StringUtils.isNotBlank(probeContentType)) {
+            contentType = probeContentType;
         }
 
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");

@@ -1,12 +1,16 @@
 package noogel.xyz.search.infrastructure.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.consts.CustomContentTypeEnum;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +54,26 @@ public class FileHelper {
             extension = path.substring(i + 1).toLowerCase();
         }
         return extension.toLowerCase();
+    }
+
+    /**
+     * 计算 content type
+     * @param file
+     * @return
+     */
+    public static String getContentType(File file) {
+        String contentType = "";
+        try {
+            contentType = Files.probeContentType(file.toPath());
+        } catch (IOException ignored) {
+        }
+        if (StringUtils.isBlank(contentType)) {
+            String[] tmp = file.getAbsolutePath().split("\\.");
+            String ext = tmp[tmp.length-1];
+            contentType = CustomContentTypeEnum.findByExt(ext)
+                    .map(CustomContentTypeEnum::getContentType).orElse("");
+        }
+        return contentType;
     }
 
     /**
