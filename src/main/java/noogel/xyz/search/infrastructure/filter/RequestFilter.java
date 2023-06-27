@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-//@Component
+@Component
 public class RequestFilter implements Filter {
     private static final Map<String, Long> HASH_TIME_MAP = new ConcurrentHashMap<>();
     private static final long TIME_SHIFT = 600 * 1000L; // 10 分钟
