@@ -1,4 +1,4 @@
-FROM openjdk:17-alpine
+FROM ghcr.io/graalvm/graalvm-ce:22.3.1
 MAINTAINER noogel@163.com
 RUN mkdir -p /data/share /data/transfer /usr/share/xyz-search/data
 RUN mkdir -p /data/collect1 /data/collect2 /data/collect3

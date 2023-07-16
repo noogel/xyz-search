@@ -1,10 +1,11 @@
 package noogel.xyz.search.application.controller;
 
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.application.scheduler.CollectServiceScheduler;
 import noogel.xyz.search.infrastructure.dto.ModalInfoDto;
 import noogel.xyz.search.infrastructure.dto.SearchSettingDto;
 import noogel.xyz.search.infrastructure.utils.EnvHelper;
-import noogel.xyz.search.service.SearchService;
 import noogel.xyz.search.service.SettingService;
 import noogel.xyz.search.service.SynchronizeService;
 import org.springframework.stereotype.Controller;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.annotation.Resource;
 
 @Controller
 @Slf4j
@@ -23,6 +22,8 @@ public class SettingsCtrl {
     private SettingService settingService;
     @Resource
     private SynchronizeService synchronizeService;
+    @Resource
+    private CollectServiceScheduler collectServiceScheduler;
 
     @RequestMapping(value="/settings", method= RequestMethod.GET)
     public ModelAndView getSettings(){
@@ -57,6 +58,18 @@ public class SettingsCtrl {
         } catch (Exception ex) {
             log.error("dataSync", ex);
             return ModalInfoDto.ofErr("更新索引：" + ex.getMessage());
+        }
+    }
+
+    @RequestMapping(value="/settings/data/collect", method= RequestMethod.POST)
+    public @ResponseBody ModalInfoDto collectSync(){
+        try {
+            // 同步目录数据
+            collectServiceScheduler.asyncCollectFileIfNotExist();
+            return ModalInfoDto.ofOk("收集文件");
+        } catch (Exception ex) {
+            log.error("collectSync", ex);
+            return ModalInfoDto.ofErr("收集文件：" + ex.getMessage());
         }
     }
 

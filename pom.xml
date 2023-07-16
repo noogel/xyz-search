@@ -5,43 +5,49 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.4</version>
+        <version>3.1.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>noogel.xyz</groupId>
     <artifactId>xyz-search</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.3</version>
     <packaging>war</packaging>
     <name>xyz-search</name>
     <description>xyz-search</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>${java.specification.version}</java.version>
+        <maven.compiler.source>${java.specification.version}</maven.compiler.source>
+        <maven.compiler.target>${java.specification.version}</maven.compiler.target>
+        <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
+        <jakarta-json.version>2.1.2</jakarta-json.version>
+        <mainClass>noogel.xyz.search.MainApp</mainClass>
     </properties>
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-thymeleaf -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/ognl/ognl -->
         <dependency>
             <groupId>ognl</groupId>
             <artifactId>ognl</artifactId>
-            <!--不能升级，会报错-->
-            <version>3.1.15</version>
+            <version>3.3.4</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </exclusion>
-            </exclusions>
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.springframework.boot</groupId>-->
+<!--                    <artifactId>spring-boot-starter-tomcat</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jetty</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-jetty</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -50,11 +56,6 @@
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
             <version>8.4.3</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
-            <version>2.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -105,6 +106,28 @@
     </dependencies>
     <build>
         <plugins>
+<!--            <plugin>-->
+<!--                <groupId>org.graalvm.buildtools</groupId>-->
+<!--                <artifactId>native-maven-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    &lt;!&ndash; imageName is used to set the name of the generated binary file &ndash;&gt;-->
+<!--                    <imageName>${project.artifactId}</imageName>-->
+<!--                    &lt;!&ndash; mainClass is used to specify the path to the main method class &ndash;&gt;-->
+<!--                    <mainClass>${mainClass}</mainClass>-->
+<!--                    <buildArgs>-->
+<!--                        &#45;&#45;no-fallback-->
+<!--                    </buildArgs>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>build-native</id>-->
+<!--                        <goals>-->
+<!--                            <goal>compile-no-fork</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>package</phase>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -115,8 +138,8 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
-                    <outputDirectory>docker/dep2</outputDirectory>
                     <outputDirectory>docker/dep1</outputDirectory>
+<!--                    <outputDirectory>docker/native1</outputDirectory>-->
                     <includeSystemScope>true</includeSystemScope>
                 </configuration>
             </plugin>
@@ -124,8 +147,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>

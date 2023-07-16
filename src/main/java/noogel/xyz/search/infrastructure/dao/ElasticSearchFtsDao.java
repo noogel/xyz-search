@@ -8,6 +8,7 @@ import co.elastic.clients.elasticsearch.core.search.*;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.elasticsearch.indices.ForcemergeRequest;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
@@ -21,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -57,8 +57,8 @@ public class ElasticSearchFtsDao {
                         .settings(s ->
                                 s.analysis(k ->
                                         // 自定义路径分词工具
-                                        k.analyzer("path_tokenizer", a->
-                                                a.custom(l-> l.tokenizer("path_hierarchy"))))));
+                                        k.analyzer("path_tokenizer", a ->
+                                                a.custom(l -> l.tokenizer("path_hierarchy"))))));
                 log.info("CreateIndexResponse delete: {}", response.acknowledged());
                 // 持久化配置
                 searchConfig.getRuntime().setInitIndex(true);
@@ -73,6 +73,7 @@ public class ElasticSearchFtsDao {
 
     /**
      * 获取索引名称
+     *
      * @return
      */
     private String getIndexName() {
@@ -141,6 +142,27 @@ public class ElasticSearchFtsDao {
             GetResponse<ResourceModel> response = config.getClient().get(t -> t.index(getIndexName()).id(resId),
                     ResourceModel.class);
             return response.source();
+        } catch (Exception ex) {
+            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
+        }
+    }
+
+    public List<ResourceModel> findByResHash(String resHash) {
+        try {
+            Query query = TermQuery.of(m -> m.field("resHash").value(resHash))._toQuery();
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                    .index(getIndexName())
+                    .query(q -> q.bool(t -> t.must(query)))
+                    .source(l -> l.filter(m -> m.excludes("searchableText")))
+            );
+            SearchResponse<ResourceModel> search = config.getClient().search(searchRequest, ResourceModel.class);
+            List<Hit<ResourceModel>> hits = search.hits().hits();
+
+            List<ResourceModel> resp = new ArrayList<>();
+            for (Hit<ResourceModel> hit : hits) {
+                resp.add(hit.source());
+            }
+            return resp;
         } catch (Exception ex) {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
         }
@@ -251,7 +273,7 @@ public class ElasticSearchFtsDao {
                 )._toQuery();
                 BoolQuery.Builder orSearch = new BoolQuery.Builder();
                 orSearch.should(searchableText, resName);
-                builder.must(l-> l.bool(orSearch.build()));
+                builder.must(l -> l.bool(orSearch.build()));
             }
             if (!StringUtils.isEmpty(queryDto.getResType())) {
                 Query resType = TermQuery.of(m -> m

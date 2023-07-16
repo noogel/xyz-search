@@ -1,5 +1,6 @@
 package noogel.xyz.search.service.extension.impl;
 
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
@@ -14,7 +15,6 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.Optional;
 import java.util.Set;

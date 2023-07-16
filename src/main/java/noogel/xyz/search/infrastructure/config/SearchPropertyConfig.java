@@ -53,6 +53,12 @@ public class SearchPropertyConfig {
         private String notifyUrl;
         @ConfigNote(desc = "访问通知邮件接收人")
         private List<String> notifyReceivers;
+        @ConfigNote(desc = "资源收集来源目录")
+        private List<String> collectFromDirectories;
+        @ConfigNote(desc = "资源收集到的目录")
+        private String collectToDirectory;
+        @ConfigNote(desc = "资源收集过滤规则（正则）（可选）")
+        private String collectFilterRegex;
 
         public static AppConfig init() {
             AppConfig appConfig = new AppConfig();

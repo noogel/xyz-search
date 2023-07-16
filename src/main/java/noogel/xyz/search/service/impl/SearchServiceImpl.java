@@ -1,5 +1,6 @@
 package noogel.xyz.search.service.impl;
 
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
@@ -13,9 +14,9 @@ import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
 import noogel.xyz.search.service.SearchService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -99,6 +100,21 @@ public class SearchServiceImpl implements SearchService {
         String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
         page.setSupportView(CommonsConstConfig.SUPPORT_VIEW_EXT.contains(fileExtension));
         return page;
+    }
+
+    @Override
+    public List<ResourceSimpleDto> searchByResHash(String resHash) {
+        List<ResourceModel> models = dao.findByResHash(resHash);
+        return models.stream().map(t -> {
+            ResourceSimpleDto page = new ResourceSimpleDto();
+            page.setResId(t.getResId());
+            page.setResTitle(t.getResTitle());
+            page.calculateSearchableResTitle();
+            page.setResSize(String.format("%s | %s", FileHelper.formatFileSize(t.getResSize()),
+                    FileHelper.formatFileSize(t.getTextSize())));
+            page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
+            return page;
+        }).collect(Collectors.toList());
     }
 
     @Override

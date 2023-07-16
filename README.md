@@ -101,3 +101,39 @@ https://levelup.gitconnected.com/how-to-run-elasticsearch-8-on-docker-for-local-
 
 
 docker run -d --name xyzEs3 --network xyz-bridge-net -p 9300:9300 -p 9200:9200 -v /home/xyz/DockerSharingData/xyzEs3:/usr/share/elasticsearch/data elasticsearch:8.4.3
+
+
+构建命令：
+
+docker build -t xyz-search:1.0.3 .
+docker tag xyz-search:1.0.3 noogel/xyz-search:1.0.3
+docker tag xyz-search:1.0.3 10.168.1.102:8111/noogel/xyz-search:1.0.3
+
+一键构建：
+mvn clean package && cd docker/dep1 && docker build -t xyz-search:1.0.3 . && docker tag xyz-search:1.0.3 10.168.1.102:8111/noogel/xyz-search:1.0.3 && cd ../../
+mvn clean package && cd docker/dep1 && docker build -t xyz-search:1.0.3 . && docker tag xyz-search:1.0.3 noogel/xyz-search:1.0.3 && cd ../../
+
+发布命令：
+
+docker push 10.168.1.102:8111/noogel/xyz-search:1.0.3
+docker push noogel/xyz-search:1.0.3
+
+
+拉取命令：
+
+docker pull 10.168.1.102:8111/noogel/xyz-search:1.0.3
+docker pull noogel/xyz-search:1.0.3
+
+测试启动：
+
+docker run -d --restart=always --name xyzSearch --network xyz-bridge-net -p 8081:8081 \
+-v /home/xyz/DockerSharingData/xyzSearch/searchData:/usr/share/xyz-search/data \
+-v /home/xyz/DockerSharingData/TestSearch:/data/share \
+xyz-search:1.0.3
+
+
+## 变更记录
+
+升级 spring boot 3.x
+https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide
+https://docs.spring.io/spring-boot/docs/current/reference/html/native-image.html

@@ -10,10 +10,10 @@ public class CommonsConstConfig {
     public static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
     public static final ExecutorService SHORT_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
     public static final ExecutorService MULTI_EXECUTOR_SERVICE = Executors.newWorkStealingPool(
-            Math.max(1, Runtime.getRuntime().availableProcessors() / 2)
+            Math.max(1, Runtime.getRuntime().availableProcessors() / 4)
     );
     public static final ScheduledExecutorService COMMON_SCHEDULED_SERVICE = Executors.newScheduledThreadPool(
-            Math.max(1, Runtime.getRuntime().availableProcessors() / 2)
+            Math.max(1, Runtime.getRuntime().availableProcessors() / 4)
     );
     public static final ScheduledExecutorService DELAY_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
 

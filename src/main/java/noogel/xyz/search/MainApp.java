@@ -6,9 +6,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-public class XyzSearchApplication {
+public class MainApp {
 
     public static void main(String[] args) {
-        SpringApplication.run(XyzSearchApplication.class, args);
+        SpringApplication.run(MainApp.class, args);
     }
 }

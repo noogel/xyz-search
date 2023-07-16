@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +18,6 @@ import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.net.ssl.SSLContext;
 import java.io.InputStream;
 import java.nio.file.Files;

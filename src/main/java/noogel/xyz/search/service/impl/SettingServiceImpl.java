@@ -2,15 +2,17 @@ package noogel.xyz.search.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.dto.SearchSettingDto;
+import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.service.SettingService;
-import noogel.xyz.search.service.SynchronizeService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,10 +20,12 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -30,13 +34,14 @@ public class SettingServiceImpl implements SettingService {
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
     @Resource
-    private SynchronizeService synchronizeService;
-    @Resource
     private ElasticsearchConfig elasticsearchConfig;
     @Resource
     private InMemoryUserDetailsManager inMemoryUserDetailsManager;
     @Resource
     private PasswordEncoder passwordEncoder;
+    @Resource
+    private ApplicationEventPublisher publisher;
+
 
     @Override
     public SearchSettingDto query() {
@@ -63,23 +68,12 @@ public class SettingServiceImpl implements SettingService {
         // 更新 es client bean
         elasticsearchConfig.reloadClient();
 
-        // 计算并更新目录
-        List<String> oldDirList = new ArrayList<>(oldApp.getSearchDirectories());
-        // 新增目录
-        List<String> newDirList = new ArrayList<>(newApp.getSearchDirectories());
-        // 把新目录移除 = 剩下旧目录
-        oldDirList.removeAll(newApp.getSearchDirectories());
-        // 把旧目录移除 = 剩下新增的目录
-        newDirList.removeAll(oldApp.getSearchDirectories());
-        // 如果有变化则更新
-        if (!CollectionUtils.isEmpty(oldDirList) || !CollectionUtils.isEmpty(newDirList)) {
-            // 同步新目录
-            synchronizeService.asyncAll();
-        }
         // 更新 密码
         if (updateUserPass) {
             updateUserPassword();
         }
+        // 发布事件
+        publisher.publishEvent(ConfigAppUpdateEvent.of(this, oldApp, newApp));
         return query();
     }
 
@@ -132,7 +126,10 @@ public class SettingServiceImpl implements SettingService {
                     ExceptionCode.CONFIG_ERROR.throwOn(!file.exists() || !file.isDirectory(),
                             String.format("目录 %s 不存在", k));
                 });
-
+        if (StringUtils.isNotBlank(cfg.getCollectFilterRegex())) {
+            // 检查是否可编译
+            Pattern.compile(cfg.getCollectFilterRegex());
+        }
         return cfg;
     }
 }

@@ -1,9 +1,11 @@
 package noogel.xyz.search.service.impl;
 
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.dao.ElasticSearchFtsDao;
+import noogel.xyz.search.infrastructure.dto.SearchBaseQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
@@ -13,11 +15,7 @@ import noogel.xyz.search.service.extension.ExtensionPointService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.io.File;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,25 +32,6 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     private ElasticSearchFtsDao ftsDao;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
-
-    @PostConstruct
-    public void init() {
-        // 执行时间点
-        long dailyRunAt = 5 * 60 * 60;
-        // 一天时间
-        long oneDay = 24 * 60 * 60;
-        // 今天已经过去多久
-        long todayPast = LocalDateTime.now().getHour() * 3600 + LocalDateTime.now().getMinute() * 60 + LocalDateTime.now().getSecond();
-        long initialDelay = todayPast > dailyRunAt ? (oneDay - todayPast + dailyRunAt) : (dailyRunAt - todayPast);
-        log.info("auto forceMerge runDelay {}ms", initialDelay);
-        // 定时执行
-        CommonsConstConfig.COMMON_SCHEDULED_SERVICE.scheduleAtFixedRate(
-                ()-> ftsDao.forceMerge(),
-                initialDelay,
-                oneDay,
-                TimeUnit.SECONDS
-        );
-    }
 
     @Override
     public void async(List<String> paths) {
@@ -71,6 +50,28 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Override
     public boolean resetIndex() {
         return ftsDao.createIndex(true);
+    }
+
+    @Override
+    public void appendFiles(List<File> files) {
+        // 随机获取一个 task 数据
+        SearchBaseQueryDto queryDto = new SearchBaseQueryDto();
+        queryDto.setLimit(1);
+        SearchResultDto search = ftsDao.search(queryDto);
+        TaskDto taskDto = search.getData().stream().map(t -> {
+            TaskDto dto = new TaskDto();
+            dto.setTaskId(t.getTaskId());
+            dto.setTaskOpAt(t.getTaskOpAt());
+            return dto;
+        }).findFirst().orElse(TaskDto.generateTask());
+        List<CompletableFuture<Void>> subResFutureList = new ArrayList<>();
+        // 添加执行
+        for (File file : files) {
+            subResFutureList.add(CompletableFuture.runAsync(()-> this.processFile(file, taskDto),
+                    CommonsConstConfig.MULTI_EXECUTOR_SERVICE));
+        }
+        // 并发阻塞
+        CompletableFuture.allOf(subResFutureList.toArray(CompletableFuture[]::new)).join();
     }
 
 

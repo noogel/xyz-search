@@ -1,19 +1,18 @@
 package noogel.xyz.search.service.extension.impl;
 
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
-import noogel.xyz.search.infrastructure.utils.FileHelper;
-import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import javax.annotation.Resource;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
 @Service

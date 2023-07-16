@@ -2,6 +2,8 @@ package noogel.xyz.search.service;
 
 import noogel.xyz.search.infrastructure.dto.*;
 
+import java.util.List;
+
 public interface SearchService {
     /**
      * 主页面搜索
@@ -24,6 +26,13 @@ public interface SearchService {
      * @return
      */
     ResourcePageDto searchByResId(String resId, String search);
+
+    /**
+     * 根据文件 MD5 搜索
+     * @param resHash
+     * @return
+     */
+    List<ResourceSimpleDto> searchByResHash(String resHash);
 
     /**
      * 获取资源下载信息

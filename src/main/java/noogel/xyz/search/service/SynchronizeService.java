@@ -1,7 +1,7 @@
 package noogel.xyz.search.service;
 
+import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 public interface SynchronizeService {
     /**
@@ -19,4 +19,10 @@ public interface SynchronizeService {
      * 重置索引
      */
     boolean resetIndex();
+
+    /**
+     * 追加文件
+     * @param files
+     */
+    void appendFiles(List<File> files);
 }

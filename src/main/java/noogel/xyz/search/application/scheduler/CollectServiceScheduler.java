@@ -1,0 +1,199 @@
+package noogel.xyz.search.application.scheduler;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.dto.ResourceSimpleDto;
+import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
+import noogel.xyz.search.infrastructure.utils.MD5Helper;
+import noogel.xyz.search.service.SearchService;
+import noogel.xyz.search.service.SynchronizeService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+@Service
+@Slf4j
+public class CollectServiceScheduler {
+    private static final DateTimeFormatter AUTO_COLLECT_FORMATTER = DateTimeFormatter.ofPattern("yyyy年MM月");
+    private static final AtomicInteger TRANSFER_RUNNING_COUNT = new AtomicInteger();
+    private Pattern PATTERN = null;
+
+    @Resource
+    private SearchPropertyConfig.SearchConfig searchConfig;
+    @Resource
+    private SearchService searchService;
+    @Resource
+    private SynchronizeService synchronizeService;
+
+
+    @PostConstruct
+    public void init() {
+        // 初始化正则匹配器
+        String collectFilterRegex = searchConfig.getApp().getCollectFilterRegex();
+        if (StringUtils.isNotBlank(collectFilterRegex)) {
+            PATTERN = Pattern.compile(collectFilterRegex);
+        }
+    }
+
+    @EventListener(ConfigAppUpdateEvent.class)
+    public void configAppUpdate(ConfigAppUpdateEvent event) {
+        // 更新正则匹配器
+        String oldRegex = event.getOldApp().getCollectFilterRegex();
+        String newRegex = event.getNewApp().getCollectFilterRegex();
+        if (!Objects.equals(oldRegex, newRegex)) {
+            if (StringUtils.isBlank(newRegex)) {
+                PATTERN = null;
+            } else {
+                PATTERN = Pattern.compile(newRegex);
+            }
+        }
+    }
+
+    /**
+     * 转移收集的文件
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    public void asyncCollectFileIfNotExist() {
+        CommonsConstConfig.EXECUTOR_SERVICE.submit(this::syncCollectFileIfNotExist);
+    }
+
+    public void syncCollectFileIfNotExist() {
+        try {
+            if (TRANSFER_RUNNING_COUNT.incrementAndGet() > 1) {
+                log.warn("transferFileIfNotExist already running {}.", TRANSFER_RUNNING_COUNT.get());
+                return;
+            }
+            SearchPropertyConfig.AppConfig app = searchConfig.getApp();
+            List<String> collectFromDirectories = app.getCollectFromDirectories();
+            String collectToDirectory = app.getCollectToDirectory();
+            File toDir;
+            // 检查配置
+            if (CollectionUtils.isEmpty(collectFromDirectories)
+                    || StringUtils.isEmpty(collectToDirectory)
+                    || Objects.isNull(PATTERN)
+                    || !((new File(collectToDirectory)).exists())) {
+                log.info("transferFileIfNotExist config empty or notExist.");
+                return;
+            }
+            // 获取或创建子目录
+            toDir = getOrMkCollectToSubDir(collectToDirectory);
+            // 遍历目录，转移资源
+            Optional.of(collectFromDirectories).orElse(Collections.emptyList()).forEach(from -> {
+                File fromDir;
+                if (!(fromDir = new File(from)).exists()) {
+                    log.info("transferFileIfNotExist fromDir notExist.");
+                }
+                // 拷贝文件
+                List<File> files = copyFilesFromSource(fromDir, toDir);
+                // 同步到 ES
+                synchronizeService.appendFiles(files);
+            });
+            log.info("transferFileIfNotExist run complete.");
+        } finally {
+            TRANSFER_RUNNING_COUNT.decrementAndGet();
+        }
+    }
+
+    /**
+     * 获取或创建目标子目录
+     *
+     * @param collectToDirectory
+     * @return
+     */
+    private File getOrMkCollectToSubDir(String collectToDirectory) {
+        File toDir;
+        // 创建子目录
+        String subDir = LocalDateTime.now().format(AUTO_COLLECT_FORMATTER);
+        if (!collectToDirectory.endsWith("/")) {
+            collectToDirectory += "/";
+        }
+        collectToDirectory += subDir;
+        if (!(toDir = new File(collectToDirectory)).exists()) {
+            if (toDir.mkdir()) {
+                log.info("transferFileIfNotExist mkdir success {}.", collectToDirectory);
+            } else {
+                log.info("transferFileIfNotExist mkdir fail {}.", collectToDirectory);
+            }
+        }
+        return toDir;
+    }
+
+    /**
+     * 拷贝文件
+     *
+     * @param sourceDir
+     * @param targetDir
+     */
+    private List<File> copyFilesFromSource(File sourceDir, File targetDir) {
+        List<File> sourceFiles = new ArrayList<>();
+        // 遍历文件和文件夹
+        // regex filters
+        for (File file : Optional.ofNullable(sourceDir.listFiles()).map(Arrays::asList).orElse(Collections.emptyList())) {
+            if (file.exists() && file.isFile()
+                    && PATTERN.matcher(file.getAbsolutePath()).find()) {
+                sourceFiles.add(file);
+            }
+        }
+
+        log.info("collectNeedFiles source files:{}", sourceFiles.stream()
+                .map(String::valueOf).collect(Collectors.joining(";")));
+
+        List<File> realTargetFiles = new ArrayList<>();
+        // 1. 检查文件是否存在 es, md5 去重。
+        // 2. 复制文件。
+        // 3. 主动添加到 es。
+        for (File sourceFile : sourceFiles) {
+            String targetPath = targetDir.getAbsolutePath();
+            String targetName = sourceFile.getName();
+            long sourceFileLength = sourceFile.length();
+            File targetFile = new File(String.format("%s/%s", targetPath, targetName));
+            int nameFlag = 0;
+            // 目标文件名存在
+            while (targetFile.exists()) {
+                long toFileLength = targetFile.length();
+                // 大小一样 则跳过
+                if (sourceFileLength == toFileLength) {
+                    targetFile = null;
+                    break;
+                }
+                nameFlag++;
+                targetFile = new File(String.format("%s/(%s)%s", targetPath, nameFlag, targetName));
+            }
+            // 目标文件不存在
+            if (Objects.nonNull(targetFile)) {
+                // 计算原始文件是否存在 ES
+                String fromMD5 = MD5Helper.getMD5(sourceFile);
+                List<ResourceSimpleDto> esData = searchService.searchByResHash(fromMD5);
+                if (!CollectionUtils.isEmpty(esData)) {
+                    log.info("transferFiles file exist {} md5:{}", sourceFile.getAbsolutePath(), fromMD5);
+                    continue;
+                }
+                // 拷贝文件
+                try {
+                    Files.copy(sourceFile.toPath(), targetFile.toPath());
+                    log.info("transferFile ok {}", sourceFile);
+                    // 添加到回填对象
+                    realTargetFiles.add(targetFile);
+                } catch (IOException e) {
+                    log.error("transferFile error {}", sourceFile);
+                }
+            }
+        }
+        return realTargetFiles;
+    }
+}

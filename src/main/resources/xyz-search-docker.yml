@@ -12,3 +12,4 @@ app:
   elasticsearchSocketTimeout: 18000
   searchDirectories:
     - /data/share
+  collectFilterRegex: \.(pdf|PDF)
