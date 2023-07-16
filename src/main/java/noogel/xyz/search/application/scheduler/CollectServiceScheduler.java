@@ -7,6 +7,7 @@ import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.dto.ResourceSimpleDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
+import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.SearchService;
 import noogel.xyz.search.service.SynchronizeService;
@@ -143,7 +144,7 @@ public class CollectServiceScheduler {
         List<File> sourceFiles = new ArrayList<>();
         // 遍历文件和文件夹
         // regex filters
-        for (File file : Optional.ofNullable(sourceDir.listFiles()).map(Arrays::asList).orElse(Collections.emptyList())) {
+        for (File file : FileHelper.parseAllSubFiles(sourceDir)) {
             if (file.exists() && file.isFile()
                     && PATTERN.matcher(file.getAbsolutePath()).find()) {
                 sourceFiles.add(file);
