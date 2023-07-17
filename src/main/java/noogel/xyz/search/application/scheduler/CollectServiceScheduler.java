@@ -68,7 +68,7 @@ public class CollectServiceScheduler {
     /**
      * 转移收集的文件
      */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 12 * * *")
     public void asyncCollectFileIfNotExist() {
         CommonsConstConfig.EXECUTOR_SERVICE.submit(this::syncCollectFileIfNotExist);
     }
