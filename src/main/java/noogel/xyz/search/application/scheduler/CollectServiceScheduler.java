@@ -142,7 +142,7 @@ public class CollectServiceScheduler {
      */
     private List<File> copyFilesFromSource(File sourceDir, File targetDir) {
         List<File> sourceFiles = new ArrayList<>();
-        List<File> excludeFiles = new ArrayList<>();
+        List<String> excludeFiles = new ArrayList<>();
         // 遍历文件和文件夹
         // regex filters
         for (File file : FileHelper.parseAllSubFiles(sourceDir)) {
@@ -150,11 +150,12 @@ public class CollectServiceScheduler {
                     && PATTERN.matcher(file.getAbsolutePath()).find()) {
                 sourceFiles.add(file);
             } else {
-                excludeFiles.add(file);
+                excludeFiles.add(String.format("%s %s %s %s", file, file.exists(),
+                        file.isFile(), PATTERN.matcher(file.getAbsolutePath()).find()));
             }
         }
         // add logs
-        log.info("collectNeedFiles sourceFiles:{}\ncollectNeedFiles excludeFiles:{}",
+        log.info("collectNeedFiles sourceFiles:\n{}\ncollectNeedFiles excludeFiles:\n{}",
                 sourceFiles.stream().map(String::valueOf).collect(Collectors.joining("\n")),
                 excludeFiles.stream().map(String::valueOf).collect(Collectors.joining("\n"))
         );
