@@ -205,7 +205,7 @@ public class OPDSCtrl {
             response.setContentType(contentType);
             response.addHeader("Content-Length", String.valueOf(file.length()));
             response.addHeader("Content-Disposition", "attachment; filename=\""
-                    + title.replaceAll("[;='\"]", "_")
+                    + UrlHelper.ct(title.replaceAll("[;='\"]", "_"))
                     + "\"; filename*=utf-8''"
                     + UrlHelper.ct(title));
 
