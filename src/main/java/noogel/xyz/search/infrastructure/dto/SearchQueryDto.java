@@ -3,6 +3,7 @@ package noogel.xyz.search.infrastructure.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 import static noogel.xyz.search.infrastructure.utils.UrlHelper.ct;
 
@@ -12,11 +13,34 @@ import static noogel.xyz.search.infrastructure.utils.UrlHelper.ct;
 public class SearchQueryDto extends SearchBaseQueryDto {
     private String relativeResDir;
     private String resId;
+    private String orderType;
 
     public String getUrlQuery(long offset) {
-        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s&relativeResDir=%s&resType=%s",
+        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s&relativeResDir=%s&resType=%s&orderType=%s",
                 ct(getSearch()), ct(resId), ct(getResSize()), ct(getModifiedAt()),
-                ct(getLimit()), ct(offset), ct(relativeResDir), ct(getResType()));
+                ct(getLimit()), ct(offset), ct(relativeResDir), ct(getResType()), ct(orderType));
+    }
+
+    public static boolean indexEmptySearch(SearchQueryDto dto) {
+        return StringUtils.isEmpty(dto.getSearch())
+                && StringUtils.isEmpty(dto.getResDirPrefix())
+                && StringUtils.isEmpty(dto.getResSize())
+                && StringUtils.isEmpty(dto.getModifiedAt())
+                && StringUtils.isEmpty(dto.getResType())
+                && StringUtils.isEmpty(dto.getOrderType());
+    }
+
+    public static boolean indexLatestSearch(SearchQueryDto dto) {
+        return StringUtils.isEmpty(dto.getSearch())
+                && StringUtils.isEmpty(dto.getResDirPrefix())
+                && StringUtils.isEmpty(dto.getResSize())
+                && StringUtils.isEmpty(dto.getModifiedAt())
+                && StringUtils.isEmpty(dto.getResType())
+                && "latest".equals(dto.getOrderType());
+    }
+
+    public static boolean dirEmptySearch(SearchQueryDto dto) {
+        return StringUtils.isEmpty(dto.getSearch()) && StringUtils.isNotEmpty(dto.getResDirPrefix());
     }
 
 }
