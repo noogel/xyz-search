@@ -241,30 +241,6 @@
                                                 </label>
                                             </div>
                                         </fieldset>
-
-                                    </div>
-                                    <div class="col-auto">
-
-                                        <fieldset>
-                                            <legend>排序方式</legend>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="orderType"
-                                                       id="orderRandom" value=""
-                                                       th:checked="${#strings.isEmpty(result.paging.query.orderType)} ? 'checked'">
-                                                <label class="form-check-label" for="orderRandom">
-                                                    默认排序
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="orderType"
-                                                       id="orderLatest" value="latest"
-                                                       th:checked="(${result.paging.query.orderType} == 'latest') ? 'checked'">
-                                                <label class="form-check-label" for="orderLatest">
-                                                    最近更新
-                                                </label>
-                                            </div>
-                                        </fieldset>
-
                                     </div>
                                 </div>
                             </div>
@@ -309,7 +285,7 @@
                 </table>
 
                 <!-- 分页 -->
-                <nav aria-label="...">
+                <nav aria-label="..." th:if="${random} != 'true'">
                     <ul class="pagination justify-content-center">
                         <li class="page-item">
                             <a class="page-link" th:href="'/?' + ${result.paging.getStartPageQuery()}">首页</a></li>
@@ -420,6 +396,7 @@
             <footer class="py-3 my-4">
                 <ul class="nav justify-content-center border-bottom pb-3 mb-3">
                     <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
+                    <li class="nav-item"><a href="/?random=true" class="nav-link px-2 text-muted">随机</a></li>
                     <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
                     <li class="nav-item"><a href="/logout" class="nav-link px-2 text-muted">登出</a></li>
                 </ul>
