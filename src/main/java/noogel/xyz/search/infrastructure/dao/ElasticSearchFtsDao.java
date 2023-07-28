@@ -8,6 +8,7 @@ import co.elastic.clients.elasticsearch.core.search.*;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.elasticsearch.indices.ForcemergeRequest;
+import co.elastic.clients.util.ObjectBuilder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
@@ -24,9 +25,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 @Repository
@@ -187,14 +186,7 @@ public class ElasticSearchFtsDao {
                             .size(100),
                     ResourceModel.class);
 
-            TotalHits total = search.hits().total();
-            resp.setExactSize(total.relation() == TotalHitsRelation.Eq);
-            resp.setSize(total.value());
-
-            List<Hit<ResourceModel>> hits = search.hits().hits();
-            for (Hit<ResourceModel> hit : hits) {
-                resp.getData().add(hit.source());
-            }
+            parseSearchResult(resp, search);
         } catch (IOException ex) {
             log.error("searchOldRes err", ex);
         }
@@ -257,77 +249,104 @@ public class ElasticSearchFtsDao {
         resp.setData(new ArrayList<>());
 
         try {
-            BoolQuery.Builder builder = new BoolQuery.Builder();
-
-            if (!StringUtils.isEmpty(queryDto.getSearch())) {
-                Query searchableText = MatchQuery.of(m -> m
-                        .field("searchableText")
-                        .query(queryDto.getSearch())
-                        .analyzer("ik_smart")
-                )._toQuery();
-                Query resName = MatchQuery.of(m -> m
-                        .field("resName")
-                        .query(queryDto.getSearch())
-                        .boost(10.f)
-                        .analyzer("ik_smart")
-                )._toQuery();
-                BoolQuery.Builder orSearch = new BoolQuery.Builder();
-                orSearch.should(searchableText, resName);
-                builder.must(l -> l.bool(orSearch.build()));
-            }
-            if (!StringUtils.isEmpty(queryDto.getResType())) {
-                Query resType = TermQuery.of(m -> m
-                        .field("resType")
-                        .value(queryDto.getResType())
-                )._toQuery();
-                builder.must(resType);
-            }
-            if (!StringUtils.isEmpty(queryDto.getResDirPrefix())) {
-                Query resId = TermQuery.of(m -> m
-                        .field("resDir")
-                        .value(queryDto.getResDirPrefix())
-                )._toQuery();
-                builder.must(resId);
-            }
-            if (!StringUtils.isEmpty(queryDto.getResSize())) {
-                Query resSize = ElasticSearchQueryHelper.buildRangeQuery("resSize", queryDto.getResSize(), t -> t);
-                builder.must(resSize);
-            }
-            if (!StringUtils.isEmpty(queryDto.getModifiedAt())) {
-                Function<String, String> fn = (t) -> String.valueOf(Instant.now().getEpochSecond() - Long.parseLong(t));
-                Query modifiedAt = ElasticSearchQueryHelper.buildRangeQuery("modifiedAt",
-                        queryDto.getModifiedAt(), fn);
-                builder.must(modifiedAt);
-            }
             SearchRequest searchRequest = SearchRequest.of(s -> s.index(getIndexName())
-                    .query(q -> q.functionScore(r -> {
-                        if (queryDto.emptyQuery()) {
-                            return r.query(t -> t.matchAll(k -> k))
-                                    .functions(FunctionScore.of(l -> l.randomScore(m -> m)));
-                        } else {
-                            return r.query(l -> l.bool(t -> builder));
-                        }
-                    }))
+                    .query(genQueryBuilderFunction(queryDto))
                     .source(l -> l.filter(m -> m.excludes("searchableText")))
-                    .sort(queryDto.dirQuery() ? Collections.singletonList(SortOptions
-                            .of(l -> l.field(m -> m.field("rank").order(SortOrder.Asc)))) : Collections.emptyList())
+                    .sort(genSortList(queryDto.getOrder()))
                     .size(queryDto.getLimit())
                     .from(queryDto.getOffset()));
             log.info("search:{}", searchRequest.toString());
             SearchResponse<ResourceModel> search = config.getClient().search(searchRequest, ResourceModel.class);
-            TotalHits total = search.hits().total();
-            resp.setExactSize(total.relation() == TotalHitsRelation.Eq);
-            resp.setSize(total.value());
-
-            List<Hit<ResourceModel>> hits = search.hits().hits();
-
-            for (Hit<ResourceModel> hit : hits) {
-                resp.getData().add(hit.source());
-            }
+            parseSearchResult(resp, search);
         } catch (IOException ex) {
             log.error("search err", ex);
         }
         return resp;
+    }
+
+    private static void parseSearchResult(SearchResultDto resp, SearchResponse<ResourceModel> search) {
+        TotalHits total = search.hits().total();
+        resp.setExactSize(Objects.nonNull(total) && total.relation() == TotalHitsRelation.Eq);
+        resp.setSize(Optional.ofNullable(total).map(TotalHits::value).orElse(0L));
+        List<ResourceModel> hits = search.hits().hits().stream().map(Hit::source).toList();
+        resp.getData().addAll(hits);
+    }
+
+    /**
+     * 查询
+     * @param queryDto
+     * @return
+     */
+    private static Function<Query.Builder, ObjectBuilder<Query>> genQueryBuilderFunction(
+            SearchBaseQueryDto queryDto) {
+        return q -> q.functionScore(r -> {
+            // 随机
+            if (Boolean.TRUE.equals(queryDto.getRandomScore())) {
+                return r.query(t -> t.matchAll(k -> k))
+                        .functions(FunctionScore.of(l -> l.randomScore(m -> m)));
+            } else {
+                // 查询
+                BoolQuery.Builder builder = genQueryBuilder(queryDto);
+                return r.query(l -> l.bool(t -> builder));
+            }
+        });
+    }
+
+    private static BoolQuery.Builder genQueryBuilder(SearchBaseQueryDto queryDto) {
+        BoolQuery.Builder builder = new BoolQuery.Builder();
+
+        if (!StringUtils.isEmpty(queryDto.getSearch())) {
+            Query searchableText = MatchQuery.of(m -> m
+                    .field("searchableText")
+                    .query(queryDto.getSearch())
+                    .analyzer("ik_smart")
+            )._toQuery();
+            Query resName = MatchQuery.of(m -> m
+                    .field("resName")
+                    .query(queryDto.getSearch())
+                    .boost(10.f)
+                    .analyzer("ik_smart")
+            )._toQuery();
+            BoolQuery.Builder orSearch = new BoolQuery.Builder();
+            orSearch.should(searchableText, resName);
+            builder.must(l -> l.bool(orSearch.build()));
+        }
+        if (!StringUtils.isEmpty(queryDto.getResType())) {
+            Query resType = TermQuery.of(m -> m
+                    .field("resType")
+                    .value(queryDto.getResType())
+            )._toQuery();
+            builder.must(resType);
+        }
+        if (!StringUtils.isEmpty(queryDto.getResDirPrefix())) {
+            Query resId = TermQuery.of(m -> m
+                    .field("resDir")
+                    .value(queryDto.getResDirPrefix())
+            )._toQuery();
+            builder.must(resId);
+        }
+        if (!StringUtils.isEmpty(queryDto.getResSize())) {
+            Query resSize = ElasticSearchQueryHelper.buildRangeQuery("resSize", queryDto.getResSize(), t -> t);
+            builder.must(resSize);
+        }
+        if (!StringUtils.isEmpty(queryDto.getModifiedAt())) {
+            Function<String, String> fn = (t) -> String.valueOf(Instant.now().getEpochSecond() - Long.parseLong(t));
+            Query modifiedAt = ElasticSearchQueryHelper.buildRangeQuery("modifiedAt",
+                    queryDto.getModifiedAt(), fn);
+            builder.must(modifiedAt);
+        }
+        return builder;
+    }
+
+    /**
+     * 排序
+     * @param order
+     * @return
+     */
+    private static List<SortOptions> genSortList(SearchBaseQueryDto.QueryOrderDto order) {
+        return Objects.nonNull(order)
+                ? Collections.singletonList(SortOptions.of(l -> l.field(m -> m.field(order.getField()).order(order.isAscOrder() ? SortOrder.Asc : SortOrder.Desc))))
+                : Collections.emptyList();
     }
 
 }
