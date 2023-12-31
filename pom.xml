@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>noogel.xyz</groupId>
@@ -37,25 +37,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.springframework.boot</groupId>-->
-<!--                    <artifactId>spring-boot-starter-tomcat</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-jetty</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/co.elastic.clients/elasticsearch-java -->
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.4.3</version>
+            <version>8.11.2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -106,28 +97,6 @@
     </dependencies>
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.graalvm.buildtools</groupId>-->
-<!--                <artifactId>native-maven-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    &lt;!&ndash; imageName is used to set the name of the generated binary file &ndash;&gt;-->
-<!--                    <imageName>${project.artifactId}</imageName>-->
-<!--                    &lt;!&ndash; mainClass is used to specify the path to the main method class &ndash;&gt;-->
-<!--                    <mainClass>${mainClass}</mainClass>-->
-<!--                    <buildArgs>-->
-<!--                        &#45;&#45;no-fallback-->
-<!--                    </buildArgs>-->
-<!--                </configuration>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>build-native</id>-->
-<!--                        <goals>-->
-<!--                            <goal>compile-no-fork</goal>-->
-<!--                        </goals>-->
-<!--                        <phase>package</phase>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -139,7 +108,6 @@
                         </exclude>
                     </excludes>
                     <outputDirectory>docker/dep1</outputDirectory>
-<!--                    <outputDirectory>docker/native1</outputDirectory>-->
                     <includeSystemScope>true</includeSystemScope>
                 </configuration>
             </plugin>
