@@ -16,12 +16,12 @@ build:
 push:
 	docker push $(hub)\:$(port)/noogel/$(project)\:$(version)
 
-push-git:
+git-push:
 	git add . \
  && git commit -am "auto update" \
  && git push
 
-push-future:
+git-push-future:
 	git add . \
  && git commit -am "auto update" \
  && git push origin future
