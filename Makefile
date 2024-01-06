@@ -1,20 +1,20 @@
 #!/bin/sh
 
 version = 1.0.4
+project = xyz-search
+hub = nas.noogel.xyz
+port = 8111
 
 build:
 	mvn clean package \
  && cd docker/dep1 \
- && docker build -t xyz-search\:$(version) . \
- && rm xyz-search-*.war \
- && docker tag xyz-search\:$(version) 10.168.1.102\:8111/noogel/xyz-search\:$(version) \
+ && docker build -t $(project)\:$(version) . \
+ && rm $(project)-*.war \
+ && docker tag $(project)\:$(version) $(hub)\:$(port)/noogel/$(project)\:$(version) \
  && cd ../../
 
-build-native:
-	mvn clean package -Pnative
-
 push:
-	docker push 10.168.1.102\:8111/noogel/xyz-search\:$(version)
+	docker push $(hub)\:$(port)/noogel/$(project)\:$(version)
 
 push-git:
 	git add . \
@@ -25,7 +25,3 @@ push-future:
 	git add . \
  && git commit -am "auto update" \
  && git push origin future
-
-push-native:
-	docker push 10.168.1.102\:8111/noogel/xyz-search\:$(version)-native
-
