@@ -1,6 +1,6 @@
 #!/bin/sh
 
-version = 1.0.4
+version = 1.0.5
 project = xyz-search
 hub = nas.noogel.xyz
 port = 8111
