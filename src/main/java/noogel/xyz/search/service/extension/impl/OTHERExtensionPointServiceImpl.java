@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
+import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +27,17 @@ public class OTHERExtensionPointServiceImpl implements ExtensionPointService {
 
     @Override
     public boolean supportFile(File file) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, file);
+        boolean supportFile = extensionUtilsService.supportFileExtension(SUPPORT, file);
+        if (supportFile) {
+            String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
+            if ("mp4".equals(fileExtension)) {
+                // 小于 10M 的是视频不索引，扩展点
+                if (file.length() < 1024 * 1024 * 10) {
+                    supportFile = false;
+                }
+            }
+        }
+        return supportFile;
     }
 
     @Nullable
