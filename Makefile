@@ -20,3 +20,8 @@ git-push:
 	git add . \
  && git commit -am "auto update" \
  && git push
+
+git-push-dev:
+	git add . \
+ && git commit -am "auto update" \
+ && git push origin dev
