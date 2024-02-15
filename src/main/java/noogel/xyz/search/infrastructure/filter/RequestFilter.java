@@ -60,9 +60,9 @@ public class RequestFilter implements Filter {
                                 "新 IP:%s，访问时间：%s，访问路径：%s %s，访问参数：%s",
                         remoteIP, LocalDateTime.now(), req.getMethod(), req.getRequestURL(),
                         JsonHelper.toJson(req.getParameterMap()));
-//                EmailNotifyHelper.send(searchConfig.getApp(), subject, msg,
-//                        ()-> !HASH_TIME_MAP.containsKey(hashKey),
-//                        () -> HASH_TIME_MAP.put(hashKey, nowTs));
+                EmailNotifyHelper.send(searchConfig.getApp(), subject, msg,
+                        ()-> !HASH_TIME_MAP.containsKey(hashKey),
+                        () -> HASH_TIME_MAP.put(hashKey, nowTs));
             }
             HashMap<String, String> headers = new HashMap<>();
             Enumeration<String> headerNames = req.getHeaderNames();
