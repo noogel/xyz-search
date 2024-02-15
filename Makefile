@@ -21,7 +21,7 @@ git-push:
  && git commit -am "auto update" \
  && git push
 
-git-push-future:
+git-push-dev:
 	git add . \
  && git commit -am "auto update" \
- && git push origin future
+ && git push origin dev
