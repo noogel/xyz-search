@@ -1,5 +1,5 @@
 base:
-  configFilePath:
+  configFilePath: /home/xyz/DockerSharingData/xyzSearchRuntimeTmp
   ftsIndexName: xyz_search
   username: xyz
   password: search

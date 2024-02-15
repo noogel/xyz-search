@@ -108,7 +108,6 @@ public class ElasticsearchConfig {
 
         // And create the API client
         final ElasticsearchClient client = new ElasticsearchClient(transport);
-
         return client;
     }
 }
