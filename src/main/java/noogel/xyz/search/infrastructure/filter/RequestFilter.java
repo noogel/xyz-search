@@ -3,20 +3,19 @@ package noogel.xyz.search.infrastructure.filter;
 import jakarta.annotation.Resource;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
 import noogel.xyz.search.infrastructure.utils.IpUtils;
+import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -54,15 +53,16 @@ public class RequestFilter implements Filter {
                 // x 时间内不重复通知，不随访问更新。
                 // IP_TIME_MAP.put(remoteIP, nowTs);
                 log.info("畅文全索请求更新，ip:{}， 访问路径：{} {} 访问参数：{}", remoteIP, req.getMethod(),
-                        req.getRequestURL(), req.getParameterMap());
+                        req.getRequestURL(), JsonHelper.toJson(req.getParameterMap()));
             } else {
                 String subject = String.format("畅文: %s -> %s", remoteIP, serverName);
                 String msg = String.format("畅文全索请求通知：<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
                                 "新 IP:%s，访问时间：%s，访问路径：%s %s，访问参数：%s",
-                        remoteIP, LocalDateTime.now(), req.getMethod(), req.getRequestURL(), req.getParameterMap());
-                EmailNotifyHelper.send(searchConfig.getApp(), subject, msg,
-                        ()-> !HASH_TIME_MAP.containsKey(hashKey),
-                        () -> HASH_TIME_MAP.put(hashKey, nowTs));
+                        remoteIP, LocalDateTime.now(), req.getMethod(), req.getRequestURL(),
+                        JsonHelper.toJson(req.getParameterMap()));
+//                EmailNotifyHelper.send(searchConfig.getApp(), subject, msg,
+//                        ()-> !HASH_TIME_MAP.containsKey(hashKey),
+//                        () -> HASH_TIME_MAP.put(hashKey, nowTs));
             }
             HashMap<String, String> headers = new HashMap<>();
             Enumeration<String> headerNames = req.getHeaderNames();

@@ -37,6 +37,8 @@
                     document.querySelector("#fileViewA").href = "/pdf.js/web/view?file=/file/" + data.resId;
                 } else if (data.resType == 'FILE:EPUB') {
                     document.querySelector("#fileViewA").href = "/epub/web/view?book=" + data.resId;
+                } else if (data.resType == 'FILE:MP4') {
+                    document.querySelector("#fileViewA").href = "/video/" + data.resId;
                 } else {
                     document.querySelector("#fileViewA").href = "/file/" + data.resId;
                 }

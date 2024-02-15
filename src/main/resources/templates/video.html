@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${resTitle}"></title>
+    <link href="/css/video-js.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <video id="play-video" class="video-js vjs-default-skin" controls preload="auto" height="720"
+               data-setup="{}">
+            <source th:src="'/video/m3u8/' + ${resId}" type="application/x-mpegURL">
+        </video>
+    </div>
+</div>
+
+<!--<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>-->
+<script src="/js/video.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>

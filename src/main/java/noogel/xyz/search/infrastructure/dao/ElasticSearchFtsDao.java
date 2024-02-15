@@ -299,16 +299,31 @@ public class ElasticSearchFtsDao {
             Query searchableText = MatchQuery.of(m -> m
                     .field("searchableText")
                     .query(queryDto.getSearch())
+                    .fuzziness("auto")
+                    .analyzer("ik_smart")
+            )._toQuery();
+            Query searchableTextPhrase = MatchPhraseQuery.of(m -> m
+                    .field("searchableText")
+                    .query(queryDto.getSearch())
+                    .slop(50)
+                    .boost(100.F)
                     .analyzer("ik_smart")
             )._toQuery();
             Query resName = MatchQuery.of(m -> m
                     .field("resName")
                     .query(queryDto.getSearch())
-                    .boost(10.f)
+                    .fuzziness("auto")
+                    .analyzer("ik_smart")
+            )._toQuery();
+            Query resNamePhrase = MatchPhraseQuery.of(m -> m
+                    .field("resName")
+                    .query(queryDto.getSearch())
+                    .slop(10)
+                    .boost(500.F)
                     .analyzer("ik_smart")
             )._toQuery();
             BoolQuery.Builder orSearch = new BoolQuery.Builder();
-            orSearch.should(searchableText, resName);
+            orSearch.should(searchableText, searchableTextPhrase, resName, resNamePhrase);
             builder.must(l -> l.bool(orSearch.build()));
         }
         if (!StringUtils.isEmpty(queryDto.getResType())) {
