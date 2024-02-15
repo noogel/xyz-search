@@ -1,5 +1,8 @@
 FROM openjdk:17-alpine
 MAINTAINER noogel@163.com
+RUN apk add --no-cache ffmpeg \
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
 RUN mkdir -p /data/share /data/transfer /usr/share/xyz-search/data
 RUN mkdir -p /data/collect1 /data/collect2 /data/collect3
 COPY xyz-search-*.war /usr/share/xyz-search/xyz-search.war
