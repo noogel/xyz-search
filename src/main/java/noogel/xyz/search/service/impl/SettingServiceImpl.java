@@ -110,8 +110,8 @@ public class SettingServiceImpl implements SettingService {
                 "Elasticsearch host 不能为空");
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(scr.getPassword()),
                 "密码不能为空");
-        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isNotBlank(cfg.getNotifyUrl())
-                && CollectionUtils.isEmpty(cfg.getNotifyReceivers()), "邮件通知接收人不能为空");
+        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isNotBlank(cfg.getNotifyEmail().getUrl())
+                && CollectionUtils.isEmpty(cfg.getNotifyEmail().getReceivers()), "邮件通知接收人不能为空");
         // 校验证书
         if (StringUtils.isNotBlank(cfg.getElasticsearchCAPath())) {
             File file = new File(cfg.getElasticsearchCAPath());
@@ -126,9 +126,12 @@ public class SettingServiceImpl implements SettingService {
                     ExceptionCode.CONFIG_ERROR.throwOn(!file.exists() || !file.isDirectory(),
                             String.format("目录 %s 不存在", k));
                 });
-        if (StringUtils.isNotBlank(cfg.getCollectFilterRegex())) {
-            // 检查是否可编译
-            Pattern.compile(cfg.getCollectFilterRegex());
+        // 校验正则
+        for (SearchPropertyConfig.CollectItem collectItem : cfg.getCollectDirectories()) {
+            if (StringUtils.isNotBlank(collectItem.getFilterRegex())) {
+                // 检查是否可编译
+                Pattern.compile(collectItem.getFilterRegex());
+            }
         }
         return cfg;
     }

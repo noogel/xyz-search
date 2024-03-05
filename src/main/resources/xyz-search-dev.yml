@@ -12,4 +12,3 @@ app:
   elasticsearchSocketTimeout: 5000
   searchDirectories:
     - /home/xyz/DockerSharingData/TestSearch
-  collectFilterRegex: \.(pdf|PDF)

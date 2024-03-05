@@ -18,10 +18,7 @@ import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -29,6 +26,28 @@ import java.util.stream.Collectors;
 public class SearchPropertyConfig {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final ObjectMapper YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory());
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CollectItem {
+        @ConfigNote(desc = "collectDirectories:资源收集来源目录")
+        private List<String> fromList;
+        @ConfigNote(desc = "collectDirectories:资源收集到的目录")
+        private String to;
+        @ConfigNote(desc = "collectDirectories:资源收集过滤规则（正则）（可选）")
+        private String filterRegex;
+        @ConfigNote(desc = "collectDirectories:资源收集后自动删除文件")
+        private Boolean autoDelete;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class NotifyEmail {
+        @ConfigNote(desc = "notifyEmail:访问通知链接")
+        private String url;
+        @ConfigNote(desc = "notifyEmail:访问通知邮件接收人")
+        private List<String> receivers;
+    }
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -48,22 +67,17 @@ public class SearchPropertyConfig {
         @ConfigNote(desc = "索引目录")
         private List<String> searchDirectories;
         @ConfigNote(desc = "OPDS 资源目录，如果存在则开启")
-        private String OPDSDirectory;
-        @ConfigNote(desc = "访问通知链接")
-        private String notifyUrl;
-        @ConfigNote(desc = "访问通知邮件接收人")
-        private List<String> notifyReceivers;
-        @ConfigNote(desc = "资源收集来源目录")
-        private List<String> collectFromDirectories;
-        @ConfigNote(desc = "资源收集到的目录")
-        private String collectToDirectory;
-        @ConfigNote(desc = "资源收集过滤规则（正则）（可选）")
-        private String collectFilterRegex;
+        private String opdsDirectory;
+        @ConfigNote(desc = "访问邮件通知")
+        private NotifyEmail notifyEmail;
+        @ConfigNote(desc = "资源收集目录映射")
+        private List<CollectItem> collectDirectories;
 
         public static AppConfig init() {
             AppConfig appConfig = new AppConfig();
             appConfig.setSearchDirectories(new ArrayList<>());
-            appConfig.setNotifyReceivers(new ArrayList<>());
+            appConfig.setNotifyEmail(new NotifyEmail());
+            appConfig.getNotifyEmail().setReceivers(new ArrayList<>());
             return appConfig;
         }
 
