@@ -41,7 +41,7 @@ public class OPDSCtrl {
     private SearchPropertyConfig.SearchConfig searchConfig;
 
     private void checkConfig() {
-        String opdsDirectory = searchConfig.getApp().getOPDSDirectory();
+        String opdsDirectory = searchConfig.getApp().getOpdsDirectory();
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(opdsDirectory), "OPDS 未开启");
     }
 
@@ -127,7 +127,7 @@ public class OPDSCtrl {
         query.setLimit(BaseConsts.DEFAULT_LIMIT);
         query.setOffset(offset);
         query.setSearch(text);
-        query.setResDirPrefix(searchConfig.getApp().getOPDSDirectory());
+        query.setResDirPrefix(searchConfig.getApp().getOpdsDirectory());
         if (StringUtils.isEmpty(text)) {
             query.setOrder(SearchBaseQueryDto.buildRankOrder(true));
         }

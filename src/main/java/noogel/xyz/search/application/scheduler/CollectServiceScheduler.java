@@ -11,6 +11,7 @@ import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.SearchService;
 import noogel.xyz.search.service.SynchronizeService;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 public class CollectServiceScheduler {
     private static final DateTimeFormatter AUTO_COLLECT_FORMATTER = DateTimeFormatter.ofPattern("yyyy年MM月");
     private static final AtomicInteger TRANSFER_RUNNING_COUNT = new AtomicInteger();
-    private Pattern PATTERN = null;
+    private static final List<Pattern> PATTERN = new ArrayList<>();
 
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
@@ -45,22 +46,26 @@ public class CollectServiceScheduler {
     @PostConstruct
     public void init() {
         // 初始化正则匹配器
-        String collectFilterRegex = searchConfig.getApp().getCollectFilterRegex();
-        if (StringUtils.isNotBlank(collectFilterRegex)) {
-            PATTERN = Pattern.compile(collectFilterRegex);
+        for (SearchPropertyConfig.CollectItem item : searchConfig.getApp().getCollectDirectories()) {
+            String filterRegex = item.getFilterRegex();
+            if (StringUtils.isNotBlank(filterRegex)) {
+                PATTERN.add(Pattern.compile(filterRegex));
+            } else {
+                PATTERN.add(null);
+            }
         }
     }
 
     @EventListener(ConfigAppUpdateEvent.class)
     public void configAppUpdate(ConfigAppUpdateEvent event) {
         // 更新正则匹配器
-        String oldRegex = event.getOldApp().getCollectFilterRegex();
-        String newRegex = event.getNewApp().getCollectFilterRegex();
-        if (!Objects.equals(oldRegex, newRegex)) {
-            if (StringUtils.isBlank(newRegex)) {
-                PATTERN = null;
+        PATTERN.clear();
+        for (SearchPropertyConfig.CollectItem item : event.getNewApp().getCollectDirectories()) {
+            String newRegex = item.getFilterRegex();
+            if (StringUtils.isNotBlank(newRegex)) {
+                PATTERN.add(Pattern.compile(newRegex));
             } else {
-                PATTERN = Pattern.compile(newRegex);
+                PATTERN.add(null);
             }
         }
     }
@@ -79,32 +84,37 @@ public class CollectServiceScheduler {
                 log.warn("transferFileIfNotExist already running {}.", TRANSFER_RUNNING_COUNT.get());
                 return;
             }
-            SearchPropertyConfig.AppConfig app = searchConfig.getApp();
-            List<String> collectFromDirectories = app.getCollectFromDirectories();
-            String collectToDirectory = app.getCollectToDirectory();
-            File toDir;
-            // 检查配置
-            if (CollectionUtils.isEmpty(collectFromDirectories)
-                    || StringUtils.isEmpty(collectToDirectory)
-                    || Objects.isNull(PATTERN)
-                    || !((new File(collectToDirectory)).exists())) {
-                log.info("transferFileIfNotExist config empty or notExist.");
-                return;
-            }
-            // 获取或创建子目录
-            toDir = getOrMkCollectToSubDir(collectToDirectory);
-            // 遍历目录，转移资源
-            Optional.of(collectFromDirectories).orElse(Collections.emptyList()).forEach(from -> {
-                File fromDir;
-                if (!(fromDir = new File(from)).exists()) {
-                    log.info("transferFileIfNotExist fromDir notExist.");
+            List<SearchPropertyConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
+
+            for (int i = 0; i < itemList.size(); i++) {
+                List<String> fromDirectories = itemList.get(i).getFromList();
+                String toDirectory = itemList.get(i).getTo();
+                Pattern pattern = PATTERN.get(i);
+                boolean autoDelete = BooleanUtils.isTrue(itemList.get(i).getAutoDelete());
+                File toDir;
+                // 检查配置
+                if (CollectionUtils.isEmpty(fromDirectories)
+                        || StringUtils.isEmpty(toDirectory)
+                        || Objects.isNull(pattern)
+                        || !((new File(toDirectory)).exists())) {
+                    log.info("transferFileIfNotExist config empty or notExist.");
+                    return;
                 }
-                // 拷贝文件
-                List<File> files = copyFilesFromSource(fromDir, toDir);
-                // 同步到 ES
-                synchronizeService.appendFiles(files);
-            });
-            log.info("transferFileIfNotExist run complete.");
+                // 获取或创建子目录
+                toDir = getOrMkCollectToSubDir(toDirectory);
+                // 遍历目录，转移资源
+                Optional.of(fromDirectories).orElse(Collections.emptyList()).forEach(from -> {
+                    File fromDir;
+                    if (!(fromDir = new File(from)).exists()) {
+                        log.info("transferFileIfNotExist fromDir notExist.");
+                    }
+                    // 拷贝文件
+                    List<File> files = copyFilesFromSource(fromDir, toDir, pattern, autoDelete);
+                    // 同步到 ES
+                    synchronizeService.appendFiles(files);
+                });
+                log.info("transferFileIfNotExist run complete.");
+            }
         } finally {
             TRANSFER_RUNNING_COUNT.decrementAndGet();
         }
@@ -140,18 +150,18 @@ public class CollectServiceScheduler {
      * @param sourceDir
      * @param targetDir
      */
-    private List<File> copyFilesFromSource(File sourceDir, File targetDir) {
+    private List<File> copyFilesFromSource(File sourceDir, File targetDir, Pattern pattern, boolean autoDelete) {
         List<File> sourceFiles = new ArrayList<>();
         List<String> excludeFiles = new ArrayList<>();
         // 遍历文件和文件夹
         // regex filters
         for (File file : FileHelper.parseAllSubFiles(sourceDir)) {
             if (file.exists() && file.isFile()
-                    && PATTERN.matcher(file.getAbsolutePath()).find()) {
+                    && pattern.matcher(file.getAbsolutePath()).find()) {
                 sourceFiles.add(file);
             } else {
                 excludeFiles.add(String.format("%s %s %s %s", file, file.exists(),
-                        file.isFile(), PATTERN.matcher(file.getAbsolutePath()).find()));
+                        file.isFile(), pattern.matcher(file.getAbsolutePath()).find()));
             }
         }
         // add logs
@@ -198,6 +208,12 @@ public class CollectServiceScheduler {
                     realTargetFiles.add(targetFile);
                 } catch (IOException e) {
                     log.error("transferFile error {}", sourceFile);
+                }
+            }
+            // 资源收集后自动删除
+            if (autoDelete) {
+                if(sourceFile.delete()) {
+                    log.warn("delete collected file: {}", sourceFile.getAbsolutePath());
                 }
             }
         }

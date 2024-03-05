@@ -46,20 +46,20 @@ public class EmailNotifyHelper {
      */
     public static void send(SearchPropertyConfig.AppConfig cfg, String subject, String message,
                             Supplier<Boolean> sendCondition, Runnable successRunnable) {
-        if (StringUtils.isBlank(cfg.getNotifyUrl())) {
+        if (StringUtils.isBlank(cfg.getNotifyEmail().getUrl())) {
             return;
         }
-        if (CollectionUtils.isEmpty(cfg.getNotifyReceivers())) {
+        if (CollectionUtils.isEmpty(cfg.getNotifyEmail().getReceivers())) {
             return;
         }
         CommonsConstConfig.SHORT_EXECUTOR_SERVICE.submit(()-> {
             if (!sendCondition.get()) {
                 return;
             }
-            NotifyDto dto = NotifyDto.of(cfg.getNotifyReceivers(), subject, message);
+            NotifyDto dto = NotifyDto.of(cfg.getNotifyEmail().getReceivers(), subject, message);
             try {
                 String str = OBJECT_MAPPER.writeValueAsString(dto);
-                String s = HttpClient.doPost(cfg.getNotifyUrl(), str);
+                String s = HttpClient.doPost(cfg.getNotifyEmail().getUrl(), str);
                 log.info("sendMail subject:{} message:{} result:{}", subject, message, s);
                 if ( Objects.equals("Success", s)) {
                     successRunnable.run();
