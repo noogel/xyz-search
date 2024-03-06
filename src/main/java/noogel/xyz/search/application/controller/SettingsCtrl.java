@@ -53,7 +53,7 @@ public class SettingsCtrl {
     public @ResponseBody ModalInfoDto dataSync(){
         try {
             // 同步目录数据
-            synchronizeService.asyncAll();
+            synchronizeService.asyncDirectories();
             return ModalInfoDto.ofOk("更新索引");
         } catch (Exception ex) {
             log.error("dataSync", ex);
@@ -79,7 +79,7 @@ public class SettingsCtrl {
             // 删除重建索引
             synchronizeService.resetIndex();
             // 同步目录数据
-            synchronizeService.asyncAll();
+            synchronizeService.asyncDirectories();
             return ModalInfoDto.ofOk("重置索引");
         } catch (Exception ex) {
             log.error("dataReset", ex);

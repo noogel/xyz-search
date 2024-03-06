@@ -19,11 +19,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         String authEnv = EnvHelper.FuncEnv.AUTH.getEnv();
-        if (Objects.equals("true", authEnv)) {
-            http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
-        } else {
-            http.authorizeRequests().anyRequest().permitAll();
-        }
+        http.authorizeRequests().anyRequest().permitAll();
+//        if (Objects.equals("true", authEnv)) {
+//            http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
+//        } else {
+//            http.authorizeRequests().anyRequest().permitAll();
+//        }
+
 //        http.authorizeRequests()
 //                .anyRequest().authenticated()
 //                .and().formLogin().loginProcessingUrl("/login")

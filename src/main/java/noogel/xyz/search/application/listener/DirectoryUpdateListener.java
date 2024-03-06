@@ -37,7 +37,7 @@ public class DirectoryUpdateListener {
         // 如果有变化则更新
         if (!CollectionUtils.isEmpty(oldDirList) || !CollectionUtils.isEmpty(newDirList)) {
             // 同步新目录
-            synchronizeService.asyncAll();
+            synchronizeService.asyncDirectories(newDirList, oldDirList);
         }
     }
 

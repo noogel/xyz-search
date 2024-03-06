@@ -5,11 +5,11 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
-import noogel.xyz.search.infrastructure.dto.ResourceSimpleDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileDbDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
-import noogel.xyz.search.service.SearchService;
+import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.SynchronizeService;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +38,9 @@ public class CollectServiceScheduler {
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
     @Resource
-    private SearchService searchService;
-    @Resource
     private SynchronizeService synchronizeService;
+    @Resource
+    private FileDbService fileDbService;
 
 
     @PostConstruct
@@ -110,7 +110,7 @@ public class CollectServiceScheduler {
                     }
                     // 拷贝文件
                     List<File> files = copyFilesFromSource(fromDir, toDir, pattern, autoDelete);
-                    // 同步到 ES
+                    // 追加到数据库
                     synchronizeService.appendFiles(files);
                 });
                 log.info("transferFileIfNotExist run complete.");
@@ -195,8 +195,8 @@ public class CollectServiceScheduler {
             if (Objects.nonNull(targetFile)) {
                 // 计算原始文件是否存在 ES
                 String fromMD5 = MD5Helper.getMD5(sourceFile);
-                List<ResourceSimpleDto> esData = searchService.searchByResHash(fromMD5);
-                if (!CollectionUtils.isEmpty(esData)) {
+                Optional<FileDbDto> fileDbDto = fileDbService.findFirstByHash(fromMD5);
+                if (fileDbDto.isPresent()) {
                     log.info("transferFiles file exist {} md5:{}", sourceFile.getAbsolutePath(), fromMD5);
                     continue;
                 }
@@ -212,7 +212,7 @@ public class CollectServiceScheduler {
             }
             // 资源收集后自动删除
             if (autoDelete) {
-                if(sourceFile.delete()) {
+                if (sourceFile.delete()) {
                     log.warn("delete collected file: {}", sourceFile.getAbsolutePath());
                 }
             }

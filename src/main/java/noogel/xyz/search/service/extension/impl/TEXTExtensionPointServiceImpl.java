@@ -3,6 +3,8 @@ package noogel.xyz.search.service.extension.impl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
+import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileFsDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.ResourceModel;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
@@ -17,11 +19,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Set;
 
 @Service
 @Slf4j
-public class TEXTExtensionPointServiceImpl implements ExtensionPointService {
+public class TEXTExtensionPointServiceImpl extends AbstractExtensionPointService implements ExtensionPointService {
 
     private static final Set<String> SUPPORT = Set.of("txt", "csv", "md");
 
@@ -45,5 +48,19 @@ public class TEXTExtensionPointServiceImpl implements ExtensionPointService {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
         return ResourceModel.buildBaseInfo(file, text, task);
+    }
+
+    @Nullable
+    @Override
+    public FileFsDto parseFile(File file) {
+        Path path = Paths.get(file.toURI());
+        String text = "";
+        try {
+            Charset charset = FileHelper.detectCharset(file);
+            text = Files.readString(path, charset);
+        } catch (IOException e) {
+            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
+        }
+        return genFileFsDto(file, Collections.singletonList(ChapterDto.of("", text)), null);
     }
 }

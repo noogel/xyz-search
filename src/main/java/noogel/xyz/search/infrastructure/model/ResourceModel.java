@@ -2,7 +2,6 @@ package noogel.xyz.search.infrastructure.model;
 
 import co.elastic.clients.elasticsearch._types.mapping.*;
 import lombok.Data;
-import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;

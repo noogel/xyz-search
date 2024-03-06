@@ -17,7 +17,7 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class ExtensionUtilsServiceImpl implements ExtensionUtilsService {
+public class ExtensionUtilsServiceImpl extends AbstractExtensionPointService implements ExtensionUtilsService {
 
     @Override
     public boolean supportFileExtension(Set<String> supportExtension, File file) {
