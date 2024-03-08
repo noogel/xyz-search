@@ -7,6 +7,7 @@ import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface FileDbService {
@@ -35,10 +36,20 @@ public interface FileDbService {
     void updateFileState(Long fieldId, FileStateEnum stateEnum);
 
     /**
+     * 更新文件状态和扩展信息
+     *
+     * @param fieldId
+     * @param stateEnum
+     * @param appendOptions
+     */
+    void updateFileState(Long fieldId, FileStateEnum stateEnum, Map<String, String> appendOptions);
+
+    /**
      * 移除文件
+     *
      * @param fieldId
      */
-    void removeFile(Long fieldId);
+    void deleteFile(Long fieldId);
 
     /**
      * 更新目录状态
@@ -67,8 +78,17 @@ public interface FileDbService {
 
     /**
      * 按状态搜索
+     *
      * @param state
      * @return
      */
     List<Long> scanFileResByState(FileStateEnum state);
+
+    /**
+     * 创建或追加目录
+     *
+     * @param path
+     * @return
+     */
+    void upsertPath(String path);
 }

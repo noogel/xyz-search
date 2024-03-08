@@ -10,12 +10,10 @@ public class CommonsConstConfig {
     public static final Set<String> SUPPORT_VIEW_EXT = Set.of("xhtml", "html", "txt", "pdf", "epub", "mp4");
     public static final ExecutorService SHORT_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
     public static final ExecutorService MULTI_EXECUTOR_SERVICE = Executors.newWorkStealingPool(
-//            Math.max(1, Runtime.getRuntime().availableProcessors() * 4)
-            1
+            Math.max(1, Runtime.getRuntime().availableProcessors() * 4)
     );
     public static final ExecutorService TICK_SCAN_EXECUTOR_SERVICE = Executors.newWorkStealingPool(
-//            Math.max(1, Runtime.getRuntime().availableProcessors() * 4)
-            1
+            Math.max(1, Runtime.getRuntime().availableProcessors() * 4)
     );
     public static final ScheduledExecutorService DELAY_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
 

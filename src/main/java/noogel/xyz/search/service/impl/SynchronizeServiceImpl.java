@@ -104,7 +104,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Override
     public void resetIndex() {
         ftsDao.createIndex(true);
-        searchConfig.getApp().getSearchDirectories().forEach(t-> {
+        searchConfig.getApp().getSearchDirectories().forEach(t -> {
             int updateCount = fileDbService.updateDirectoryState(t, FileStateEnum.VALID);
             log.info("resetIndex dir {} count {}", t, updateCount);
         });
@@ -123,15 +123,15 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     }
 
     private void processDirectory(File rootDir) {
-//        log.info("processDirectory will record {}", rootDir.getAbsolutePath());
         // 检查文件夹
         if (!rootDir.isDirectory()) {
             return;
         }
+        // 记录目录
+        fileDbService.upsertPath(rootDir.getAbsolutePath());
         // 文件系统 遍历文件和文件夹
         List<File> fsFiles = parseValidSubFsFiles(rootDir);
         // 数据库 文件和文件夹
-        // TODO
         List<FileViewDto> dbFiles = fileDbService.listFiles(rootDir);
         // 均为空则返回
         if (CollectionUtils.isEmpty(fsFiles) && CollectionUtils.isEmpty(dbFiles)) {

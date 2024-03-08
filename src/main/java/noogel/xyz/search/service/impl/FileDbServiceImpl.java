@@ -3,18 +3,23 @@ package noogel.xyz.search.service.impl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
+import noogel.xyz.search.infrastructure.dao.sqlite.DirectoryDao;
 import noogel.xyz.search.infrastructure.dao.sqlite.FileResDao;
+import noogel.xyz.search.infrastructure.dto.dao.DirectoryDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
+import noogel.xyz.search.infrastructure.model.sqlite.DirectoryModel;
 import noogel.xyz.search.infrastructure.model.sqlite.FileResModel;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.service.FileDbService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -23,16 +28,20 @@ public class FileDbServiceImpl implements FileDbService {
 
     @Resource
     private FileResDao fileResDao;
+    @Resource
+    private DirectoryDao directoryDao;
 
     @Override
     public List<FileViewDto> listFiles(File rootDir) {
-        String dir = rootDir.getAbsolutePath();
-        int dirDep = dir.split("/").length;
+        DirectoryDto directoryDto = DirectoryDto.of(rootDir.getAbsolutePath());
 
         List<FileViewDto> resp = new ArrayList<>();
 
         // 查询子目录
-        List<String> subDirs = fileResDao.batchFindDistinctDirByDirStartsWithAndDirDep(dir, dirDep + 1);
+
+        List<String> subDirs = directoryDao
+                .findByPathStartsWithAndDep(directoryDto.getPath() + "/", directoryDto.calDirDep() + 1)
+                .stream().map(DirectoryModel::getPath).toList();
 
         for (String subDir : subDirs) {
             FileViewDto dbDto = FileViewDto.of(subDir, true, null, null, null);
@@ -40,7 +49,7 @@ public class FileDbServiceImpl implements FileDbService {
         }
 
         // 查询当前目录的文件
-        List<FileResModel> subFiles = fileResDao.batchFindByDir(dir);
+        List<FileResModel> subFiles = fileResDao.batchFindByDir(directoryDto.getPath());
 
         for (FileResModel subFile : subFiles) {
             String path = subFile.getDir() + "/" + subFile.getName();
@@ -79,7 +88,19 @@ public class FileDbServiceImpl implements FileDbService {
     }
 
     @Override
-    public void removeFile(Long fieldId) {
+    public void updateFileState(Long fieldId, FileStateEnum stateEnum, Map<String, String> appendOptions) {
+        synchronized (this) {
+            String options = JsonHelper.toJson(appendOptions);
+            if (StringUtils.isBlank(options)) {
+                fileResDao.updateStateById(stateEnum.getVal(), fieldId);
+            } else {
+                fileResDao.updateStateAndOptionsById(stateEnum.getVal(), options, fieldId);
+            }
+        }
+    }
+
+    @Override
+    public void deleteFile(Long fieldId) {
         synchronized (this) {
             fileResDao.deleteById(fieldId);
         }
@@ -88,6 +109,10 @@ public class FileDbServiceImpl implements FileDbService {
     @Override
     public int updateDirectoryState(String path, FileStateEnum stateEnum) {
         synchronized (this) {
+            // 删除目录
+            directoryDao.deleteByPath(path);
+            directoryDao.deleteByPathStartsWith(path + "/");
+            // 标记清理文件
             return fileResDao.updateStateByDirStartsWith(stateEnum.getVal(), path);
         }
     }
@@ -131,4 +156,18 @@ public class FileDbServiceImpl implements FileDbService {
         List<Long> list = fileResDao.findTop12ByState(state.getVal()).stream().map(FileResModel::getId).toList();
         return list;
     }
+
+    @Override
+    public void upsertPath(String path) {
+        synchronized (this) {
+            if (directoryDao.findByPath(path).isEmpty()) {
+                DirectoryDto dto = DirectoryDto.of(path);
+                DirectoryModel model = new DirectoryModel();
+                model.setPath(dto.getPath());
+                model.setDep(dto.calDirDep());
+                directoryDao.save(model);
+            }
+        }
+    }
+
 }

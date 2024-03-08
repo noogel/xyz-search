@@ -17,10 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -76,6 +73,9 @@ public class TickServiceImpl implements TickService {
             log.info("indexFileToEs {}", file.getAbsolutePath());
             // 检查是否文件
             if (!file.isFile()) {
+                Map<String, String> options = t.getOptions();
+                options.put("error", "not file");
+                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
                 return;
             }
             try {
@@ -87,6 +87,9 @@ public class TickServiceImpl implements TickService {
                             // 解析文件
                             FileResContentDto contentDto = l.parseFile(t);
                             if (Objects.isNull(contentDto)) {
+                                Map<String, String> options = t.getOptions();
+                                options.put("error", "parse file error");
+                                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
                                 return;
                             }
                             // ES 文件
@@ -98,7 +101,9 @@ public class TickServiceImpl implements TickService {
                         });
             } catch (Exception ex) {
                 log.error("indexFileToEs error {}", file.getAbsolutePath(), ex);
-                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR);
+                Map<String, String> options = t.getOptions();
+                options.put("error", ex.getMessage());
+                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
             }
         });
     }
@@ -159,10 +164,12 @@ public class TickServiceImpl implements TickService {
                 // 清理ES
                 ftsDao.deleteByResId(t.getResId());
                 // 清理DB
-                fileDbService.removeFile(t.getFieldId());
+                fileDbService.deleteFile(t.getFieldId());
             } catch (Exception ex) {
                 log.error("removeEsAndFile error {}", file.getAbsolutePath(), ex);
-                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR);
+                Map<String, String> options = t.getOptions();
+                options.put("error", ex.getMessage());
+                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
             }
         });
     }
