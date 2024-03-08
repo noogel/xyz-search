@@ -9,7 +9,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public enum CustomContentTypeEnum {
     LRF("application-lrf"),
-//    LRF("text-lrs"),
+    //    LRF("text-lrs"),
     MOBI("application-x-mobipocket-ebook"),
     TPZ("application-x-topaz-ebook"),
     AZW2("application-x-kindle-application"),

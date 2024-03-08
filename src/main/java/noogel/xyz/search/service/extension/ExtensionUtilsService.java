@@ -10,6 +10,7 @@ public interface ExtensionUtilsService {
 
     /**
      * 是否支持的扩展
+     *
      * @param supportExtension
      * @param file
      * @return
@@ -18,6 +19,7 @@ public interface ExtensionUtilsService {
 
     /**
      * 自动寻找关联信息
+     *
      * @param file
      * @return
      */

@@ -3,6 +3,7 @@ package noogel.xyz.search.service.extension.impl;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.OPDSResMetaDataDto;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
+import noogel.xyz.search.infrastructure.utils.FileResHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.OPDSHelper;
 import noogel.xyz.search.service.extension.ExtensionUtilsService;
@@ -17,7 +18,7 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class ExtensionUtilsServiceImpl extends AbstractExtensionPointService implements ExtensionUtilsService {
+public class ExtensionUtilsServiceImpl implements ExtensionUtilsService {
 
     @Override
     public boolean supportFileExtension(Set<String> supportExtension, File file) {

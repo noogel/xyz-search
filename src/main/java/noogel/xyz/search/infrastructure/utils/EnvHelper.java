@@ -26,6 +26,7 @@ public class EnvHelper {
 
         /**
          * 获取功能性环境变量配置
+         *
          * @return
          */
         public String getEnv() {
@@ -35,11 +36,12 @@ public class EnvHelper {
 
         /**
          * 获取所有子参数
+         *
          * @return
          */
         public Map<FuncEnv, String> getSubEnv() {
-            return Arrays.stream(values()).filter(t-> t.name().startsWith(name() + "_"))
-                    .collect(Collectors.toMap(t-> t, FuncEnv::getEnv));
+            return Arrays.stream(values()).filter(t -> t.name().startsWith(name() + "_"))
+                    .collect(Collectors.toMap(t -> t, FuncEnv::getEnv));
         }
 
     }

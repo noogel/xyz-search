@@ -19,6 +19,7 @@ public class DirectoryUpdateListener {
 
     /**
      * 监听目录变化
+     *
      * @param event
      */
     @EventListener(ConfigAppUpdateEvent.class)

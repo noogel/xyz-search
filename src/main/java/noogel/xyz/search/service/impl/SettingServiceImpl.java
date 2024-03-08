@@ -96,8 +96,10 @@ public class SettingServiceImpl implements SettingService {
                 .build();
         inMemoryUserDetailsManager.updateUser(user);
     }
+
     /**
      * 校验并且拷贝到新的配置对象中
+     *
      * @param scr
      * @return
      */
@@ -110,7 +112,8 @@ public class SettingServiceImpl implements SettingService {
                 "Elasticsearch host 不能为空");
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(scr.getPassword()),
                 "密码不能为空");
-        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isNotBlank(cfg.getNotifyEmail().getUrl())
+        ExceptionCode.CONFIG_ERROR.throwOn(Objects.nonNull(cfg.getNotifyEmail())
+                && StringUtils.isNotBlank(cfg.getNotifyEmail().getUrl())
                 && CollectionUtils.isEmpty(cfg.getNotifyEmail().getReceivers()), "邮件通知接收人不能为空");
         // 校验证书
         if (StringUtils.isNotBlank(cfg.getElasticsearchCAPath())) {

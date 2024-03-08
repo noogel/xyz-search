@@ -7,6 +7,7 @@ import java.util.List;
 public interface SearchService {
     /**
      * 主页面搜索
+     *
      * @param query
      * @return
      */
@@ -14,6 +15,7 @@ public interface SearchService {
 
     /**
      * opds 资源搜索
+     *
      * @param query
      * @return
      */
@@ -21,6 +23,7 @@ public interface SearchService {
 
     /**
      * 根据资源搜索
+     *
      * @param resId
      * @param search
      * @return
@@ -29,6 +32,7 @@ public interface SearchService {
 
     /**
      * 根据文件 MD5 搜索
+     *
      * @param resHash
      * @return
      */
@@ -36,6 +40,7 @@ public interface SearchService {
 
     /**
      * 获取资源下载信息
+     *
      * @param resId
      * @return
      */

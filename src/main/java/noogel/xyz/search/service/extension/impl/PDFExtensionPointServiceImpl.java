@@ -3,11 +3,11 @@ package noogel.xyz.search.service.extension.impl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
-import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
-import noogel.xyz.search.infrastructure.dto.dao.FileFsDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
+import noogel.xyz.search.infrastructure.utils.FileResHelper;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService implements ExtensionPointService {
+public class PDFExtensionPointServiceImpl implements ExtensionPointService {
 
     private static final Set<String> SUPPORT = Set.of("pdf");
 
@@ -57,28 +57,11 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
         // PDF 全为空，需要重置
-        if (resp.size() > 1 && resp.stream().allMatch(t-> StringUtils.isBlank(t.getText()))) {
+        if (resp.size() > 1 && resp.stream().allMatch(t -> StringUtils.isBlank(t.getText()))) {
             resp.clear();
             resp.add(ChapterDto.of(null, ""));
         }
         return resp;
-    }
-
-    /**
-     * 读取pdf中文字信息(全部)
-     */
-    public static String readPdf(File inputFile) {
-        try (PDDocument doc = PDDocument.load(inputFile)) {
-            // 获取一个PDFTextStripper文本剥离对象
-            PDFTextStripper textStripper = new PDFTextStripper();
-            return textStripper.getText(doc);
-        } catch (Exception e) {
-            if (e instanceof InvalidPasswordException) {
-                log.warn("parsePdf InvalidPasswordException {}", inputFile.getAbsoluteFile());
-                return e.getMessage();
-            }
-            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
-        }
     }
 
     @Override
@@ -88,22 +71,8 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
 
     @Nullable
     @Override
-    public ResourceModel parseFile(File file, TaskDto task) {
-        String text = readPdf(file).replace("\n", "").replace("  ", "").trim();
-        ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
-        String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
-        if (StringUtils.isBlank(text)) {
-            text = Optional.ofNullable(resRel).map(ResRelationInfoDto::getMetaContent).orElse("");
-        }
-        if (StringUtils.isBlank(text)) {
-            text = file.getName();
-        }
-        return ResourceModel.buildBaseInfo(file, text, title, task);
-    }
-
-    @Nullable
-    @Override
-    public FileFsDto parseFile(File file) {
+    public FileResContentDto parseFile(FileResReadDto resReadDto) {
+        File file = resReadDto.genFile();
         List<ChapterDto> chapters = readPdfChapters(file);
         ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
@@ -116,6 +85,7 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
                 t.setChapter(metaContent);
             });
         }
-        return genFileFsDto(file, chapters, title);
+        return FileResContentDto.of(chapters, title);
     }
+
 }

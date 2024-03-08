@@ -22,6 +22,7 @@ public interface SynchronizeService {
 
     /**
      * 追加文件
+     *
      * @param files
      */
     void appendFiles(List<File> files);

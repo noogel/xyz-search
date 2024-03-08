@@ -19,7 +19,7 @@ public class UrlDto {
             return requestUrl;
         }
         return String.format("%s?%s", requestUrl, parameters.entrySet().stream()
-                .map(t-> String.format("%s=%s", t.getKey(), UrlHelper.ct(t.getValue())))
+                .map(t -> String.format("%s=%s", t.getKey(), UrlHelper.ct(t.getValue())))
                 .collect(Collectors.joining("&"))
         );
     }

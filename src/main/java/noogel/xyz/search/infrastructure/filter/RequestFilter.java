@@ -3,7 +3,6 @@ package noogel.xyz.search.infrastructure.filter;
 import jakarta.annotation.Resource;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
@@ -15,7 +14,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -61,7 +63,7 @@ public class RequestFilter implements Filter {
                         remoteIP, LocalDateTime.now(), req.getMethod(), req.getRequestURL(),
                         JsonHelper.toJson(req.getParameterMap()));
                 EmailNotifyHelper.send(searchConfig.getApp(), subject, msg,
-                        ()-> !HASH_TIME_MAP.containsKey(hashKey),
+                        () -> !HASH_TIME_MAP.containsKey(hashKey),
                         () -> HASH_TIME_MAP.put(hashKey, nowTs));
             }
             HashMap<String, String> headers = new HashMap<>();

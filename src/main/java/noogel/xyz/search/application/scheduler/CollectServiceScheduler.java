@@ -5,7 +5,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
-import noogel.xyz.search.infrastructure.dto.dao.FileDbDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
@@ -75,7 +75,7 @@ public class CollectServiceScheduler {
      */
     @Scheduled(cron = "0 0 0,6,11,15,20 * * *")
     public void asyncCollectFileIfNotExist() {
-        CommonsConstConfig.EXECUTOR_SERVICE.submit(this::syncCollectFileIfNotExist);
+        CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(this::syncCollectFileIfNotExist);
     }
 
     public void syncCollectFileIfNotExist() {
@@ -195,7 +195,7 @@ public class CollectServiceScheduler {
             if (Objects.nonNull(targetFile)) {
                 // 计算原始文件是否存在 ES
                 String fromMD5 = MD5Helper.getMD5(sourceFile);
-                Optional<FileDbDto> fileDbDto = fileDbService.findFirstByHash(fromMD5);
+                Optional<FileViewDto> fileDbDto = fileDbService.findFirstByHash(fromMD5);
                 if (fileDbDto.isPresent()) {
                     log.info("transferFiles file exist {} md5:{}", sourceFile.getAbsolutePath(), fromMD5);
                     continue;

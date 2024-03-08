@@ -6,12 +6,14 @@ public interface SettingService {
 
     /**
      * 获取最新的搜索配置
+     *
      * @return
      */
     SearchSettingDto query();
 
     /**
      * 更新配置
+     *
      * @param cfg
      * @return
      */
@@ -19,6 +21,7 @@ public interface SettingService {
 
     /**
      * 测试链接
+     *
      * @param cfg
      * @return
      */

@@ -4,10 +4,10 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
-import noogel.xyz.search.infrastructure.dao.ElasticSearchFtsDao;
+import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.*;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
+import noogel.xyz.search.infrastructure.model.elastic.FileEsModel;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     @Resource
-    private ElasticSearchFtsDao dao;
+    private ElasticDao dao;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
@@ -82,7 +82,7 @@ public class SearchServiceImpl implements SearchService {
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(Objects.isNull(dto), "资源不存在");
         String highlightHtml = HTMLTemplateHelper.render("highlight.html",
                 Collections.singletonMap("highlight", dto.getHighlights()));
-        ResourceModel t = dto.getResource();
+        FileEsModel t = dto.getResource();
         ResourcePageDto page = new ResourcePageDto();
         page.setResId(t.getResId());
         page.setResTitle(t.getResTitle());
@@ -104,7 +104,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<ResourceSimpleDto> searchByResHash(String resHash) {
-        List<ResourceModel> models = dao.findByResHash(resHash);
+        List<FileEsModel> models = dao.findByResHash(resHash);
         return models.stream().map(t -> {
             ResourceSimpleDto page = new ResourceSimpleDto();
             page.setResId(t.getResId());
@@ -120,7 +120,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public ResourceDownloadDto getDownloadResource(String resId) {
         ResourceDownloadDto dto = new ResourceDownloadDto();
-        ResourceModel res = dao.findByResId(resId);
+        FileEsModel res = dao.findByResId(resId);
         dto.setResId(resId);
         dto.setResTitle(res.getResTitle());
         dto.setAbsolutePath(res.calculateAbsolutePath());

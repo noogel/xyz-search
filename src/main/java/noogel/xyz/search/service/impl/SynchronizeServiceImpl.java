@@ -5,9 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
-import noogel.xyz.search.infrastructure.dao.ElasticSearchFtsDao;
-import noogel.xyz.search.infrastructure.dto.dao.FileDbDto;
-import noogel.xyz.search.infrastructure.dto.dao.FileFsDto;
+import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
+import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
+import noogel.xyz.search.infrastructure.utils.FileResHelper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.SynchronizeService;
 import noogel.xyz.search.service.extension.ExtensionPointService;
@@ -29,13 +30,13 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Resource
     private List<ExtensionPointService> extServices;
     @Resource
-    private ElasticSearchFtsDao ftsDao;
+    private ElasticDao ftsDao;
     @Resource
     private FileDbService fileDbService;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
-    private static List<FileDbDto> calculateRemoveFiles(List<File> fsFiles, List<FileDbDto> dbFiles) {
+    private static List<FileViewDto> calculateRemoveFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
         List<String> fsFilesUk = fsFiles.stream().map(t -> {
             if (t.isDirectory()) {
                 return t.getAbsolutePath();
@@ -55,12 +56,12 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         }).toList();
     }
 
-    private static List<File> calculateAppendFiles(List<File> fsFiles, List<FileDbDto> dbFiles) {
+    private static List<File> calculateAppendFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
         List<File> resp = new ArrayList<>();
         // 添加所有目录
         fsFiles.stream().filter(File::isDirectory).forEach(resp::add);
         // 添加文件
-        List<String> existFilesUk = dbFiles.stream().filter(FileDbDto::isFile).map(t -> {
+        List<String> existFilesUk = dbFiles.stream().filter(FileViewDto::isFile).map(t -> {
             return String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
         }).toList();
         fsFiles.stream().filter(File::isFile).forEach(t -> {
@@ -89,13 +90,13 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                 if (!file.isDirectory()) {
                     continue;
                 }
-                CommonsConstConfig.EXECUTOR_SERVICE.submit(() -> processDirectory(file));
+                CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> processDirectory(file));
             }
         }
         if (!CollectionUtils.isEmpty(removeDirectories)) {
             for (String path : removeDirectories) {
-                FileDbDto dbDto = FileDbDto.of(path, true, null, null, null);
-                CommonsConstConfig.EXECUTOR_SERVICE.submit(() -> removeDirectory(dbDto));
+                FileViewDto dbDto = FileViewDto.of(path, true, null, null, null);
+                CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> removeDirectory(dbDto));
             }
         }
     }
@@ -103,6 +104,10 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Override
     public void resetIndex() {
         ftsDao.createIndex(true);
+        searchConfig.getApp().getSearchDirectories().forEach(t-> {
+            int updateCount = fileDbService.updateDirectoryState(t, FileStateEnum.VALID);
+            log.info("resetIndex dir {} count {}", t, updateCount);
+        });
     }
 
     @Override
@@ -111,14 +116,14 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         // 添加执行
         for (File file : files) {
             subResFutureList.add(CompletableFuture.runAsync(() -> this.processFile(file),
-                    CommonsConstConfig.MULTI_EXECUTOR_SERVICE));
+                    CommonsConstConfig.TICK_SCAN_EXECUTOR_SERVICE));
         }
         // 并发阻塞
         CompletableFuture.allOf(subResFutureList.toArray(CompletableFuture[]::new)).join();
     }
 
     private void processDirectory(File rootDir) {
-        log.info("processDirectory will process {}", rootDir.getAbsolutePath());
+//        log.info("processDirectory will record {}", rootDir.getAbsolutePath());
         // 检查文件夹
         if (!rootDir.isDirectory()) {
             return;
@@ -126,17 +131,21 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         // 文件系统 遍历文件和文件夹
         List<File> fsFiles = parseValidSubFsFiles(rootDir);
         // 数据库 文件和文件夹
-        List<FileDbDto> dbFiles = fileDbService.listFiles(rootDir);
+        // TODO
+        List<FileViewDto> dbFiles = fileDbService.listFiles(rootDir);
         // 均为空则返回
         if (CollectionUtils.isEmpty(fsFiles) && CollectionUtils.isEmpty(dbFiles)) {
             return;
         }
         // 待操作数据
         List<File> appendFiles = calculateAppendFiles(fsFiles, dbFiles);
-        List<FileDbDto> removeFiles = calculateRemoveFiles(fsFiles, dbFiles);
-        log.info("processDirectory\n\nappend:\n  {} \nremove:\n  {}",
-                String.join("\n  ", appendFiles.stream().map(File::getAbsolutePath).toList()),
-                String.join("\n  ", removeFiles.stream().map(FileDbDto::getPath).toList()));
+        List<FileViewDto> removeFiles = calculateRemoveFiles(fsFiles, dbFiles);
+        if (!(CollectionUtils.isEmpty(appendFiles) && CollectionUtils.isEmpty(removeFiles))) {
+            log.info("processDirectory will {}\nappend:\n  {} \nremove:\n  {}",
+                    rootDir.getAbsolutePath(),
+                    String.join("\n  ", appendFiles.stream().map(File::getAbsolutePath).toList()),
+                    String.join("\n  ", removeFiles.stream().map(FileViewDto::getPath).toList()));
+        }
         // 按照文件和目录分别添加
         for (File t : appendFiles) {
             if (t.isFile()) {
@@ -146,7 +155,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
             }
         }
         // 按照文件和目录分别删除
-        for (FileDbDto t : removeFiles) {
+        for (FileViewDto t : removeFiles) {
             if (t.isFile()) {
                 CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> this.removeFile(t));
             } else if (t.isDirectory()) {
@@ -164,28 +173,25 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     }
 
     private void processFile(File subFile) {
-        log.info("processTask will process {}", subFile.getAbsolutePath());
+        log.info("processFile to db {}", subFile.getAbsolutePath());
         // 检查文件夹
         if (!subFile.isFile()) {
             return;
         }
-        try {
-            // 解析子文件
-            extServices.stream().filter(t -> t.supportFile(subFile)).findFirst()
-                    .ifPresent(t -> {
-                        FileFsDto fsDto = t.parseFile(subFile);
-                        fileDbService.appendFile(fsDto);
-                    });
-        } catch (Exception ex) {
-            log.error("processTask error {}", subFile.getAbsolutePath(), ex);
-        }
+        // 读取文件
+        FileResWriteDto fsDto = FileResHelper.genFileFsDto(subFile);
+        // 追加到DB
+        fileDbService.appendFile(fsDto);
     }
 
-    private void removeFile(FileDbDto subFile) {
-        fileDbService.updateFileState(subFile, FileStateEnum.INVALID);
+    private void removeFile(FileViewDto subFile) {
+        log.info("processTask will remove {}", subFile.getPath());
+        fileDbService.updateFileState(subFile.getFileId(), FileStateEnum.INVALID);
     }
 
-    private void removeDirectory(FileDbDto subDir) {
-        fileDbService.updateDirectoryState(subDir, FileStateEnum.INVALID);
+    private void removeDirectory(FileViewDto subDir) {
+        log.info("processTask will remove {}", subDir.getPath());
+        fileDbService.updateDirectoryState(subDir.getPath(), FileStateEnum.INVALID);
     }
+
 }

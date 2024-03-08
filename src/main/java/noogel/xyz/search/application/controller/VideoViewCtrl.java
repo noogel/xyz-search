@@ -15,7 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -27,6 +30,7 @@ public class VideoViewCtrl {
 
     /**
      * 视频渲染页面
+     *
      * @param resId
      * @return
      */
@@ -44,6 +48,7 @@ public class VideoViewCtrl {
 
     /**
      * 视频切片列表
+     *
      * @param resId
      * @return
      * @throws IOException
@@ -86,6 +91,7 @@ public class VideoViewCtrl {
 
     /**
      * 视频切片获取
+     *
      * @param resId
      * @param tsId
      * @param response

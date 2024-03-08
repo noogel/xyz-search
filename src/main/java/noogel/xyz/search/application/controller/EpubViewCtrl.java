@@ -89,7 +89,7 @@ public class EpubViewCtrl {
             tmp = Files.createTempDirectory("tmp").toFile();
             // 解压缩 epub 文件
             for (Enumeration<? extends ZipEntry> entries = zip.entries(); entries.hasMoreElements(); ) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
+                ZipEntry entry = entries.nextElement();
                 String zipEntryName = entry.getName();
                 try (InputStream in = zip.getInputStream(entry)) {
                     //指定解压后的文件夹+当前zip文件的名称
@@ -120,7 +120,7 @@ public class EpubViewCtrl {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
         final File willDel = tmp;
-        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(()-> deleteTree(resId, willDel), 1, TimeUnit.HOURS);
+        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(() -> deleteTree(resId, willDel), 1, TimeUnit.HOURS);
         return tmp;
     }
 

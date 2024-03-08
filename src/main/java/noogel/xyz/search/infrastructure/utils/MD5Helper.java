@@ -40,6 +40,7 @@ public class MD5Helper {
 
     /**
      * 获取一个文件的md5值(可处理大文件)
+     *
      * @return md5 value
      */
     public static String getMD5(File file) {
@@ -58,7 +59,7 @@ public class MD5Helper {
             return null;
         } finally {
             try {
-                if (fileInputStream != null){
+                if (fileInputStream != null) {
                     fileInputStream.close();
                 }
             } catch (IOException e) {

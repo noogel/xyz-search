@@ -3,10 +3,10 @@ package noogel.xyz.search.service.extension.impl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
-import noogel.xyz.search.infrastructure.dto.TaskDto;
 import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
-import noogel.xyz.search.infrastructure.dto.dao.FileFsDto;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
+import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
+import noogel.xyz.search.infrastructure.utils.FileResHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import noogel.xyz.search.service.extension.ExtensionUtilsService;
@@ -21,7 +21,7 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class OTHERExtensionPointServiceImpl extends AbstractExtensionPointService implements ExtensionPointService {
+public class OTHERExtensionPointServiceImpl implements ExtensionPointService {
 
     private static final Set<String> SUPPORT = Set.of("mobi", "azw3", "azw", "mp4");
 
@@ -45,25 +45,14 @@ public class OTHERExtensionPointServiceImpl extends AbstractExtensionPointServic
 
     @Nullable
     @Override
-    public ResourceModel parseFile(File file, TaskDto task) {
+    public FileResContentDto parseFile(FileResReadDto resReadDto) {
+        File file = resReadDto.genFile();
         ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
         String text = file.getName();
         if (StringUtils.isNotBlank(title)) {
             text = title;
         }
-        return ResourceModel.buildBaseInfo(file, text, title, task);
-    }
-
-    @Nullable
-    @Override
-    public FileFsDto parseFile(File file) {
-        ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
-        String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
-        String text = file.getName();
-        if (StringUtils.isNotBlank(title)) {
-            text = title;
-        }
-        return genFileFsDto(file, Collections.singletonList(ChapterDto.of("", text)), title);
+        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text)), title);
     }
 }

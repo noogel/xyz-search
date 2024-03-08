@@ -14,12 +14,6 @@ public class SearchQueryDto extends SearchBaseQueryDto {
     private String relativeResDir;
     private String resId;
 
-    public String getUrlQuery(long offset) {
-        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s&relativeResDir=%s&resType=%s",
-                ct(getSearch()), ct(resId), ct(getResSize()), ct(getModifiedAt()),
-                ct(getLimit()), ct(offset), ct(relativeResDir), ct(getResType()));
-    }
-
     public static boolean indexEmptySearch(SearchQueryDto dto) {
         return StringUtils.isEmpty(dto.getSearch())
                 && StringUtils.isEmpty(dto.getResDirPrefix())
@@ -30,6 +24,12 @@ public class SearchQueryDto extends SearchBaseQueryDto {
 
     public static boolean dirEmptySearch(SearchQueryDto dto) {
         return StringUtils.isEmpty(dto.getSearch()) && StringUtils.isNotEmpty(dto.getResDirPrefix());
+    }
+
+    public String getUrlQuery(long offset) {
+        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s&relativeResDir=%s&resType=%s",
+                ct(getSearch()), ct(resId), ct(getResSize()), ct(getModifiedAt()),
+                ct(getLimit()), ct(offset), ct(relativeResDir), ct(getResType()));
     }
 
 }

@@ -22,6 +22,10 @@ public enum FileStateEnum {
      * 无效，已删除
      */
     DELETED(3),
+    /**
+     * 处理状态异常
+     */
+    ERROR(4),
     ;
 
     private final int val;

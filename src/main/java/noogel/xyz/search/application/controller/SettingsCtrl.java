@@ -25,16 +25,16 @@ public class SettingsCtrl {
     @Resource
     private CollectServiceScheduler collectServiceScheduler;
 
-    @RequestMapping(value="/settings", method= RequestMethod.GET)
-    public ModelAndView getSettings(){
+    @RequestMapping(value = "/settings", method = RequestMethod.GET)
+    public ModelAndView getSettings() {
         ModelAndView mv = new ModelAndView("settings");
         mv.addObject("env", EnvHelper.DEPLOY_ENV);
         mv.addObject("searchConfig", settingService.query());
         return mv;
     }
 
-    @RequestMapping(value="/settings", method= RequestMethod.POST)
-    public ModelAndView postSettings(SearchSettingDto cfg){
+    @RequestMapping(value = "/settings", method = RequestMethod.POST)
+    public ModelAndView postSettings(SearchSettingDto cfg) {
         ModelAndView mv = new ModelAndView("settings");
         mv.addObject("env", EnvHelper.DEPLOY_ENV);
         try {
@@ -49,8 +49,8 @@ public class SettingsCtrl {
         return mv;
     }
 
-    @RequestMapping(value="/settings/data/sync", method= RequestMethod.POST)
-    public @ResponseBody ModalInfoDto dataSync(){
+    @RequestMapping(value = "/settings/data/sync", method = RequestMethod.POST)
+    public @ResponseBody ModalInfoDto dataSync() {
         try {
             // 同步目录数据
             synchronizeService.asyncDirectories();
@@ -61,8 +61,8 @@ public class SettingsCtrl {
         }
     }
 
-    @RequestMapping(value="/settings/data/collect", method= RequestMethod.POST)
-    public @ResponseBody ModalInfoDto collectSync(){
+    @RequestMapping(value = "/settings/data/collect", method = RequestMethod.POST)
+    public @ResponseBody ModalInfoDto collectSync() {
         try {
             // 同步目录数据
             collectServiceScheduler.asyncCollectFileIfNotExist();
@@ -73,8 +73,8 @@ public class SettingsCtrl {
         }
     }
 
-    @RequestMapping(value="/settings/data/reset", method= RequestMethod.POST)
-    public @ResponseBody ModalInfoDto dataReset(){
+    @RequestMapping(value = "/settings/data/reset", method = RequestMethod.POST)
+    public @ResponseBody ModalInfoDto dataReset() {
         try {
             // 删除重建索引
             synchronizeService.resetIndex();
@@ -87,9 +87,9 @@ public class SettingsCtrl {
         }
     }
 
-    @RequestMapping(value="/settings/connect/testing", method= RequestMethod.POST)
-    public @ResponseBody ModalInfoDto connectTesting(SearchSettingDto cfg){
-        try{
+    @RequestMapping(value = "/settings/connect/testing", method = RequestMethod.POST)
+    public @ResponseBody ModalInfoDto connectTesting(SearchSettingDto cfg) {
+        try {
             boolean res = settingService.connectTesting(cfg);
             if (res) {
                 return ModalInfoDto.ofOk("测试连接");

@@ -9,7 +9,7 @@ import java.util.Objects;
 @Data
 @AllArgsConstructor(staticName = "of")
 @NoArgsConstructor
-public class FileDbDto {
+public class FileViewDto {
     /**
      * 完整路径
      */

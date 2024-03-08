@@ -58,6 +58,7 @@ public class FileHelper {
 
     /**
      * 计算 content type
+     *
      * @param file
      * @return
      */
@@ -69,7 +70,7 @@ public class FileHelper {
         }
         if (StringUtils.isBlank(contentType)) {
             String[] tmp = file.getAbsolutePath().split("\\.");
-            String ext = tmp[tmp.length-1];
+            String ext = tmp[tmp.length - 1];
             contentType = CustomContentTypeEnum.findByExt(ext)
                     .map(CustomContentTypeEnum::getContentType).orElse("");
         }

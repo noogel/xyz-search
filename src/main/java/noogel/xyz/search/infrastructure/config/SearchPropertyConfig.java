@@ -18,7 +18,10 @@ import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -26,6 +29,121 @@ import java.util.stream.Collectors;
 public class SearchPropertyConfig {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final ObjectMapper YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory());
+
+    /**
+     * 配置文件绝对路径
+     *
+     * @param configFilePath
+     * @return
+     */
+    public static String propertyConfigPath(String configFilePath) {
+        return String.format("%sproperty-config.json", StringUtils.isBlank(configFilePath) ? "" : (configFilePath + "/"));
+    }
+
+    /**
+     * 自定义配置文件
+     *
+     * @param configPath
+     * @return
+     */
+    @Nullable
+    public static SearchConfig readConfigByFile(String configPath) {
+        if (StringUtils.isBlank(configPath)) {
+            return null;
+        }
+        File file = new File(configPath);
+        if (!file.exists()) {
+            return null;
+        }
+        try (InputStream input = new FileInputStream(file)) {
+            return YAML_OBJECT_MAPPER.readValue(input, SearchConfig.class);
+        } catch (Exception e) {
+            log.warn("readConfigByProperty error path:{}", configPath, e);
+        }
+        return null;
+    }
+
+    /**
+     * 通过参数配置的资源文件
+     *
+     * @return
+     */
+    @Nullable
+    public static SearchConfig readConfigByProperty() {
+        String configPath = System.getProperty("config.path");
+        if (StringUtils.isBlank(configPath)) {
+            return null;
+        }
+        try (InputStream input = new FileInputStream(configPath)) {
+            return YAML_OBJECT_MAPPER.readValue(input, SearchConfig.class);
+        } catch (Exception e) {
+            log.warn("readConfigByProperty error path: {}", configPath, e);
+        }
+        return null;
+    }
+
+    /**
+     * 从资源文件读取
+     *
+     * @return
+     */
+    @Nullable
+    public static SearchConfig readBaseConfigByResource() {
+        Resource resource = new DefaultResourceLoader().getResource(
+                String.format("classpath:xyz-search-%s.yml", EnvHelper.DEPLOY_ENV));
+        try (InputStream inputStream = resource.getInputStream()) {
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                byte[] b = new byte[10240];
+                int n;
+                while ((n = inputStream.read(b)) != -1) {
+                    outputStream.write(b, 0, n);
+                }
+                String readString = outputStream.toString();
+                ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+                return objectMapper.readValue(readString, SearchConfig.class);
+            }
+        } catch (Exception e) {
+            log.error("readConfigByResource error", e);
+        }
+        return null;
+    }
+
+    /**
+     * 获取配置文件，必须
+     *
+     * @return
+     */
+    @Bean
+    public SearchConfig getSearchConfig() {
+        // 优先从 yml 文件中读取基础配置
+        SearchConfig searchConfig = readBaseConfigByResource();
+        if (Objects.isNull(searchConfig)) {
+            throw ExceptionCode.CONFIG_ERROR.throwExc("基础配置不能为空");
+        }
+
+        // 先从启动命令中读取配置
+        SearchConfig commandConfig = readConfigByProperty();
+        if (Objects.nonNull(commandConfig)) {
+            return commandConfig;
+        }
+
+        // 否则从配置路径中获取
+        String pCfgPath = propertyConfigPath(searchConfig.base.configFilePath);
+        SearchConfig propertyConfig = readConfigByFile(pCfgPath);
+        if (Objects.nonNull(propertyConfig)) {
+            return propertyConfig;
+        }
+
+        // 最后填充配置对象返回
+        if (Objects.isNull(searchConfig.getApp())) {
+            searchConfig.setApp(AppConfig.init());
+        }
+        if (Objects.isNull(searchConfig.getRuntime())) {
+            searchConfig.setRuntime(RuntimeConfig.init());
+        }
+        searchConfig.saveToFile();
+        return searchConfig;
+    }
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -72,6 +190,8 @@ public class SearchPropertyConfig {
         private NotifyEmail notifyEmail;
         @ConfigNote(desc = "资源收集目录映射")
         private List<CollectItem> collectDirectories;
+        @ConfigNote(desc = "索引限速")
+        private Long indexLimitMs;
 
         public static AppConfig init() {
             AppConfig appConfig = new AppConfig();
@@ -154,120 +274,5 @@ public class SearchPropertyConfig {
                 log.error("writeConfigErr path: {}", pCfgPath, e);
             }
         }
-    }
-
-    /**
-     * 获取配置文件，必须
-     *
-     * @return
-     */
-    @Bean
-    public SearchConfig getSearchConfig() {
-        // 优先从 yml 文件中读取基础配置
-        SearchConfig searchConfig = readBaseConfigByResource();
-        if (Objects.isNull(searchConfig)) {
-            throw ExceptionCode.CONFIG_ERROR.throwExc("基础配置不能为空");
-        }
-
-        // 先从启动命令中读取配置
-        SearchConfig commandConfig = readConfigByProperty();
-        if (Objects.nonNull(commandConfig)) {
-            return commandConfig;
-        }
-
-        // 否则从配置路径中获取
-        String pCfgPath = propertyConfigPath(searchConfig.base.configFilePath);
-        SearchConfig propertyConfig = readConfigByFile(pCfgPath);
-        if (Objects.nonNull(propertyConfig)) {
-            return propertyConfig;
-        }
-
-        // 最后填充配置对象返回
-        if (Objects.isNull(searchConfig.getApp())) {
-            searchConfig.setApp(AppConfig.init());
-        }
-        if (Objects.isNull(searchConfig.getRuntime())) {
-            searchConfig.setRuntime(RuntimeConfig.init());
-        }
-        searchConfig.saveToFile();
-        return searchConfig;
-    }
-
-    /**
-     * 配置文件绝对路径
-     *
-     * @param configFilePath
-     * @return
-     */
-    public static String propertyConfigPath(String configFilePath) {
-        return String.format("%sproperty-config.json", StringUtils.isBlank(configFilePath) ? "" : (configFilePath + "/"));
-    }
-
-    /**
-     * 自定义配置文件
-     *
-     * @param configPath
-     * @return
-     */
-    @Nullable
-    public static SearchConfig readConfigByFile(String configPath) {
-        if (StringUtils.isBlank(configPath)) {
-            return null;
-        }
-        File file = new File(configPath);
-        if (!file.exists()) {
-            return null;
-        }
-        try (InputStream input = new FileInputStream(file)) {
-            return YAML_OBJECT_MAPPER.readValue(input, SearchConfig.class);
-        } catch (Exception e) {
-            log.warn("readConfigByProperty error path:{}", configPath, e);
-        }
-        return null;
-    }
-
-    /**
-     * 通过参数配置的资源文件
-     *
-     * @return
-     */
-    @Nullable
-    public static SearchConfig readConfigByProperty() {
-        String configPath = System.getProperty("config.path");
-        if (StringUtils.isBlank(configPath)) {
-            return null;
-        }
-        try (InputStream input = new FileInputStream(configPath)) {
-            return YAML_OBJECT_MAPPER.readValue(input, SearchConfig.class);
-        } catch (Exception e) {
-            log.warn("readConfigByProperty error path: {}", configPath, e);
-        }
-        return null;
-    }
-
-    /**
-     * 从资源文件读取
-     *
-     * @return
-     */
-    @Nullable
-    public static SearchConfig readBaseConfigByResource() {
-        Resource resource = new DefaultResourceLoader().getResource(
-                String.format("classpath:xyz-search-%s.yml", EnvHelper.DEPLOY_ENV));
-        try (InputStream inputStream = resource.getInputStream()) {
-            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                byte[] b = new byte[10240];
-                int n;
-                while ((n = inputStream.read(b)) != -1) {
-                    outputStream.write(b, 0, n);
-                }
-                String readString = outputStream.toString();
-                ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-                return objectMapper.readValue(readString, SearchConfig.class);
-            }
-        } catch (Exception e) {
-            log.error("readConfigByResource error", e);
-        }
-        return null;
     }
 }

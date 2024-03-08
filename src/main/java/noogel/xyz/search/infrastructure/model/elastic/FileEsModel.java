@@ -1,4 +1,4 @@
-package noogel.xyz.search.infrastructure.model;
+package noogel.xyz.search.infrastructure.model.elastic;
 
 import co.elastic.clients.elasticsearch._types.mapping.*;
 import lombok.Data;
@@ -12,29 +12,24 @@ import java.io.File;
 import java.util.*;
 
 @Data
-public class ResourceModel {
+public class FileEsModel {
 
     /**
      * 资源完整路径 HASH
      */
     private String resId;
     /**
+     * 资源路径
+     */
+    private String resDir;
+    /**
      * 资源文件名
      */
     private String resName;
-
     /**
      * 资源 meta 名称
      */
     private String resTitle;
-    /**
-     * 根据资源名称计算的分数
-     */
-    private Long rank;
-    /**
-     * 资源路径
-     */
-    private String resDir;
     /**
      * 文件 HASH
      */
@@ -53,7 +48,10 @@ public class ResourceModel {
      * 资源最近更新时间 秒
      */
     private Long modifiedAt;
-
+    /**
+     * 根据资源名称计算的分数
+     */
+    private Long rank;
 
     /**
      * 搜索内容
@@ -68,16 +66,6 @@ public class ResourceModel {
      */
     private Integer textSize;
 
-
-    /**
-     * 任务 ID
-     */
-    private Long taskId;
-    /**
-     * 任务操作时间
-     */
-    private Long taskOpAt;
-
     public static Map<String, Property> generateEsMapping() {
         Map<String, Property> documentMap = new HashMap<>();
         documentMap.put("resId", Property
@@ -85,6 +73,8 @@ public class ResourceModel {
         documentMap.put("resName", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("ik_smart")))));
         documentMap.put("resTitle", Property
+                .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("ik_smart")))));
+        documentMap.put("resChapter", Property
                 .of(p -> p.text(TextProperty.of(i -> i.index(true).analyzer("ik_smart")))));
         documentMap.put("rank", Property
                 .of(p -> p.long_(LongNumberProperty.of(i -> i.index(true)))));
@@ -105,32 +95,28 @@ public class ResourceModel {
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));
         documentMap.put("textSize", Property
                 .of(p -> p.integer(IntegerNumberProperty.of(i -> i.index(true)))));
-
-        documentMap.put("taskId", Property
-                .of(p -> p.long_(LongNumberProperty.of(i -> i.index(true)))));
-        documentMap.put("taskOpAt", Property
-                .of(p -> p.long_(LongNumberProperty.of(i -> i.index(true)))));
         return documentMap;
     }
 
     /**
      * 初始化基础信息
+     *
      * @param file
      * @return
      */
-    public static ResourceModel buildBaseInfo(File file, String text, TaskDto task) {
+    public static FileEsModel buildBaseInfo(File file, String text, TaskDto task) {
         return buildBaseInfo(file, text, null, task);
     }
 
-    public static ResourceModel buildBaseInfo(File file, String text, String title, TaskDto task) {
+    public static FileEsModel buildBaseInfo(File file, String text, String title, TaskDto task) {
         File fileDir = new File(file.getParent());
-        ResourceModel demo = new ResourceModel();
+        FileEsModel demo = new FileEsModel();
         demo.setResId(MD5Helper.getMD5(file.getAbsolutePath()));
         // 所在目录
         demo.setResDir(fileDir.getAbsolutePath());
         demo.setResName(file.getName());
-        demo.setResTitle(StringUtils.isBlank(title) ? file.getName(): title);
-        demo.setRank(RankHelper.calcRank(StringUtils.isBlank(title) ? file.getName(): title));
+        demo.setResTitle(StringUtils.isBlank(title) ? file.getName() : title);
+        demo.setRank(RankHelper.calcRank(StringUtils.isBlank(title) ? file.getName() : title));
         demo.setResType("FILE:" + FileHelper.getFileExtension(file.getName()).toUpperCase());
         demo.setResHash(MD5Helper.getMD5(file));
         demo.setResSize(file.length());
@@ -140,25 +126,12 @@ public class ResourceModel {
         demo.setTextHash(MD5Helper.getMD5(text));
         demo.setTextSize(text.length());
 
-        demo.setTaskId(task.getTaskId());
-        demo.setTaskOpAt(task.getTaskOpAt());
-
         return demo;
     }
 
     /**
-     * 更新 task 信息
-     * @param taskDto
-     * @return
-     */
-    public ResourceModel updateTask(TaskDto taskDto) {
-        taskId = taskDto.getTaskId();
-        taskOpAt = taskDto.getTaskOpAt();
-        return this;
-    }
-
-    /**
      * 计算完整路径
+     *
      * @return
      */
     public String calculateAbsolutePath() {
@@ -167,6 +140,7 @@ public class ResourceModel {
 
     /**
      * 计算相对路径
+     *
      * @return
      */
     public String calculateRelativePath(List<String> searchDirs) {
@@ -183,8 +157,10 @@ public class ResourceModel {
         }
         return resp;
     }
+
     /**
      * 计算相对目录
+     *
      * @return
      */
     public String calculateRelativeDir(List<String> searchDirs) {

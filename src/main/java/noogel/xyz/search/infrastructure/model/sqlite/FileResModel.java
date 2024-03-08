@@ -12,7 +12,7 @@ import lombok.Setter;
         @Index(name = "idx_fileres_dir_dir_dep", columnList = "dir, dir_dep"),
         @Index(name = "idx_fileres_hash", columnList = "hash")
 })
-public class FileRes {
+public class FileResModel {
 
     /**
      * ID
@@ -20,6 +20,12 @@ public class FileRes {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    /**
+     * UUID
+     */
+    private String resId;
+
     /**
      * 文件目录
      */
@@ -46,7 +52,7 @@ public class FileRes {
      * FILE:EPUB
      * FILE:TXT
      */
-    private String ext;
+    private String type;
     /**
      * 文件 hash
      */
@@ -58,11 +64,9 @@ public class FileRes {
     /**
      * 资源 meta 名称
      */
-    private String meta;
+    private String options;
     /**
      * 文件状态
-     * 0 有效
-     * 1 失效
      */
     private Integer state;
 }
