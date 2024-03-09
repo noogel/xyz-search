@@ -23,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -130,7 +131,9 @@ public class SettingServiceImpl implements SettingService {
                             String.format("目录 %s 不存在", k));
                 });
         // 校验正则
-        for (SearchPropertyConfig.CollectItem collectItem : cfg.getCollectDirectories()) {
+        List<SearchPropertyConfig.CollectItem> itemList = Optional.ofNullable(cfg.getCollectDirectories())
+                .orElse(Collections.emptyList());
+        for (SearchPropertyConfig.CollectItem collectItem : itemList) {
             if (StringUtils.isNotBlank(collectItem.getFilterRegex())) {
                 // 检查是否可编译
                 Pattern.compile(collectItem.getFilterRegex());

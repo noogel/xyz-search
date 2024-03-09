@@ -54,7 +54,13 @@ public class TickServiceImpl implements TickService {
                 List<CompletableFuture<Void>> data = new ArrayList<>();
                 waitIds.forEach(id -> {
                     data.add(CompletableFuture.runAsync(
-                            () -> this.indexFileToEs(id), CommonsConstConfig.TICK_SCAN_EXECUTOR_SERVICE));
+                            () -> {
+                                try {
+                                    this.indexFileToEs(id);
+                                } catch (Exception ex) {
+                                    log.error("fs to es error {}", id);
+                                }
+                            }, CommonsConstConfig.TICK_SCAN_EXECUTOR_SERVICE));
                 });
                 CompletableFuture.allOf(data.toArray(new CompletableFuture[0])).join();
                 if (waitIds.isEmpty()) {
@@ -66,6 +72,11 @@ public class TickServiceImpl implements TickService {
                 }
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {
+                    break;
+                }
+                try {
+                    Thread.sleep(60_000);
+                } catch (InterruptedException e) {
                     break;
                 }
                 log.error("scanNonIndex item error.", ex);
@@ -158,6 +169,11 @@ public class TickServiceImpl implements TickService {
                 }
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {
+                    break;
+                }
+                try {
+                    Thread.sleep(60_000);
+                } catch (InterruptedException e) {
                     break;
                 }
                 log.error("scanInvalidFiles item error.", ex);

@@ -47,7 +47,11 @@ public class CollectServiceScheduler {
     @PostConstruct
     public void init() {
         // 初始化正则匹配器
-        for (SearchPropertyConfig.CollectItem item : searchConfig.getApp().getCollectDirectories()) {
+        List<SearchPropertyConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
+        if (CollectionUtils.isEmpty(itemList)) {
+            return;
+        }
+        for (SearchPropertyConfig.CollectItem item : itemList) {
             String filterRegex = item.getFilterRegex();
             if (StringUtils.isNotBlank(filterRegex)) {
                 PATTERN.add(Pattern.compile(filterRegex));
@@ -61,7 +65,11 @@ public class CollectServiceScheduler {
     public void configAppUpdate(ConfigAppUpdateEvent event) {
         // 更新正则匹配器
         PATTERN.clear();
-        for (SearchPropertyConfig.CollectItem item : event.getNewApp().getCollectDirectories()) {
+        List<SearchPropertyConfig.CollectItem> itemList = event.getNewApp().getCollectDirectories();
+        if (CollectionUtils.isEmpty(itemList)) {
+            return;
+        }
+        for (SearchPropertyConfig.CollectItem item : itemList) {
             String newRegex = item.getFilterRegex();
             if (StringUtils.isNotBlank(newRegex)) {
                 PATTERN.add(Pattern.compile(newRegex));
@@ -109,6 +117,9 @@ public class CollectServiceScheduler {
                 return;
             }
             List<SearchPropertyConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
+            if (CollectionUtils.isEmpty(itemList)) {
+                return;
+            }
 
             for (int i = 0; i < itemList.size(); i++) {
                 List<String> fromDirectories = itemList.get(i).getFromList();

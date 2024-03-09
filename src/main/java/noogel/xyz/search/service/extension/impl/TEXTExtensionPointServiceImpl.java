@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -40,13 +41,15 @@ public class TEXTExtensionPointServiceImpl implements ExtensionPointService {
     public FileResContentDto parseFile(FileResReadDto resReadDto) {
         File file = resReadDto.genFile();
         Path path = Paths.get(file.toURI());
-        String text = "";
+        StringBuilder text = new StringBuilder();
         try {
             Charset charset = FileHelper.detectCharset(file);
-            text = Files.readString(path, charset);
-        } catch (IOException e) {
-            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
+            List<String> allLines = Files.readAllLines(path, charset);
+            allLines.forEach(text::append);
+        } catch (Exception ex) {
+            log.error("TEXTExtensionPointServiceImpl error {}", path, ex);
+            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
         }
-        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text)), null);
+        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text.toString())), null);
     }
 }
