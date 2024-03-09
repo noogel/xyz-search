@@ -89,6 +89,7 @@ public class CollectServiceScheduler {
             if (errorRecords.isEmpty()) {
                 break;
             }
+            log.info("asyncCleanDbErrorFiles {}", errorRecords.size());
             errorRecords.forEach(fileDbService::deleteFile);
         }
     }
