@@ -116,7 +116,7 @@ public class TickServiceImpl implements TickService {
 
     private FileEsModel buildEsModel(FileResReadDto t, FileResContentDto dto) {
         String content = dto.genContent();
-        String title = Optional.ofNullable(t.getOptions().get("title"))
+        String title = Optional.ofNullable(dto.getMetaTitle())
                 .filter(StringUtils::isNotBlank).orElse(t.getName());
         FileEsModel es = new FileEsModel();
         es.setResId(t.getResId());

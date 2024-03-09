@@ -5,6 +5,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
@@ -76,6 +77,20 @@ public class CollectServiceScheduler {
     @Scheduled(cron = "0 0 3 * * *")
     public void asyncScanFsFiles() {
         synchronizeService.asyncDirectories();
+    }
+
+    /**
+     * 每天 8 点 清理异常记录
+     */
+    @Scheduled(cron = "0 0 8 * * *")
+    public void asyncCleanDbErrorFiles() {
+        for (int i = 0; i < 1000; i++) {
+            List<Long> errorRecords = fileDbService.scanFileResByState(FileStateEnum.ERROR);
+            if (errorRecords.isEmpty()) {
+                break;
+            }
+            errorRecords.forEach(fileDbService::deleteFile);
+        }
     }
 
     /**
