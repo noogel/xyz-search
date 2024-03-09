@@ -12,11 +12,13 @@ import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 import noogel.xyz.search.infrastructure.model.sqlite.DirectoryModel;
 import noogel.xyz.search.infrastructure.model.sqlite.FileResModel;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
+import noogel.xyz.search.infrastructure.utils.sqlite.SqliteLock;
 import noogel.xyz.search.service.FileDbService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +28,14 @@ import java.util.Optional;
 @Slf4j
 public class FileDbServiceImpl implements FileDbService {
 
+    private static final List<Integer> VALID_STATES = List.of(FileStateEnum.VALID.getVal(), FileStateEnum.INDEXED.getVal());
+
     @Resource
     private FileResDao fileResDao;
     @Resource
     private DirectoryDao directoryDao;
 
+    @SqliteLock
     @Override
     public List<FileViewDto> listFiles(File rootDir) {
         DirectoryDto directoryDto = DirectoryDto.of(rootDir.getAbsolutePath());
@@ -49,7 +54,7 @@ public class FileDbServiceImpl implements FileDbService {
         }
 
         // 查询当前目录的文件
-        List<FileResModel> subFiles = fileResDao.batchFindByDir(directoryDto.getPath());
+        List<FileResModel> subFiles = fileResDao.findByDirAndStateIn(directoryDto.getPath(), VALID_STATES);
 
         for (FileResModel subFile : subFiles) {
             String path = subFile.getDir() + "/" + subFile.getName();
@@ -60,71 +65,69 @@ public class FileDbServiceImpl implements FileDbService {
         return resp;
     }
 
+    @SqliteLock
     @Override
     public Long appendFile(FileResWriteDto writeDto) {
-        synchronized (this) {
-            FileResModel fileResModel = new FileResModel();
-            fileResModel.setResId(writeDto.getResId());
-            fileResModel.setDir(writeDto.getDir());
-            fileResModel.setDirDep(writeDto.calDirDep());
-            fileResModel.setName(writeDto.getName());
-            fileResModel.setSize(writeDto.getSize());
-            fileResModel.setModifiedAt(writeDto.getModifiedAt());
-            fileResModel.setType(writeDto.getType());
-            fileResModel.setHash(writeDto.getHash());
-            fileResModel.setRank(writeDto.getRank());
-            fileResModel.setOptions(JsonHelper.toJson(writeDto.getOptions()));
-            fileResModel.setState(FileStateEnum.VALID.getVal());
-            fileResDao.save(fileResModel);
-            return fileResModel.getId();
-        }
+        FileResModel fileResModel = new FileResModel();
+        fileResModel.setResId(writeDto.getResId());
+        fileResModel.setDir(writeDto.getDir());
+        fileResModel.setDirDep(writeDto.calDirDep());
+        fileResModel.setName(writeDto.getName());
+        fileResModel.setSize(writeDto.getSize());
+        fileResModel.setModifiedAt(writeDto.getModifiedAt());
+        fileResModel.setType(writeDto.getType());
+        fileResModel.setHash(writeDto.getHash());
+        fileResModel.setRank(writeDto.getRank());
+        fileResModel.setOptions(JsonHelper.toJson(writeDto.getOptions()));
+        fileResModel.setState(FileStateEnum.VALID.getVal());
+        fileResModel.setCreateTime(Instant.now().toEpochMilli());
+        fileResDao.save(fileResModel);
+        return fileResModel.getId();
     }
 
+    @SqliteLock
     @Override
     public void updateFileState(Long fieldId, FileStateEnum stateEnum) {
-        synchronized (this) {
-            fileResDao.updateStateById(stateEnum.getVal(), fieldId);
-        }
+        fileResDao.updateStateById(stateEnum.getVal(), fieldId);
     }
 
+    @SqliteLock
     @Override
     public void updateFileState(Long fieldId, FileStateEnum stateEnum, Map<String, String> appendOptions) {
-        synchronized (this) {
-            String options = JsonHelper.toJson(appendOptions);
-            if (StringUtils.isBlank(options)) {
-                fileResDao.updateStateById(stateEnum.getVal(), fieldId);
-            } else {
-                fileResDao.updateStateAndOptionsById(stateEnum.getVal(), options, fieldId);
-            }
+        String options = JsonHelper.toJson(appendOptions);
+        if (StringUtils.isBlank(options)) {
+            fileResDao.updateStateById(stateEnum.getVal(), fieldId);
+        } else {
+            fileResDao.updateStateAndOptionsById(stateEnum.getVal(), options, fieldId);
         }
     }
 
+    @SqliteLock
     @Override
     public void deleteFile(Long fieldId) {
-        synchronized (this) {
-            fileResDao.deleteById(fieldId);
-        }
+        fileResDao.deleteById(fieldId);
     }
 
+    @SqliteLock
     @Override
     public int updateDirectoryState(String path, FileStateEnum stateEnum) {
-        synchronized (this) {
-            // 删除目录
-            directoryDao.deleteByPath(path);
-            directoryDao.deleteByPathStartsWith(path + "/");
-            // 标记清理文件
-            return fileResDao.updateStateByDirStartsWith(stateEnum.getVal(), path);
-        }
+        // 删除目录
+        directoryDao.deleteByPath(path);
+        directoryDao.deleteByPathStartsWith(path + "/");
+        // 标记清理文件
+        return fileResDao.updateStateByDirStartsWith(stateEnum.getVal(), path);
     }
 
+    @SqliteLock
     @Override
     public Optional<FileViewDto> findFirstByHash(String hash) {
-        return fileResDao.findFirstByHash(hash).map(t -> {
+        return fileResDao.findFirstByHashAndStateIn(hash, VALID_STATES).map(t -> {
             String path = t.getDir() + "/" + t.getName();
             return FileViewDto.of(path, false, t.getId(), t.getSize(), t.getModifiedAt());
         });
     }
 
+    @SqliteLock
     @Override
     public Optional<FileResReadDto> findByIdFilterState(Long id, FileStateEnum state) {
         Optional<FileResModel> fileRes = fileResDao.findById(id);
@@ -151,22 +154,21 @@ public class FileDbServiceImpl implements FileDbService {
         return Optional.of(dto);
     }
 
+    @SqliteLock
     @Override
     public List<Long> scanFileResByState(FileStateEnum state) {
-        List<Long> list = fileResDao.findTop12ByState(state.getVal()).stream().map(FileResModel::getId).toList();
-        return list;
+        return fileResDao.findTop48ByState(state.getVal()).stream().map(FileResModel::getId).toList();
     }
 
+    @SqliteLock
     @Override
     public void upsertPath(String path) {
-        synchronized (this) {
-            if (directoryDao.findByPath(path).isEmpty()) {
-                DirectoryDto dto = DirectoryDto.of(path);
-                DirectoryModel model = new DirectoryModel();
-                model.setPath(dto.getPath());
-                model.setDep(dto.calDirDep());
-                directoryDao.save(model);
-            }
+        if (directoryDao.findByPath(path).isEmpty()) {
+            DirectoryDto dto = DirectoryDto.of(path);
+            DirectoryModel model = new DirectoryModel();
+            model.setPath(dto.getPath());
+            model.setDep(dto.calDirDep());
+            directoryDao.save(model);
         }
     }
 

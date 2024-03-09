@@ -69,4 +69,8 @@ public class FileResModel {
      * 文件状态
      */
     private Integer state;
+    /**
+     * 创建时间
+     */
+    private Long createTime;
 }

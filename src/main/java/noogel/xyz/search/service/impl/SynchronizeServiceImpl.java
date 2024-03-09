@@ -80,6 +80,13 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void asyncDirectories(List<String> syncDirectories, List<String> removeDirectories) {
+        if (!CollectionUtils.isEmpty(removeDirectories)) {
+            for (String path : removeDirectories) {
+                FileViewDto dbDto = FileViewDto.of(path, true, null, null, null);
+                CompletableFuture.runAsync(()-> this.removeDirectory(dbDto),
+                        CommonsConstConfig.MULTI_EXECUTOR_SERVICE).join();
+            }
+        }
         if (!CollectionUtils.isEmpty(syncDirectories)) {
             for (String path : syncDirectories) {
                 // 检查文件夹是否存在
@@ -91,12 +98,6 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                     continue;
                 }
                 CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> processDirectory(file));
-            }
-        }
-        if (!CollectionUtils.isEmpty(removeDirectories)) {
-            for (String path : removeDirectories) {
-                FileViewDto dbDto = FileViewDto.of(path, true, null, null, null);
-                CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> removeDirectory(dbDto));
             }
         }
     }
@@ -146,20 +147,24 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                     String.join("\n  ", appendFiles.stream().map(File::getAbsolutePath).toList()),
                     String.join("\n  ", removeFiles.stream().map(FileViewDto::getPath).toList()));
         }
+        // 按照文件和目录分别删除
+        for (FileViewDto t : removeFiles) {
+            try {
+                if (t.isFile()) {
+                    this.removeFile(t);
+                } else if (t.isDirectory()) {
+                    this.removeDirectory(t);
+                }
+            } catch (Exception ex) {
+                log.error("process remove error {}", t.getPath(), ex);
+            }
+        }
         // 按照文件和目录分别添加
         for (File t : appendFiles) {
             if (t.isFile()) {
                 CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> this.processFile(t));
             } else if (t.isDirectory()) {
                 CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> this.processDirectory(t));
-            }
-        }
-        // 按照文件和目录分别删除
-        for (FileViewDto t : removeFiles) {
-            if (t.isFile()) {
-                CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> this.removeFile(t));
-            } else if (t.isDirectory()) {
-                CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> this.removeDirectory(t));
             }
         }
     }

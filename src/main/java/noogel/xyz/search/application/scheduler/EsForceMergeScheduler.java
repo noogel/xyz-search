@@ -12,6 +12,9 @@ public class EsForceMergeScheduler {
     @Resource
     private ElasticDao ftsDao;
 
+    /**
+     * 每天 5 点整理 es
+     */
     @Scheduled(cron = "0 0 5 * * *")
     public void init() {
         log.info("auto forceMerge runDelay.");

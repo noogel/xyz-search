@@ -71,6 +71,14 @@ public class CollectServiceScheduler {
     }
 
     /**
+     * 每天 3 点 diff 一遍文件
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    public void asyncScanFsFiles() {
+        synchronizeService.asyncDirectories();
+    }
+
+    /**
      * 转移收集的文件
      */
     @Scheduled(cron = "0 0 0,6,11,15,20 * * *")
@@ -206,14 +214,14 @@ public class CollectServiceScheduler {
                     log.info("transferFile ok {}", sourceFile);
                     // 添加到回填对象
                     realTargetFiles.add(targetFile);
+                    // 资源收集后自动删除
+                    if (autoDelete) {
+                        if (sourceFile.delete()) {
+                            log.info("delete collected file: {}", sourceFile.getAbsolutePath());
+                        }
+                    }
                 } catch (IOException e) {
                     log.error("transferFile error {}", sourceFile);
-                }
-            }
-            // 资源收集后自动删除
-            if (autoDelete) {
-                if (sourceFile.delete()) {
-                    log.warn("delete collected file: {}", sourceFile.getAbsolutePath());
                 }
             }
         }
