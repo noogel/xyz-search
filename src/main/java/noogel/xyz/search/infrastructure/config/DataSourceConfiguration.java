@@ -22,8 +22,8 @@ public class DataSourceConfiguration {
 
         return DataSourceBuilder.create()
                 .driverClassName("org.sqlite.JDBC")
-                .url("jdbc:sqlite:ex.db")
-//                .url("jdbc:sqlite:" + dbPath)
+//                .url("jdbc:sqlite:ex.db")
+                .url("jdbc:sqlite:" + dbPath)
 //                .type(SQLiteDataSource.class)
                 .build();
     }
