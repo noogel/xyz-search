@@ -17,9 +17,10 @@ import noogel.xyz.search.service.extension.ExtensionPointService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -50,20 +51,9 @@ public class TickServiceImpl implements TickService {
     private void scanNonIndexFiles() {
         while (true) {
             try {
-                List<Long> waitIds = fileDbService.scanFileResByState(FileStateEnum.VALID);
-                List<CompletableFuture<Void>> data = new ArrayList<>();
-                waitIds.forEach(id -> {
-                    data.add(CompletableFuture.runAsync(
-                            () -> {
-                                try {
-                                    this.indexFileToEs(id);
-                                } catch (Exception ex) {
-                                    log.error("fs to es error {}", id);
-                                }
-                            }, CommonsConstConfig.TICK_SCAN_EXECUTOR_SERVICE));
-                });
-                CompletableFuture.allOf(data.toArray(new CompletableFuture[0])).join();
-                if (waitIds.isEmpty()) {
+                List<FileResReadDto> waitReadDtoList = fileDbService.scanFileResByState(FileStateEnum.VALID);
+                waitReadDtoList.forEach(this::indexFileToEs);
+                if (waitReadDtoList.isEmpty()) {
                     log.info("scanNonIndex item empty.");
                     Thread.sleep(CommonsConstConfig.SLEEP_SEC_MS);
                 } else {
@@ -84,45 +74,34 @@ public class TickServiceImpl implements TickService {
         }
     }
 
-    private void indexFileToEs(Long id) {
-        fileDbService.findByIdFilterState(id, FileStateEnum.VALID).ifPresent(t -> {
-            File file = new File(String.format("%s/%s", t.getDir(), t.getName()));
-            log.info("indexFileToEs {}", file.getAbsolutePath());
-            // 检查是否文件
-            if (!file.isFile()) {
-                Map<String, String> options = t.getOptions();
-                options.put("error", "not file");
-                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
-                return;
-            }
-            try {
-                // 解析子文件
-                extServices.stream()
-                        .filter(l -> l.supportFile(file))
-                        .findFirst()
-                        .ifPresent(l -> {
-                            // 解析文件
-                            FileResContentDto contentDto = l.parseFile(t);
-                            if (Objects.isNull(contentDto)) {
-                                Map<String, String> options = t.getOptions();
-                                options.put("error", "parse file error");
-                                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
-                                return;
-                            }
-                            // ES 文件
-                            FileEsModel fileEsModel = buildEsModel(t, contentDto);
-                            // 同步到 es
-                            ftsDao.upsertData(fileEsModel);
-                            // 更新状态
-                            fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
-                        });
-            } catch (Exception ex) {
-                log.error("indexFileToEs error {}", file.getAbsolutePath(), ex);
-                Map<String, String> options = t.getOptions();
-                options.put("error", ex.getMessage());
-                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
-            }
-        });
+    private void indexFileToEs(FileResReadDto t) {
+        try {
+            // 解析子文件
+            extServices.stream()
+                    .filter(l -> l.supportFile(t.calFilePath()))
+                    .findFirst()
+                    .ifPresent(l -> {
+                        // 解析文件
+                        FileResContentDto contentDto = l.parseFile(t);
+                        if (Objects.isNull(contentDto)) {
+                            Map<String, String> options = t.getOptions();
+                            options.put("error", "parse file error");
+                            fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
+                            return;
+                        }
+                        // ES 文件
+                        FileEsModel fileEsModel = buildEsModel(t, contentDto);
+                        // 同步到 es
+                        ftsDao.upsertData(fileEsModel);
+                        // 更新状态
+                        fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
+                    });
+        } catch (Exception ex) {
+            log.error("indexFileToEs error {}", t.calFilePath(), ex);
+            Map<String, String> options = t.getOptions();
+            options.put("error", ex.getMessage());
+            fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
+        }
     }
 
     private FileEsModel buildEsModel(FileResReadDto t, FileResContentDto dto) {
@@ -153,14 +132,9 @@ public class TickServiceImpl implements TickService {
     private void scanInvalidFiles() {
         while (true) {
             try {
-                List<Long> waitIds = fileDbService.scanFileResByState(FileStateEnum.INVALID);
-                List<CompletableFuture<Void>> data = new ArrayList<>();
-                waitIds.forEach(id -> {
-                    data.add(CompletableFuture.runAsync(
-                            () -> this.removeEsAndFile(id), CommonsConstConfig.TICK_SCAN_EXECUTOR_SERVICE));
-                });
-                CompletableFuture.allOf(data.toArray(new CompletableFuture[0])).join();
-                if (waitIds.isEmpty()) {
+                List<FileResReadDto> waitDtoList = fileDbService.scanFileResByState(FileStateEnum.INVALID);
+                waitDtoList.forEach(this::removeEsAndFile);
+                if (waitDtoList.isEmpty()) {
                     log.info("scanInvalidFiles item empty.");
                     Thread.sleep(CommonsConstConfig.SLEEP_SEC_MS);
                 } else {
@@ -181,22 +155,20 @@ public class TickServiceImpl implements TickService {
         }
     }
 
-    private void removeEsAndFile(Long id) {
-        fileDbService.findByIdFilterState(id, FileStateEnum.INVALID).ifPresent(t -> {
-            File file = new File(String.format("%s/%s", t.getDir(), t.getName()));
-            log.info("removeEsAndFile {}", file.getAbsolutePath());
-            try {
-                // 清理ES
-                ftsDao.deleteByResId(t.getResId());
+    private void removeEsAndFile(FileResReadDto t) {
+        log.info("removeEsAndFile {}", t.calFilePath());
+        try {
+            // 清理ES
+            if (ftsDao.deleteByResId(t.getResId())) {
                 // 清理DB
                 fileDbService.deleteFile(t.getFieldId());
-            } catch (Exception ex) {
-                log.error("removeEsAndFile error {}", file.getAbsolutePath(), ex);
-                Map<String, String> options = t.getOptions();
-                options.put("error", ex.getMessage());
-                fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
             }
-        });
+        } catch (Exception ex) {
+            log.error("removeEsAndFile error {}", t.calFilePath(), ex);
+            Map<String, String> options = t.getOptions();
+            options.put("error", ex.getMessage());
+            fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
+        }
     }
 
 }

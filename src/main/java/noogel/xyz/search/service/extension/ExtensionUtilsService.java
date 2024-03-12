@@ -12,10 +12,10 @@ public interface ExtensionUtilsService {
      * 是否支持的扩展
      *
      * @param supportExtension
-     * @param file
+     * @param filePath
      * @return
      */
-    boolean supportFileExtension(Set<String> supportExtension, File file);
+    boolean supportFileExtension(Set<String> supportExtension, String filePath);
 
     /**
      * 自动寻找关联信息

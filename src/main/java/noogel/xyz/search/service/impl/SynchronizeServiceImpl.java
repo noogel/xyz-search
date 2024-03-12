@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -83,8 +82,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         if (!CollectionUtils.isEmpty(removeDirectories)) {
             for (String path : removeDirectories) {
                 FileViewDto dbDto = FileViewDto.of(path, true, null, null, null);
-                CompletableFuture.runAsync(()-> this.removeDirectory(dbDto),
-                        CommonsConstConfig.MULTI_EXECUTOR_SERVICE).join();
+                this.removeDirectory(dbDto);
             }
         }
         if (!CollectionUtils.isEmpty(syncDirectories)) {
@@ -97,7 +95,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                 if (!file.isDirectory()) {
                     continue;
                 }
-                CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> processDirectory(file));
+                CommonsConstConfig.SYNC_EXECUTOR_SERVICE.submit(() -> processDirectory(file));
             }
         }
     }
@@ -113,14 +111,10 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void appendFiles(List<File> files) {
-        List<CompletableFuture<Void>> subResFutureList = new ArrayList<>();
         // 添加执行
         for (File file : files) {
-            subResFutureList.add(CompletableFuture.runAsync(() -> this.processFile(file),
-                    CommonsConstConfig.TICK_SCAN_EXECUTOR_SERVICE));
+            CommonsConstConfig.SHORT_EXECUTOR_SERVICE.submit(() -> this.processFile(file));
         }
-        // 并发阻塞
-        CompletableFuture.allOf(subResFutureList.toArray(CompletableFuture[]::new)).join();
     }
 
     private void processDirectory(File rootDir) {
@@ -162,9 +156,9 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         // 按照文件和目录分别添加
         for (File t : appendFiles) {
             if (t.isFile()) {
-                CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> this.processFile(t));
+                CommonsConstConfig.SYNC_EXECUTOR_SERVICE.submit(() -> this.processFile(t));
             } else if (t.isDirectory()) {
-                CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(() -> this.processDirectory(t));
+                CommonsConstConfig.SYNC_EXECUTOR_SERVICE.submit(() -> this.processDirectory(t));
             }
         }
     }
@@ -173,7 +167,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         List<File> fsFiles = Optional.ofNullable(rootDir.listFiles())
                 .map(List::of).orElse(Collections.emptyList());
         return fsFiles.stream().filter(t -> {
-            return t.isDirectory() || extServices.stream().anyMatch(l -> l.supportFile(t));
+            return t.isDirectory() || extServices.stream().anyMatch(l -> l.supportFile(t.getAbsolutePath()));
         }).toList();
     }
 

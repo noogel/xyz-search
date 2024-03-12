@@ -24,15 +24,15 @@ import java.util.zip.ZipFile;
 @Slf4j
 public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
 
-    private static final Set<String> SUPPORT = Set.of("epub");
+    public static final Set<String> SUPPORT = Set.of("epub");
     private static final Set<String> SUB_SUPPORT = Set.of("html", "xhtml", "xml");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;
 
     @Override
-    public boolean supportFile(File file) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, file);
+    public boolean supportFile(String filePath) {
+        return extensionUtilsService.supportFileExtension(SUPPORT, filePath);
     }
 
     private List<ChapterDto> parseFileToChapters(File zipFile) {

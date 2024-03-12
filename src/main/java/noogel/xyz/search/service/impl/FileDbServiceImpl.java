@@ -28,7 +28,8 @@ import java.util.Optional;
 @Slf4j
 public class FileDbServiceImpl implements FileDbService {
 
-    private static final List<Integer> VALID_STATES = List.of(FileStateEnum.VALID.getVal(), FileStateEnum.INDEXED.getVal());
+    private static final List<Integer> VALID_STATES = List
+            .of(FileStateEnum.VALID.getVal(), FileStateEnum.INDEXED.getVal(), FileStateEnum.ERROR.getVal());
 
     @Resource
     private FileResDao fileResDao;
@@ -156,8 +157,22 @@ public class FileDbServiceImpl implements FileDbService {
 
     @SqliteLock
     @Override
-    public List<Long> scanFileResByState(FileStateEnum state) {
-        return fileResDao.findTop48ByState(state.getVal()).stream().map(FileResModel::getId).toList();
+    public List<FileResReadDto> scanFileResByState(FileStateEnum state) {
+        return fileResDao.findTop48ByState(state.getVal()).stream().map(t -> {
+            FileResReadDto dto = new FileResReadDto();
+            dto.setFieldId(t.getId());
+            dto.setState(t.getState());
+            dto.setResId(t.getResId());
+            dto.setDir(t.getDir());
+            dto.setName(t.getName());
+            dto.setSize(t.getSize());
+            dto.setModifiedAt(t.getModifiedAt());
+            dto.setType(t.getType());
+            dto.setHash(t.getHash());
+            dto.setRank(t.getRank());
+            dto.setOptions(JsonHelper.fromJson(t.getOptions()));
+            return dto;
+        }).toList();
     }
 
     @SqliteLock

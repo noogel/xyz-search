@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,14 +25,14 @@ import java.util.Set;
 @Slf4j
 public class TEXTExtensionPointServiceImpl implements ExtensionPointService {
 
-    private static final Set<String> SUPPORT = Set.of("txt", "csv", "md");
+    public static final Set<String> SUPPORT = Set.of("txt", "csv", "md");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;
 
     @Override
-    public boolean supportFile(File file) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, file);
+    public boolean supportFile(String filePath) {
+        return extensionUtilsService.supportFileExtension(SUPPORT, filePath);
     }
 
     @Nullable

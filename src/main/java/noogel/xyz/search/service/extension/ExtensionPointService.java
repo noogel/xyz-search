@@ -4,17 +4,16 @@ import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 
 import javax.annotation.Nullable;
-import java.io.File;
 
 public interface ExtensionPointService {
 
     /**
      * 是否支持文件处理
      *
-     * @param file
+     * @param filePath
      * @return
      */
-    boolean supportFile(File file);
+    boolean supportFile(String filePath);
 
     /**
      * 解析文件

@@ -82,7 +82,7 @@ public interface FileDbService {
      * @param state
      * @return
      */
-    List<Long> scanFileResByState(FileStateEnum state);
+    List<FileResReadDto> scanFileResByState(FileStateEnum state);
 
     /**
      * 创建或追加目录

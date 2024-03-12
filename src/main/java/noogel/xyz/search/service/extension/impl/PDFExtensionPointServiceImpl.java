@@ -26,7 +26,7 @@ import java.util.Set;
 @Slf4j
 public class PDFExtensionPointServiceImpl implements ExtensionPointService {
 
-    private static final Set<String> SUPPORT = Set.of("pdf");
+    public static final Set<String> SUPPORT = Set.of("pdf");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;
@@ -64,8 +64,8 @@ public class PDFExtensionPointServiceImpl implements ExtensionPointService {
     }
 
     @Override
-    public boolean supportFile(File file) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, file);
+    public boolean supportFile(String filePath) {
+        return extensionUtilsService.supportFileExtension(SUPPORT, filePath);
     }
 
     @Nullable

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
+import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
@@ -88,17 +89,18 @@ public class CollectServiceScheduler {
     }
 
     /**
-     * 每天 8 点 清理异常记录
+     * 每天 8 点 处理异常记录
      */
     @Scheduled(cron = "0 0 8 * * *")
     public void asyncCleanDbErrorFiles() {
         for (int i = 0; i < 1000; i++) {
-            List<Long> errorRecords = fileDbService.scanFileResByState(FileStateEnum.ERROR);
+            List<FileResReadDto> errorRecords = fileDbService.scanFileResByState(FileStateEnum.ERROR);
             if (errorRecords.isEmpty()) {
                 break;
             }
             log.info("asyncCleanDbErrorFiles {}", errorRecords.size());
-            errorRecords.forEach(fileDbService::deleteFile);
+            // 恢复记录状态
+            errorRecords.forEach(t -> fileDbService.updateFileState(t.getFieldId(), FileStateEnum.VALID));
         }
     }
 
@@ -107,7 +109,7 @@ public class CollectServiceScheduler {
      */
     @Scheduled(cron = "0 0 0,6,11,15,20 * * *")
     public void asyncCollectFileIfNotExist() {
-        CommonsConstConfig.MULTI_EXECUTOR_SERVICE.submit(this::syncCollectFileIfNotExist);
+        CommonsConstConfig.SHORT_EXECUTOR_SERVICE.submit(this::syncCollectFileIfNotExist);
     }
 
     public void syncCollectFileIfNotExist() {

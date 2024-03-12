@@ -51,7 +51,11 @@ public class FileResWriteDto {
         return dir.split("/").length;
     }
 
+    public String calFilePath() {
+        return String.format("%s/%s", dir, name);
+    }
+
     public File genFile() {
-        return new File(String.format("%s/%s", dir, name));
+        return new File(calFilePath());
     }
 }

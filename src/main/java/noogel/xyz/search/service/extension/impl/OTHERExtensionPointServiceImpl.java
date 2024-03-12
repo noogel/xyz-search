@@ -22,19 +22,19 @@ import java.util.Set;
 @Slf4j
 public class OTHERExtensionPointServiceImpl implements ExtensionPointService {
 
-    private static final Set<String> SUPPORT = Set.of("mobi", "azw3", "azw", "mp4");
+    public static final Set<String> SUPPORT = Set.of("mobi", "azw3", "azw", "mp4");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;
 
     @Override
-    public boolean supportFile(File file) {
-        boolean supportFile = extensionUtilsService.supportFileExtension(SUPPORT, file);
+    public boolean supportFile(String filePath) {
+        boolean supportFile = extensionUtilsService.supportFileExtension(SUPPORT, filePath);
         if (supportFile) {
-            String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
+            String fileExtension = FileHelper.getFileExtension(filePath);
             if ("mp4".equals(fileExtension)) {
                 // 小于 10M 的是视频不索引，扩展点
-                if (file.length() < 1024 * 1024 * 10) {
+                if (new File(filePath).length() < 1024 * 1024 * 10) {
                     supportFile = false;
                 }
             }

@@ -21,14 +21,14 @@ import java.util.Set;
 @Slf4j
 public class HTMLExtensionPointServiceImpl implements ExtensionPointService {
 
-    private static final Set<String> SUPPORT = Set.of("html", "xhtml", "htm");
+    public static final Set<String> SUPPORT = Set.of("html", "xhtml", "htm");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;
 
     @Override
-    public boolean supportFile(File file) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, file);
+    public boolean supportFile(String filePath) {
+        return extensionUtilsService.supportFileExtension(SUPPORT, filePath);
     }
 
     @Nullable
