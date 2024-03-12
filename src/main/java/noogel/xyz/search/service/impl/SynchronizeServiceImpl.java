@@ -29,48 +29,11 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Resource
     private List<ExtensionPointService> extServices;
     @Resource
-    private ElasticDao ftsDao;
+    private ElasticDao elasticDao;
     @Resource
     private FileDbService fileDbService;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
-
-    private static List<FileViewDto> calculateRemoveFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
-        List<String> fsFilesUk = fsFiles.stream().map(t -> {
-            if (t.isDirectory()) {
-                return t.getAbsolutePath();
-            } else if (t.isFile()) {
-                return String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
-            }
-            return "";
-        }).filter(StringUtils::isNotBlank).toList();
-        return dbFiles.stream().filter(t -> {
-            String uk = "";
-            if (t.isDirectory()) {
-                uk = t.getPath();
-            } else if (t.isFile()) {
-                uk = String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
-            }
-            return !fsFilesUk.contains(uk);
-        }).toList();
-    }
-
-    private static List<File> calculateAppendFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
-        List<File> resp = new ArrayList<>();
-        // 添加所有目录
-        fsFiles.stream().filter(File::isDirectory).forEach(resp::add);
-        // 添加文件
-        List<String> existFilesUk = dbFiles.stream().filter(FileViewDto::isFile).map(t -> {
-            return String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
-        }).toList();
-        fsFiles.stream().filter(File::isFile).forEach(t -> {
-            String uk = String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
-            if (!existFilesUk.contains(uk)) {
-                resp.add(t);
-            }
-        });
-        return resp;
-    }
 
     @Override
     public void asyncDirectories() {
@@ -102,7 +65,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void resetIndex() {
-        ftsDao.createIndex(true);
+        elasticDao.createIndex(true);
         searchConfig.getApp().getSearchDirectories().forEach(t -> {
             int updateCount = fileDbService.updateDirectoryState(t, FileStateEnum.VALID);
             log.info("resetIndex dir {} count {}", t, updateCount);
@@ -161,6 +124,43 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                 CommonsConstConfig.SYNC_EXECUTOR_SERVICE.submit(() -> this.processDirectory(t));
             }
         }
+    }
+
+    private static List<FileViewDto> calculateRemoveFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
+        List<String> fsFilesUk = fsFiles.stream().map(t -> {
+            if (t.isDirectory()) {
+                return t.getAbsolutePath();
+            } else if (t.isFile()) {
+                return String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
+            }
+            return "";
+        }).filter(StringUtils::isNotBlank).toList();
+        return dbFiles.stream().filter(t -> {
+            String uk = "";
+            if (t.isDirectory()) {
+                uk = t.getPath();
+            } else if (t.isFile()) {
+                uk = String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
+            }
+            return !fsFilesUk.contains(uk);
+        }).toList();
+    }
+
+    private static List<File> calculateAppendFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
+        List<File> resp = new ArrayList<>();
+        // 添加所有目录
+        fsFiles.stream().filter(File::isDirectory).forEach(resp::add);
+        // 添加文件
+        List<String> existFilesUk = dbFiles.stream().filter(FileViewDto::isFile).map(t -> {
+            return String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
+        }).toList();
+        fsFiles.stream().filter(File::isFile).forEach(t -> {
+            String uk = String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
+            if (!existFilesUk.contains(uk)) {
+                resp.add(t);
+            }
+        });
+        return resp;
     }
 
     private List<File> parseValidSubFsFiles(File rootDir) {

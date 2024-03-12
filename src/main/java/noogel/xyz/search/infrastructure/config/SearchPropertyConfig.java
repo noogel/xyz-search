@@ -192,6 +192,8 @@ public class SearchPropertyConfig {
         private List<CollectItem> collectDirectories;
         @ConfigNote(desc = "索引限速")
         private Long indexLimitMs;
+        @ConfigNote(desc = "上传文件所在目录")
+        private String uploadFileDirectory;
 
         public static AppConfig init() {
             AppConfig appConfig = new AppConfig();

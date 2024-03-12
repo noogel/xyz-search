@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EsForceMergeScheduler {
     @Resource
-    private ElasticDao ftsDao;
+    private ElasticDao elasticDao;
 
     /**
      * 每天 5 点整理 es
@@ -18,7 +18,7 @@ public class EsForceMergeScheduler {
     @Scheduled(cron = "0 0 5 * * *")
     public void init() {
         log.info("auto forceMerge runDelay.");
-        ftsDao.forceMerge();
+        elasticDao.forceMerge();
     }
 
 }

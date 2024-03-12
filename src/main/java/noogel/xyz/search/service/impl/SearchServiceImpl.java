@@ -25,13 +25,13 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     @Resource
-    private ElasticDao dao;
+    private ElasticDao elasticDao;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
     @Override
     public SearchResultShowDto pageSearch(SearchQueryDto query) {
-        SearchResultDto result = dao.search(query);
+        SearchResultDto result = elasticDao.search(query);
         SearchResultShowDto showDto = new SearchResultShowDto();
         PagingDto pagingDto = PagingDto.of(query, result.getSize());
         showDto.setPaging(pagingDto);
@@ -51,7 +51,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public OPDSResultShowDto opdsSearch(SearchQueryDto query) {
-        SearchResultDto result = dao.search(query);
+        SearchResultDto result = elasticDao.search(query);
         OPDSResultShowDto showDto = new OPDSResultShowDto();
         showDto.setSize(Math.toIntExact(result.getSize()));
         showDto.setExactSize(result.isExactSize());
@@ -78,7 +78,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public ResourcePageDto searchByResId(String resId, String search) {
-        ResourceHighlightHitsDto dto = dao.searchByResId(resId, search);
+        ResourceHighlightHitsDto dto = elasticDao.searchByResId(resId, search);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(Objects.isNull(dto), "资源不存在");
         String highlightHtml = HTMLTemplateHelper.render("highlight.html",
                 Collections.singletonMap("highlight", dto.getHighlights()));
@@ -104,7 +104,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<ResourceSimpleDto> searchByResHash(String resHash) {
-        List<FileEsModel> models = dao.findByResHash(resHash);
+        List<FileEsModel> models = elasticDao.findByResHash(resHash);
         return models.stream().map(t -> {
             ResourceSimpleDto page = new ResourceSimpleDto();
             page.setResId(t.getResId());
@@ -120,7 +120,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public ResourceDownloadDto getDownloadResource(String resId) {
         ResourceDownloadDto dto = new ResourceDownloadDto();
-        FileEsModel res = dao.findByResId(resId);
+        FileEsModel res = elasticDao.findByResId(resId);
         dto.setResId(resId);
         dto.setResTitle(res.getResTitle());
         dto.setAbsolutePath(res.calculateAbsolutePath());

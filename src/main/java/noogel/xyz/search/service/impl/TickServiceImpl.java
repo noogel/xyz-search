@@ -31,7 +31,7 @@ public class TickServiceImpl implements TickService {
     @Resource
     private List<ExtensionPointService> extServices;
     @Resource
-    private ElasticDao ftsDao;
+    private ElasticDao elasticDao;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
@@ -92,7 +92,7 @@ public class TickServiceImpl implements TickService {
                         // ES 文件
                         FileEsModel fileEsModel = buildEsModel(t, contentDto);
                         // 同步到 es
-                        ftsDao.upsertData(fileEsModel);
+                        elasticDao.upsertData(fileEsModel);
                         // 更新状态
                         fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                     });
@@ -159,7 +159,7 @@ public class TickServiceImpl implements TickService {
         log.info("removeEsAndFile {}", t.calFilePath());
         try {
             // 清理ES
-            if (ftsDao.deleteByResId(t.getResId())) {
+            if (elasticDao.deleteByResId(t.getResId())) {
                 // 清理DB
                 fileDbService.deleteFile(t.getFieldId());
             }
