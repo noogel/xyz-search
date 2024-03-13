@@ -5,8 +5,7 @@ import java.util.concurrent.*;
 
 public class CommonsConstConfig {
     public static final long SLEEP_SEC_MS = 60_000L;
-    //    public static final int CORE_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors());
-    public static final int CORE_COUNT = 1;
+    public static final int CORE_COUNT = Math.min(1, Runtime.getRuntime().availableProcessors());
     public static final Set<String> SUPPORT_VIEW_EXT = Set.of("xhtml", "html", "txt", "pdf", "epub", "mp4");
     public static final ExecutorService SHORT_EXECUTOR_SERVICE = new ThreadPoolExecutor(1, 1,
             0L, TimeUnit.MILLISECONDS,
