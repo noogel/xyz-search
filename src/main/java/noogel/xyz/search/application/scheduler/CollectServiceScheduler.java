@@ -81,17 +81,17 @@ public class CollectServiceScheduler {
     }
 
     /**
-     * 每天 3 点 diff 一遍文件
+     * diff 一遍文件
      */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 1 * * *")
     public void asyncScanFsFiles() {
         synchronizeService.asyncDirectories();
     }
 
     /**
-     * 每天 8 点 处理异常记录
+     * 处理异常记录
      */
-    @Scheduled(cron = "0 0 8 * * *")
+    @Scheduled(cron = "0 30 0 * * *")
     public void asyncCleanDbErrorFiles() {
         for (int i = 0; i < 1000; i++) {
             List<FileResReadDto> errorRecords = fileDbService.scanFileResByState(FileStateEnum.ERROR);
@@ -107,7 +107,7 @@ public class CollectServiceScheduler {
     /**
      * 转移收集的文件
      */
-    @Scheduled(cron = "0 0 0,6,11,15,20 * * *")
+    @Scheduled(cron = "0 0 0,11,18 * * *")
     public void asyncCollectFileIfNotExist() {
         CommonsConstConfig.SHORT_EXECUTOR_SERVICE.submit(this::syncCollectFileIfNotExist);
     }
