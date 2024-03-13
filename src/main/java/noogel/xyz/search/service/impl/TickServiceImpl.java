@@ -3,7 +3,7 @@ package noogel.xyz.search.service.impl;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
@@ -55,7 +55,7 @@ public class TickServiceImpl implements TickService {
                 waitReadDtoList.forEach(this::indexFileToEs);
                 if (waitReadDtoList.isEmpty()) {
                     log.info("scanNonIndex item empty.");
-                    Thread.sleep(CommonsConstConfig.SLEEP_SEC_MS);
+                    Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
                 } else {
                     Long indexLimit = Optional.ofNullable(searchConfig.getApp().getIndexLimitMs()).orElse(10L);
                     Thread.sleep(indexLimit);
@@ -136,7 +136,7 @@ public class TickServiceImpl implements TickService {
                 waitDtoList.forEach(this::removeEsAndFile);
                 if (waitDtoList.isEmpty()) {
                     log.info("scanInvalidFiles item empty.");
-                    Thread.sleep(CommonsConstConfig.SLEEP_SEC_MS);
+                    Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
                 } else {
                     Long indexLimit = Optional.ofNullable(searchConfig.getApp().getIndexLimitMs()).orElse(10L);
                     Thread.sleep(indexLimit);

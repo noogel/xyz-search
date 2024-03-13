@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -38,7 +38,7 @@ public class EmailNotifyHelper {
         if (CollectionUtils.isEmpty(cfg.getNotifyEmail().getReceivers())) {
             return;
         }
-        CommonsConstConfig.SHORT_EXECUTOR_SERVICE.submit(() -> {
+        CommonsConsts.SHORT_EXECUTOR_SERVICE.submit(() -> {
             if (!sendCondition.get()) {
                 return;
             }

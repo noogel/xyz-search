@@ -4,7 +4,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.service.SearchService;
@@ -120,7 +120,7 @@ public class EpubViewCtrl {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
         final File willDel = tmp;
-        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(() -> deleteTree(resId, willDel), 1, TimeUnit.HOURS);
+        CommonsConsts.DELAY_EXECUTOR_SERVICE.schedule(() -> deleteTree(resId, willDel), 1, TimeUnit.HOURS);
         return tmp;
     }
 

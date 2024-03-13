@@ -2,7 +2,7 @@ package noogel.xyz.search.service.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
@@ -58,7 +58,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                 if (!file.isDirectory()) {
                     continue;
                 }
-                CommonsConstConfig.SYNC_EXECUTOR_SERVICE.submit(() -> processDirectory(file));
+                CommonsConsts.SYNC_EXECUTOR_SERVICE.submit(() -> processDirectory(file));
             }
         }
     }
@@ -76,7 +76,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     public void appendFiles(List<File> files) {
         // 添加执行
         for (File file : files) {
-            CommonsConstConfig.SHORT_EXECUTOR_SERVICE.submit(() -> this.processFile(file));
+            CommonsConsts.SHORT_EXECUTOR_SERVICE.submit(() -> this.processFile(file));
         }
     }
 
@@ -119,9 +119,9 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         // 按照文件和目录分别添加
         for (File t : appendFiles) {
             if (t.isFile()) {
-                CommonsConstConfig.SYNC_EXECUTOR_SERVICE.submit(() -> this.processFile(t));
+                CommonsConsts.SYNC_EXECUTOR_SERVICE.submit(() -> this.processFile(t));
             } else if (t.isDirectory()) {
-                CommonsConstConfig.SYNC_EXECUTOR_SERVICE.submit(() -> this.processDirectory(t));
+                CommonsConsts.SYNC_EXECUTOR_SERVICE.submit(() -> this.processDirectory(t));
             }
         }
     }

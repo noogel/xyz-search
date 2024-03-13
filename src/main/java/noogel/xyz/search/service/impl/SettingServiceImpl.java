@@ -140,9 +140,9 @@ public class SettingServiceImpl implements SettingService {
             }
         }
         // 文件上传目录
-        Optional.ofNullable(cfg.getSearchDirectories()).ifPresent(t-> {
-            Optional.ofNullable(cfg.getUploadFileDirectory()).filter(StringUtils::isNotBlank).ifPresent(l-> {
-                ExceptionCode.CONFIG_ERROR.throwOn(!t.contains(l), "上传目录必须为索引资源子目录");
+        Optional.ofNullable(cfg.getSearchDirectories()).ifPresent(t -> {
+            Optional.ofNullable(cfg.getUploadFileDirectory()).filter(StringUtils::isNotBlank).ifPresent(l -> {
+                ExceptionCode.CONFIG_ERROR.throwOn(t.stream().noneMatch(l::startsWith), "上传目录必须为索引资源子目录");
             });
         });
         return cfg;

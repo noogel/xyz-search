@@ -2,7 +2,7 @@ package noogel.xyz.search.service.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.*;
@@ -98,7 +98,7 @@ public class SearchServiceImpl implements SearchService {
         String contentType = FileHelper.getContentType(file);
         page.setContentType(contentType);
         String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
-        page.setSupportView(CommonsConstConfig.SUPPORT_VIEW_EXT.contains(fileExtension));
+        page.setSupportView(CommonsConsts.SUPPORT_VIEW_EXT.contains(fileExtension));
         return page;
     }
 

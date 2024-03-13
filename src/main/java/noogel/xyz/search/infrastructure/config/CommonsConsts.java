@@ -3,7 +3,8 @@ package noogel.xyz.search.infrastructure.config;
 import java.util.Set;
 import java.util.concurrent.*;
 
-public class CommonsConstConfig {
+public class CommonsConsts {
+    public static final String FILE_SUFFIX = ".tmp.xyz.search";
     public static final long SLEEP_SEC_MS = 60_000L;
     public static final int CORE_COUNT = Math.min(1, Runtime.getRuntime().availableProcessors());
     public static final Set<String> SUPPORT_VIEW_EXT = Set.of("xhtml", "html", "txt", "pdf", "epub", "mp4");
