@@ -76,7 +76,9 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     public void appendFiles(List<File> files) {
         // 添加执行
         for (File file : files) {
-            CommonsConsts.SHORT_EXECUTOR_SERVICE.submit(() -> this.processFile(file));
+            if (extServices.stream().anyMatch(t-> t.supportFile(file.getAbsolutePath()))) {
+                CommonsConsts.SHORT_EXECUTOR_SERVICE.submit(() -> this.processFile(file));
+            }
         }
     }
 
