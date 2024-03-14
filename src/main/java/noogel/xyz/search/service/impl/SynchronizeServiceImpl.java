@@ -166,6 +166,12 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     }
 
     private List<File> parseValidSubFsFiles(File rootDir) {
+        // 被排除的目录不会索引
+        List<String> excludeDirectories = Optional.ofNullable(searchConfig.getApp().getExcludeSearchDirectories())
+                .orElse(Collections.emptyList());
+        if (excludeDirectories.contains(rootDir.getAbsolutePath())) {
+            return Collections.emptyList();
+        }
         List<File> fsFiles = Optional.ofNullable(rootDir.listFiles())
                 .map(List::of).orElse(Collections.emptyList());
         return fsFiles.stream().filter(t -> {

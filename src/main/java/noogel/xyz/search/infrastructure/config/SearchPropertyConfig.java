@@ -184,6 +184,8 @@ public class SearchPropertyConfig {
         private Integer elasticsearchSocketTimeout;
         @ConfigNote(desc = "索引目录")
         private List<String> searchDirectories;
+        @ConfigNote(desc = "排除的索引目录")
+        private List<String> excludeSearchDirectories;
         @ConfigNote(desc = "OPDS 资源目录，如果存在则开启")
         private String opdsDirectory;
         @ConfigNote(desc = "访问邮件通知")
