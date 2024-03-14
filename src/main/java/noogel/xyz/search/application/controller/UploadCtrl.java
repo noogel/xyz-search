@@ -31,13 +31,13 @@ public class UploadCtrl {
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public @ResponseBody ResponseEntity<String> postUploadPage(@RequestParam("file") MultipartFile file) {
-        if (StringUtils.isBlank(searchConfig.getApp().getUploadFileDirectory())) {
-            throw ExceptionCode.CONFIG_ERROR.throwExc("当前配置未开启");
-        }
-        if (file.isEmpty()) {
-            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc("文件为空");
-        }
         try {
+            if (StringUtils.isBlank(searchConfig.getApp().getUploadFileDirectory())) {
+                throw ExceptionCode.CONFIG_ERROR.throwExc("当前配置未开启");
+            }
+            if (file.isEmpty()) {
+                throw ExceptionCode.FILE_ACCESS_ERROR.throwExc("文件为空");
+            }
             fileProcessService.uploadFile(file, searchConfig.getApp().getUploadFileDirectory());
             return new ResponseEntity<>(JsonHelper.toJson(
                     UploadRespDto.of("Success!")), HttpStatus.OK);
