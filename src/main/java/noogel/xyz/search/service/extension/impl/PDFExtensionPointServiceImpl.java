@@ -26,7 +26,7 @@ import java.util.Set;
 @Slf4j
 public class PDFExtensionPointServiceImpl implements ExtensionPointService {
 
-    public static final Set<String> SUPPORT = Set.of("pdf");
+    private static final Set<String> SUPPORT = Set.of("pdf");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;

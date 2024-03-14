@@ -21,7 +21,7 @@ import java.util.Set;
 @Slf4j
 public class HTMLExtensionPointServiceImpl implements ExtensionPointService {
 
-    public static final Set<String> SUPPORT = Set.of("html", "xhtml", "htm");
+    private static final Set<String> SUPPORT = Set.of("html", "xhtml", "htm");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;

@@ -25,7 +25,7 @@ import java.util.Set;
 @Slf4j
 public class TEXTExtensionPointServiceImpl implements ExtensionPointService {
 
-    public static final Set<String> SUPPORT = Set.of("txt", "csv", "md");
+    private static final Set<String> SUPPORT = Set.of("txt", "csv", "md");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;

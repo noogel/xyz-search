@@ -22,7 +22,7 @@ import java.util.Set;
 @Slf4j
 public class OTHERExtensionPointServiceImpl implements ExtensionPointService {
 
-    public static final Set<String> SUPPORT = Set.of("mobi", "azw3", "azw", "mp4");
+    private static final Set<String> SUPPORT = Set.of("mobi", "azw3", "azw", "mp4", "mkv", "avi");
 
     @Resource
     private ExtensionUtilsService extensionUtilsService;

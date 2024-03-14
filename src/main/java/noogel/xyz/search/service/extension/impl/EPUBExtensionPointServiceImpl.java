@@ -24,7 +24,7 @@ import java.util.zip.ZipFile;
 @Slf4j
 public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
 
-    public static final Set<String> SUPPORT = Set.of("epub");
+    private static final Set<String> SUPPORT = Set.of("epub");
     private static final Set<String> SUB_SUPPORT = Set.of("html", "xhtml", "xml");
 
     @Resource
