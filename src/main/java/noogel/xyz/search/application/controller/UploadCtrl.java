@@ -48,7 +48,7 @@ public class UploadCtrl {
                 log.error("postUploadPage error.", exception);
             }
             return new ResponseEntity<>(JsonHelper.toJson(
-                    UploadRespDto.of(exception.getMessage())), HttpStatus.INTERNAL_SERVER_ERROR);
+                    UploadRespDto.of(exception.getMessage())), HttpStatus.BAD_REQUEST);
         }
     }
 
