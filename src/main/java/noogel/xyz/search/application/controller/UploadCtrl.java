@@ -3,6 +3,8 @@ package noogel.xyz.search.application.controller;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.dto.dropzone.UploadRespDto;
+import noogel.xyz.search.infrastructure.exception.BizException;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.service.FileProcessService;
@@ -12,9 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -40,11 +39,16 @@ public class UploadCtrl {
         }
         try {
             fileProcessService.uploadFile(file, searchConfig.getApp().getUploadFileDirectory());
-            return new ResponseEntity<>("Success!", HttpStatus.OK);
+            return new ResponseEntity<>(JsonHelper.toJson(
+                    UploadRespDto.of("Success!")), HttpStatus.OK);
         } catch (Exception exception) {
-            log.error("postUploadPage", exception);
-            // todo
-            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+            if (exception instanceof BizException) {
+                log.warn("postUploadPage warn.", exception);
+            } else {
+                log.error("postUploadPage error.", exception);
+            }
+            return new ResponseEntity<>(JsonHelper.toJson(
+                    UploadRespDto.of(exception.getMessage())), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

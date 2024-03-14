@@ -54,7 +54,6 @@ public class TickServiceImpl implements TickService {
                 List<FileResReadDto> waitReadDtoList = fileDbService.scanFileResByState(FileStateEnum.VALID);
                 waitReadDtoList.forEach(this::indexFileToEs);
                 if (waitReadDtoList.isEmpty()) {
-                    log.info("scanNonIndex item empty.");
                     Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
                 } else {
                     Long indexLimit = Optional.ofNullable(searchConfig.getApp().getIndexLimitMs()).orElse(10L);
@@ -135,7 +134,6 @@ public class TickServiceImpl implements TickService {
                 List<FileResReadDto> waitDtoList = fileDbService.scanFileResByState(FileStateEnum.INVALID);
                 waitDtoList.forEach(this::removeEsAndFile);
                 if (waitDtoList.isEmpty()) {
-                    log.info("scanInvalidFiles item empty.");
                     Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
                 } else {
                     Long indexLimit = Optional.ofNullable(searchConfig.getApp().getIndexLimitMs()).orElse(10L);
