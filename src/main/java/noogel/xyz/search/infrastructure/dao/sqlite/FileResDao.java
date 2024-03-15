@@ -38,4 +38,7 @@ public interface FileResDao extends JpaRepository<FileResModel, Long> {
     @Query("select f from FileResModel f where f.dir = :dir and f.state in :states")
     @NonNull
     List<FileResModel> findByDirAndStateIn(@Param("dir") @NonNull String dir, @Param("states") @NonNull Collection<Integer> states);
+
+    @NonNull
+    Optional<FileResModel> findByResId(@NonNull String resId);
 }

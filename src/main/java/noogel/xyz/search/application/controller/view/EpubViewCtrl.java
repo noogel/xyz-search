@@ -1,4 +1,4 @@
-package noogel.xyz.search.application.controller;
+package noogel.xyz.search.application.controller.view;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;

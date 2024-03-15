@@ -5,10 +5,12 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
+import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.SynchronizeService;
@@ -20,8 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -169,6 +173,44 @@ public class FileProcessServiceImpl implements FileProcessService {
         } finally {
             TRANSFER_RUNNING_COUNT.decrementAndGet();
         }
+    }
+
+    @Override
+    public void fileMarkDelete(String resId) {
+        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(searchConfig.getApp().getMarkDeleteDirectory()),
+                "需要先配置标记清理目录");
+        fileDbService.findByResIdFilterState(resId, FileStateEnum.INDEXED).ifPresent(t-> {
+            // 转移文件
+            Path sourcePath = Paths.get(t.calFilePath());
+            ExceptionCode.FILE_ACCESS_ERROR.throwOn(!sourcePath.toFile().exists(), "文件不存在");
+            Path targetPath;
+            int flag = 0;
+            while (true) {
+                ExceptionCode.FILE_ACCESS_ERROR.throwOn(flag > 200, "重名文件太多");
+                String prefix = flag > 0 ? String.format("(%s)", flag) : "";
+                targetPath = Paths.get(searchConfig.getApp().getMarkDeleteDirectory())
+                        .resolve(prefix + t.getName())
+                        .normalize().toAbsolutePath();
+                if (!targetPath.toFile().exists()) {
+                    break;
+                }
+                flag++;
+            }
+            try {
+                Path descPath = Paths.get(searchConfig.getApp().getMarkDeleteDirectory())
+                        .resolve(targetPath.getFileName() + ".转移说明.txt")
+                        .normalize().toAbsolutePath();
+                try (BufferedWriter writer = Files.newBufferedWriter(descPath, StandardCharsets.UTF_8)) {
+                    writer.write(Objects.requireNonNull(JsonHelper.toJson(t)));
+                }
+                Files.move(sourcePath, targetPath);
+            } catch (IOException e) {
+                log.error("fileMarkDelete error.", e);
+                throw ExceptionCode.FILE_ACCESS_ERROR.throwExc("标记删除，文件转移异常");
+            }
+            // 标记失效
+            fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INVALID);
+        });
     }
 
     /**

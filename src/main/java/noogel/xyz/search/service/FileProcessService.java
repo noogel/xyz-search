@@ -14,4 +14,10 @@ public interface FileProcessService {
      * 收集文件
      */
     void syncCollectFileIfNotExist();
+
+    /**
+     * 标记删除文件
+     * @param resId
+     */
+    void fileMarkDelete(String resId);
 }

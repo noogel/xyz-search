@@ -4,6 +4,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.util.List;
+import java.util.Objects;
+
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
@@ -39,4 +42,19 @@ public class ResourcePageDto extends ResourceSimpleDto {
      */
     private boolean supportView;
 
+    /**
+     * 计算查看 Url
+     * @return
+     */
+    public String getViewUrl() {
+        if (Objects.equals(resType, "FILE:PDF")) {
+            return "/pdf.js/web/view?file=/file/view/" + getResId();
+        } else if (Objects.equals(resType, "FILE:EPUB")) {
+            return "/epub/web/view?book=" + getResId();
+        } else if (List.of("FILE:MP4", "FILE:AVI", "FILE:MKV").contains(resType)) {
+            return "/video/" + getResId();
+        } else {
+            return "/file/view/" + getResId();
+        }
+    }
 }

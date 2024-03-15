@@ -19,7 +19,7 @@ public enum FileStateEnum {
      */
     INVALID(2),
     /**
-     * 无效，已删除
+     * 无效，标记删除
      */
     DELETED(3),
     /**

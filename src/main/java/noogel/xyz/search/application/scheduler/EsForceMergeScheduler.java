@@ -1,5 +1,6 @@
 package noogel.xyz.search.application.scheduler;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
@@ -20,5 +21,4 @@ public class EsForceMergeScheduler {
         log.info("auto forceMerge runDelay.");
         elasticDao.forceMerge();
     }
-
 }

@@ -76,6 +76,8 @@ public interface FileDbService {
      */
     Optional<FileResReadDto> findByIdFilterState(Long id, FileStateEnum state);
 
+    Optional<FileResReadDto> findByResIdFilterState(String resId, FileStateEnum state);
+
     /**
      * 按状态搜索
      *

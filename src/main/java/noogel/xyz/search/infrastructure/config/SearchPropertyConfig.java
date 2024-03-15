@@ -196,6 +196,8 @@ public class SearchPropertyConfig {
         private Long indexLimitMs;
         @ConfigNote(desc = "上传文件所在目录")
         private String uploadFileDirectory;
+        @ConfigNote(desc = "标记删除文件转移到的目录")
+        private String markDeleteDirectory;
 
         public static AppConfig init() {
             AppConfig appConfig = new AppConfig();

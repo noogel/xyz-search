@@ -155,6 +155,32 @@ public class FileDbServiceImpl implements FileDbService {
         return Optional.of(dto);
     }
 
+    @Override
+    public Optional<FileResReadDto> findByResIdFilterState(String resId, FileStateEnum state) {
+        Optional<FileResModel> fileRes = fileResDao.findByResId(resId);
+        if (fileRes.isEmpty()) {
+            return Optional.empty();
+        }
+        if (state.getVal() != fileRes.get().getState()) {
+            return Optional.empty();
+        }
+        FileResReadDto dto = new FileResReadDto();
+        fileRes.ifPresent(t -> {
+            dto.setFieldId(t.getId());
+            dto.setState(t.getState());
+            dto.setResId(t.getResId());
+            dto.setDir(t.getDir());
+            dto.setName(t.getName());
+            dto.setSize(t.getSize());
+            dto.setModifiedAt(t.getModifiedAt());
+            dto.setType(t.getType());
+            dto.setHash(t.getHash());
+            dto.setRank(t.getRank());
+            dto.setOptions(JsonHelper.fromJson(t.getOptions()));
+        });
+        return Optional.of(dto);
+    }
+
     @SqliteLock
     @Override
     public List<FileResReadDto> scanFileResByState(FileStateEnum state) {

@@ -145,6 +145,14 @@ public class SettingServiceImpl implements SettingService {
                 ExceptionCode.CONFIG_ERROR.throwOn(t.stream().noneMatch(l::startsWith), "上传目录必须为索引资源子目录");
             });
         });
+        // 标记删除转移的目录必须在排除的目录下
+        Optional.ofNullable(cfg.getMarkDeleteDirectory()).filter(StringUtils::isNotBlank).ifPresent(t -> {
+            List<String> excludeDirs = Optional.ofNullable(cfg.getExcludeSearchDirectories())
+                    .orElse(Collections.emptyList());
+            ExceptionCode.CONFIG_ERROR.throwOn(
+                    CollectionUtils.isEmpty(excludeDirs) || excludeDirs.stream().noneMatch(t::startsWith),
+                    "标记删除转移目录必须为排除目录的子目录");
+        });
         return cfg;
     }
 }

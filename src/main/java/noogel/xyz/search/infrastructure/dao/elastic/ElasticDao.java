@@ -212,15 +212,14 @@ public class ElasticDao {
         }
     }
 
-    public boolean forceMerge() {
-        ForcemergeRequest forcemergeRequest = ForcemergeRequest.of(t -> t.maxNumSegments(1L).onlyExpungeDeletes(true));
+    public void forceMerge() {
+        ForcemergeRequest forcemergeRequest = ForcemergeRequest
+                .of(t -> t.onlyExpungeDeletes(true));
         try {
             log.info("run forceMerge");
             config.getClient().indices().forcemerge(forcemergeRequest);
-            return true;
         } catch (IOException e) {
             log.error("forceMerge error.", e);
-            return false;
         }
     }
 
