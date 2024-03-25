@@ -96,7 +96,7 @@ public class VideoViewCtrl {
      * @param tsId
      * @param response
      */
-    @RequestMapping(value = "/video/{resId}/ts/{tsId}", method = RequestMethod.GET)
+    @RequestMapping(value = {"/video/{resId}/ts/{tsId}", "/video/undefined/video/{resId}/ts/{tsId}"}, method = RequestMethod.GET)
     public void fileOp(@PathVariable String resId,
                        @PathVariable String tsId,
                        HttpServletResponse response) {
