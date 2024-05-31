@@ -10,40 +10,35 @@
     <script type="text/javascript">
         function fetch_data(obj) {
             const href = obj.href;
+            // 重置
+            document.querySelector("#fileInfoName").textContent = '加载中...';
+            document.querySelector("#fileInfoPath").textContent = '';
+            document.querySelector("#fileInfoContentType").textContent = '';
+            document.querySelector("#fileInfoSize").textContent = '';
+            document.querySelector("#fileInfoModifiedAt").textContent = '';
+            document.querySelector("#fileInfoHighlight").innerHTML = '';
+            document.querySelector("#fileDownloadA").href = '';
+            document.querySelector("#selectedResId").value = '';
+            document.querySelector("#dirViewA").href = '';
+            document.querySelector("#fileViewA").href = '';
+
             fetch(href).then(function (r) {
                 if (!r.ok) {
                     document.querySelector("#fileInfoName").textContent = '加载异常：' + r.status.toString() + " " + r.statusText;
-                    document.querySelector("#fileInfoPath").textContent = '';
-                    document.querySelector("#fileInfoContentType").textContent = '';
-                    document.querySelector("#fileInfoSize").textContent = '';
-                    document.querySelector("#fileInfoModifiedAt").textContent = '';
-                    document.querySelector("#fileInfoHighlight").innerHTML = '';
-                    document.querySelector("#fileDownloadA").href = '';
-                    document.querySelector("#dirViewA").href = '';
-                    document.querySelector("#fileViewA").href = '';
                     throw 'Error';
                 }
                 return r.json()
             }).then(function (data) {
+                document.querySelector("#selectedResId").value = data.resId;
                 document.querySelector("#fileInfoName").textContent = data.resTitle;
                 document.querySelector("#fileInfoPath").textContent = data.relativeResPath;
                 document.querySelector("#fileInfoContentType").textContent = data.contentType;
                 document.querySelector("#fileInfoSize").textContent = data.resSize;
                 document.querySelector("#fileInfoModifiedAt").textContent = data.modifiedAt;
                 document.querySelector("#fileInfoHighlight").innerHTML = data.highlightHtml;
-                document.querySelector("#fileDownloadA").href = "/file/" + data.resId + "?type=download";
+                document.querySelector("#fileDownloadA").href = "/file/" + data.resId + "/download";
                 document.querySelector("#dirViewA").href = "/?resId=" + data.resId + "&relativeResDir=" + encodeURIComponent(data.relativeResDir);
-                if (data.resType == 'FILE:PDF') {
-                    document.querySelector("#fileViewA").href = "/pdf.js/web/view?file=/file/" + data.resId;
-                } else if (data.resType == 'FILE:EPUB') {
-                    document.querySelector("#fileViewA").href = "/epub/web/view?book=" + data.resId;
-                } else if (data.resType == 'FILE:MP4') {
-                    document.querySelector("#fileViewA").href = "/video/" + data.resId;
-                } else {
-                    document.querySelector("#fileViewA").href = "/file/" + data.resId;
-                }
-                // document.querySelector("#subPage").src = document.querySelector("#fileViewA").href;
-
+                document.querySelector("#fileViewA").href = data.viewUrl;
                 // 是否支持查看
                 if (data.supportView) {
                     document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success");
@@ -53,7 +48,7 @@
                     document.querySelector("#fileViewA").setAttribute("class", "page-link disabled");
                 }
 
-                document.querySelector("#linkCalibre").href = "http://10.168.1.102:8080/#library_id=%E7%94%B5%E5%AD%90%E4%B9%A6%E5%BA%93&panel=book_list&search=" + data.searchableTitle + "&sort=last_modified.desc";
+                document.querySelector("#linkCalibre").href = "http://192.168.124.13:8080/#library_id=%E7%94%B5%E5%AD%90%E4%B9%A6%E5%BA%93&panel=book_list&search=" + data.searchableTitle + "&sort=last_modified.desc";
                 document.querySelector("#linkDouban").href = "https://m.douban.com/search/?query=" + data.searchableTitle;
                 document.querySelector("#linkJd").href = "https://so.m.jd.com/ware/search.action?keyword=" + data.searchableTitle;
                 document.querySelector("#linkGG").href = "https://www.google.com/search?q=" + data.searchableTitle;
@@ -61,6 +56,23 @@
                 console.log(err);
             });
         }
+
+        const fetch_delete = function (obj) {
+            const resId = document.querySelector("#selectedResId").value;
+            const href = '/file/' + resId + "/delete";
+            fetch_data_post(href, obj);
+        }
+
+        const fetch_data_post = function (href, obj) {
+            fetch(href, {
+                method: 'GET'
+            }).then(r => r.json()).then(function (data) {
+                document.querySelector("#opResultModalBody").textContent = data.header + ":" + data.body;
+            }).catch(function (err) {
+                document.querySelector("#opResultModalBody").textContent = '操作失败:' + err.toString();
+            });
+        }
+
     </script>
 </head>
 <body>
@@ -103,14 +115,6 @@
                                                     不限制
                                                 </label>
                                             </div>
-<!--                                            <div class="form-check small">-->
-<!--                                                <input class="form-check-input" type="radio" name="resSize"-->
-<!--                                                       id="resSizeLt1048576" value="LT:1048576"-->
-<!--                                                       th:checked="(${result.paging.query.resSize} == 'LT:1048576') ? 'checked'">-->
-<!--                                                <label class="form-check-label" for="resSizeLt1048576">-->
-<!--                                                    小于 1MB-->
-<!--                                                </label>-->
-<!--                                            </div>-->
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="resSize"
                                                        id="resSizeLt10485760" value="LT:10485760"
@@ -278,7 +282,7 @@
                             <td>
                                 <a data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
                                    th:id="${m.resId}" aria-controls="offcanvasRight" onclick="fetch_data(this)"
-                                   th:href="@{/file(resId=${m.resId}, search=${result.paging.query.search})}" th:text="${m.resTitle}"></a>
+                                   th:href="@{/search/{resId}(resId=${m.resId}, search=${result.paging.query.search})}" th:text="${m.resTitle}"></a>
                             </td>
                             <td th:text="${m.resSize}"></td>
                             <td th:text="${m.modifiedAt}"></td>
@@ -311,6 +315,7 @@
                     <h5 class="offcanvas-title" id="offcanvasFileInfo">文件详情</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
+                <input type="hidden" id="selectedResId" />
                 <div class="offcanvas-body">
                     <div class="my-3 row justify-content-start">
                         <div class="col-12">
@@ -355,6 +360,11 @@
                             <a class="page-link" id="fileDownloadA" href="#" target="_blank">
                                 <button type="button" class="btn btn-primary">下载</button></a>
                         </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                    data-bs-target="#opResultModal"
+                                    onclick="document.querySelector('#opResultModalBody').textContent = '';">清理</button>
+                        </div>
                     </div>
                     <div class="my-3 row justify-content-start">
                         <!-- 文件内容结果列表 -->
@@ -393,16 +403,34 @@
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
             </div>
+            <!-- Modal -->
+            <div class="modal fade" id="opResultModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="opResultModalHeader">确认执行</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="opResultModalBody">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary" onclick="fetch_delete(this)">执行</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-12">
             <footer class="py-3 my-4">
                 <ul class="nav justify-content-center border-bottom pb-3 mb-3">
                     <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
                     <li class="nav-item"><a href="/?random=true" class="nav-link px-2 text-muted">随机</a></li>
+                    <li class="nav-item"><a href="/upload" class="nav-link px-2 text-muted">上传</a></li>
                     <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
                     <li class="nav-item"><a href="/logout" class="nav-link px-2 text-muted">登出</a></li>
                 </ul>
-                <p class="text-center text-muted">© 2015 – 2023 <span style="font-size: 0.8rem">❤</span> noogel</p>
+                <p class="text-center text-muted">© 2015 – 2024 <span style="font-size: 0.8rem">❤</span> noogel</p>
             </footer>
         </div>
     </div>

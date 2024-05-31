@@ -40,11 +40,6 @@ public class OPDSCtrl {
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
-    private void checkConfig() {
-        String opdsDirectory = searchConfig.getApp().getOpdsDirectory();
-        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(opdsDirectory), "OPDS 未开启");
-    }
-
     private static UrlDto collectUrls(HttpServletRequest httpServletRequest) {
         String requestUrl = httpServletRequest.getRequestURL().toString();
         String baseUrl = requestUrl.substring(0, requestUrl.indexOf(httpServletRequest.getRequestURI()));
@@ -56,6 +51,11 @@ public class OPDSCtrl {
         dto.setParameters(httpServletRequest.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, t -> t.getValue()[0])));
         return dto;
+    }
+
+    private void checkConfig() {
+        String opdsDirectory = searchConfig.getApp().getOpdsDirectory();
+        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(opdsDirectory), "OPDS 未开启");
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)

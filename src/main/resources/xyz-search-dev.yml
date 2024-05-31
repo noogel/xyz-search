@@ -12,3 +12,4 @@ app:
   elasticsearchSocketTimeout: 5000
   searchDirectories:
     - /home/xyz/DockerSharingData/TestSearch
+  indexLimitMs: 10

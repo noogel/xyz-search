@@ -8,6 +8,7 @@ import java.lang.annotation.*;
 public @interface ConfigNote {
     /**
      * 字段描述
+     *
      * @return
      */
     String desc();

@@ -23,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -96,8 +97,10 @@ public class SettingServiceImpl implements SettingService {
                 .build();
         inMemoryUserDetailsManager.updateUser(user);
     }
+
     /**
      * 校验并且拷贝到新的配置对象中
+     *
      * @param scr
      * @return
      */
@@ -110,7 +113,8 @@ public class SettingServiceImpl implements SettingService {
                 "Elasticsearch host 不能为空");
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(scr.getPassword()),
                 "密码不能为空");
-        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isNotBlank(cfg.getNotifyEmail().getUrl())
+        ExceptionCode.CONFIG_ERROR.throwOn(Objects.nonNull(cfg.getNotifyEmail())
+                && StringUtils.isNotBlank(cfg.getNotifyEmail().getUrl())
                 && CollectionUtils.isEmpty(cfg.getNotifyEmail().getReceivers()), "邮件通知接收人不能为空");
         // 校验证书
         if (StringUtils.isNotBlank(cfg.getElasticsearchCAPath())) {
@@ -127,12 +131,28 @@ public class SettingServiceImpl implements SettingService {
                             String.format("目录 %s 不存在", k));
                 });
         // 校验正则
-        for (SearchPropertyConfig.CollectItem collectItem : cfg.getCollectDirectories()) {
+        List<SearchPropertyConfig.CollectItem> itemList = Optional.ofNullable(cfg.getCollectDirectories())
+                .orElse(Collections.emptyList());
+        for (SearchPropertyConfig.CollectItem collectItem : itemList) {
             if (StringUtils.isNotBlank(collectItem.getFilterRegex())) {
                 // 检查是否可编译
                 Pattern.compile(collectItem.getFilterRegex());
             }
         }
+        // 文件上传目录
+        Optional.ofNullable(cfg.getSearchDirectories()).ifPresent(t -> {
+            Optional.ofNullable(cfg.getUploadFileDirectory()).filter(StringUtils::isNotBlank).ifPresent(l -> {
+                ExceptionCode.CONFIG_ERROR.throwOn(t.stream().noneMatch(l::startsWith), "上传目录必须为索引资源子目录");
+            });
+        });
+        // 标记删除转移的目录必须在排除的目录下
+        Optional.ofNullable(cfg.getMarkDeleteDirectory()).filter(StringUtils::isNotBlank).ifPresent(t -> {
+            List<String> excludeDirs = Optional.ofNullable(cfg.getExcludeSearchDirectories())
+                    .orElse(Collections.emptyList());
+            ExceptionCode.CONFIG_ERROR.throwOn(
+                    CollectionUtils.isEmpty(excludeDirs) || excludeDirs.stream().noneMatch(t::startsWith),
+                    "标记删除转移目录必须为排除目录的子目录");
+        });
         return cfg;
     }
 }

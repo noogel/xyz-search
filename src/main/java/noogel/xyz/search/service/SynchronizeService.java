@@ -4,24 +4,25 @@ import java.io.File;
 import java.util.List;
 
 public interface SynchronizeService {
-    /**
-     * 异步索引指定目录
-     * @param paths
-     */
-    void async(List<String> paths);
 
     /**
-     * 异步索引全部
+     * 异步索引
      */
-    void asyncAll();
+    void asyncDirectories();
+
+    /**
+     * 异步索引
+     */
+    void asyncDirectories(List<String> syncDirectories, List<String> removeDirectories);
 
     /**
      * 重置索引
      */
-    boolean resetIndex();
+    void resetIndex();
 
     /**
      * 追加文件
+     *
      * @param files
      */
     void appendFiles(List<File> files);

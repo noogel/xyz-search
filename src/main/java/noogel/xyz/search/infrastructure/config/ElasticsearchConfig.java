@@ -46,6 +46,7 @@ public class ElasticsearchConfig {
 
     /**
      * 获取客户端
+     *
      * @return
      */
     public ElasticsearchClient getClient() {
@@ -57,6 +58,7 @@ public class ElasticsearchConfig {
 
     /**
      * 生成客户端
+     *
      * @param sc
      * @return
      */

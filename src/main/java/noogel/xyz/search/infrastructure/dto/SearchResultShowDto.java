@@ -24,6 +24,7 @@ public class SearchResultShowDto {
     public boolean showBreadCrumb() {
         return Objects.nonNull(breadcrumb) && !CollectionUtils.isEmpty(breadcrumb.getItems());
     }
+
     public boolean showSearchBar() {
         return !showBreadCrumb();
     }

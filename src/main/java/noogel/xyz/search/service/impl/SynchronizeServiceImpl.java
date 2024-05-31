@@ -2,25 +2,25 @@ package noogel.xyz.search.service.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
-import noogel.xyz.search.infrastructure.dao.ElasticSearchFtsDao;
-import noogel.xyz.search.infrastructure.dto.SearchBaseQueryDto;
-import noogel.xyz.search.infrastructure.dto.SearchResultDto;
-import noogel.xyz.search.infrastructure.dto.TaskDto;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
-import noogel.xyz.search.infrastructure.utils.MD5Helper;
+import noogel.xyz.search.infrastructure.consts.FileStateEnum;
+import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
+import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
+import noogel.xyz.search.infrastructure.utils.FileResHelper;
+import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.SynchronizeService;
 import noogel.xyz.search.service.extension.ExtensionPointService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -29,152 +29,176 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Resource
     private List<ExtensionPointService> extServices;
     @Resource
-    private ElasticSearchFtsDao ftsDao;
+    private ElasticDao elasticDao;
+    @Resource
+    private FileDbService fileDbService;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
     @Override
-    public void async(List<String> paths) {
-        CommonsConstConfig.EXECUTOR_SERVICE.submit(() -> syncProcessDirectory(paths));
+    public void asyncDirectories() {
+        asyncDirectories(searchConfig.getApp().getSearchDirectories(), Collections.emptyList());
     }
 
     @Override
-    public void asyncAll() {
-        List<String> paths = searchConfig.getApp().getSearchDirectories();
-        if (CollectionUtils.isEmpty(paths)) {
-            return;
+    public void asyncDirectories(List<String> syncDirectories, List<String> removeDirectories) {
+        if (!CollectionUtils.isEmpty(removeDirectories)) {
+            for (String path : removeDirectories) {
+                FileViewDto dbDto = FileViewDto.of(path, true, null, null, null);
+                this.removeDirectory(dbDto);
+            }
         }
-        CommonsConstConfig.EXECUTOR_SERVICE.submit(() -> syncProcessDirectory(paths));
+        if (!CollectionUtils.isEmpty(syncDirectories)) {
+            for (String path : syncDirectories) {
+                // 检查文件夹是否存在
+                File file = new File(path);
+                if (!file.exists()) {
+                    continue;
+                }
+                if (!file.isDirectory()) {
+                    continue;
+                }
+                CommonsConsts.SYNC_EXECUTOR_SERVICE.submit(() -> processDirectory(file));
+            }
+        }
     }
 
     @Override
-    public boolean resetIndex() {
-        return ftsDao.createIndex(true);
+    public void resetIndex() {
+        elasticDao.createIndex(true);
+        searchConfig.getApp().getSearchDirectories().forEach(t -> {
+            int updateCount = fileDbService.updateDirectoryState(t, FileStateEnum.VALID);
+            log.info("resetIndex dir {} count {}", t, updateCount);
+        });
     }
 
     @Override
     public void appendFiles(List<File> files) {
-        // 随机获取一个 task 数据
-        SearchBaseQueryDto queryDto = new SearchBaseQueryDto();
-        queryDto.setLimit(1);
-        SearchResultDto search = ftsDao.search(queryDto);
-        TaskDto taskDto = search.getData().stream().map(t -> {
-            TaskDto dto = new TaskDto();
-            dto.setTaskId(t.getTaskId());
-            dto.setTaskOpAt(t.getTaskOpAt());
-            return dto;
-        }).findFirst().orElse(TaskDto.generateTask());
-        List<CompletableFuture<Void>> subResFutureList = new ArrayList<>();
         // 添加执行
         for (File file : files) {
-            subResFutureList.add(CompletableFuture.runAsync(()-> this.processFile(file, taskDto),
-                    CommonsConstConfig.MULTI_EXECUTOR_SERVICE));
+            if (extServices.stream().anyMatch(t-> t.supportFile(file.getAbsolutePath()))) {
+                CommonsConsts.SHORT_EXECUTOR_SERVICE.submit(() -> this.processFile(file));
+            }
         }
-        // 并发阻塞
-        CompletableFuture.allOf(subResFutureList.toArray(CompletableFuture[]::new)).join();
     }
 
-
-    private void syncProcessDirectory(List<String> paths) {
-        TaskDto taskDto = TaskDto.generateTask();
-        for (String path : paths) {
-            // 只允许索引配置的文件夹或子文件夹
-            boolean match = searchConfig.getApp().getSearchDirectories().stream().anyMatch(t -> t.startsWith(path));
-            if (!match) {
-                log.info("asyncPath not Configured: {}", path);
-                continue;
-            }
-            // 检查文件夹是否存在
-            File file = new File(path);
-            if (!file.exists()) {
-                continue;
-            }
-            processDirectory(file, taskDto);
-        }
-        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(
-                ()-> delayCleanOldRes("", taskDto.getTaskOpAt()), 60, TimeUnit.SECONDS);
-    }
-
-    private void processDirectory(File rootFile, TaskDto taskDto) {
-        log.info("processTask will process {} {}", rootFile.getAbsolutePath(), taskDto);
+    private void processDirectory(File rootDir) {
         // 检查文件夹
-        if (!rootFile.isDirectory()) {
+        if (!rootDir.isDirectory()) {
             return;
         }
-        // 遍历文件和文件夹
-        File[] subFiles = rootFile.listFiles();
-        if (Objects.isNull(subFiles)) {
+        // 记录目录
+        fileDbService.upsertPath(rootDir.getAbsolutePath());
+        // 文件系统 遍历文件和文件夹
+        List<File> fsFiles = parseValidSubFsFiles(rootDir);
+        // 数据库 文件和文件夹
+        List<FileViewDto> dbFiles = fileDbService.listFiles(rootDir);
+        // 均为空则返回
+        if (CollectionUtils.isEmpty(fsFiles) && CollectionUtils.isEmpty(dbFiles)) {
             return;
         }
-        List<CompletableFuture<Void>> subResFutureList = new ArrayList<>();
-        List<File> subDirList = new ArrayList<>();
-        // 分类
-        for (File subFile : subFiles) {
-            if (subFile.isFile()) {
-                subResFutureList.add(CompletableFuture.runAsync(()-> this.processFile(subFile, taskDto),
-                        CommonsConstConfig.MULTI_EXECUTOR_SERVICE));
-            } else if (subFile.isDirectory()) {
-                subDirList.add(subFile);
-            }
+        // 待操作数据
+        List<File> appendFiles = calculateAppendFiles(fsFiles, dbFiles);
+        List<FileViewDto> removeFiles = calculateRemoveFiles(fsFiles, dbFiles);
+        if (!(CollectionUtils.isEmpty(appendFiles) && CollectionUtils.isEmpty(removeFiles))) {
+            log.info("processDirectory will {}\nappend:\n  {} \nremove:\n  {}",
+                    rootDir.getAbsolutePath(),
+                    String.join("\n  ", appendFiles.stream().map(File::getAbsolutePath).toList()),
+                    String.join("\n  ", removeFiles.stream().map(FileViewDto::getPath).toList()));
         }
-        // 并发阻塞
-        CompletableFuture.allOf(subResFutureList.toArray(CompletableFuture[]::new)).join();
-
-        // 同步
-        for (File subDir : subDirList) {
-            try{
-                // 子目录索引
-                processDirectory(subDir, taskDto);
-            } catch (Exception ex) {
-                log.error("processTask error {}", subDir.getAbsolutePath(), ex);
-            }
-        }
-
-        String rootPath = rootFile.getAbsolutePath();
-        Long taskOpAt = taskDto.getTaskOpAt();
-        CommonsConstConfig.DELAY_EXECUTOR_SERVICE.schedule(
-                ()-> delayCleanOldRes(rootPath, taskOpAt), 10, TimeUnit.SECONDS);
-    }
-
-    private void processFile(File subFile, TaskDto taskDto) {
-        try {
-            // 解析子文件
-            extServices.stream().filter(t -> t.supportFile(subFile)).findFirst()
-                    .ifPresent(t -> {
-                        ResourceModel res = ftsDao.findByResId(MD5Helper.getMD5(subFile.getAbsolutePath()));
-                        // 优先判断文件更新时间和大小
-                        if (Objects.nonNull(res)
-                                && subFile.lastModified() == res.getModifiedAt()
-                                && subFile.length() == res.getResSize()) {
-                            res.updateTask(taskDto);
-                            log.info("processTask.useExistRes {} {} {}", res.getResId(),
-                                    subFile.getAbsolutePath(), taskDto);
-                        } else {
-                            res = t.parseFile(subFile, taskDto);
-                            log.info("processTask.parseFile {} {} {}", res.getResId(),
-                                    subFile.getAbsolutePath(), taskDto);
-                        }
-                        ftsDao.upsertData(res);
-                    });
-        } catch (Exception ex) {
-            log.error("processTask error {}", subFile.getAbsolutePath(), ex);
-        }
-    }
-
-    private void delayCleanOldRes(String rootDir, Long taskOpAt) {
-        SearchResultDto oldRes = ftsDao.searchOldRes(rootDir, taskOpAt);
-        log.info("delayCleanOldRes {} {}", rootDir, oldRes.getSize());
-        while (!oldRes.getData().isEmpty()) {
-            for (ResourceModel res : oldRes.getData()) {
-                ftsDao.deleteByResId(res);
-            }
+        // 按照文件和目录分别删除
+        for (FileViewDto t : removeFiles) {
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                if (t.isFile()) {
+                    this.removeFile(t);
+                } else if (t.isDirectory()) {
+                    this.removeDirectory(t);
+                }
+            } catch (Exception ex) {
+                log.error("process remove error {}", t.getPath(), ex);
             }
-            oldRes = ftsDao.searchOldRes(rootDir, taskOpAt);
         }
+        // 按照文件和目录分别添加
+        for (File t : appendFiles) {
+            if (t.isFile()) {
+                CommonsConsts.SYNC_EXECUTOR_SERVICE.submit(() -> this.processFile(t));
+            } else if (t.isDirectory()) {
+                CommonsConsts.SYNC_EXECUTOR_SERVICE.submit(() -> this.processDirectory(t));
+            }
+        }
+    }
+
+    private static List<FileViewDto> calculateRemoveFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
+        List<String> fsFilesUk = fsFiles.stream().map(t -> {
+            if (t.isDirectory()) {
+                return t.getAbsolutePath();
+            } else if (t.isFile()) {
+                return String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
+            }
+            return "";
+        }).filter(StringUtils::isNotBlank).toList();
+        return dbFiles.stream().filter(t -> {
+            String uk = "";
+            if (t.isDirectory()) {
+                uk = t.getPath();
+            } else if (t.isFile()) {
+                uk = String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
+            }
+            return !fsFilesUk.contains(uk);
+        }).toList();
+    }
+
+    private static List<File> calculateAppendFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
+        List<File> resp = new ArrayList<>();
+        // 添加所有目录
+        fsFiles.stream().filter(File::isDirectory).forEach(resp::add);
+        // 添加文件
+        List<String> existFilesUk = dbFiles.stream().filter(FileViewDto::isFile).map(t -> {
+            return String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
+        }).toList();
+        fsFiles.stream().filter(File::isFile).forEach(t -> {
+            String uk = String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
+            if (!existFilesUk.contains(uk)) {
+                resp.add(t);
+            }
+        });
+        return resp;
+    }
+
+    private List<File> parseValidSubFsFiles(File rootDir) {
+        // 被排除的目录不会索引
+        List<String> excludeDirectories = Optional.ofNullable(searchConfig.getApp().getExcludeSearchDirectories())
+                .orElse(Collections.emptyList());
+        if (excludeDirectories.contains(rootDir.getAbsolutePath())) {
+            return Collections.emptyList();
+        }
+        List<File> fsFiles = Optional.ofNullable(rootDir.listFiles())
+                .map(List::of).orElse(Collections.emptyList());
+        return fsFiles.stream().filter(t -> {
+            return t.isDirectory() || extServices.stream().anyMatch(l -> l.supportFile(t.getAbsolutePath()));
+        }).toList();
+    }
+
+    private void processFile(File subFile) {
+        log.info("processFile to db {}", subFile.getAbsolutePath());
+        // 检查文件夹
+        if (!subFile.isFile()) {
+            return;
+        }
+        // 读取文件
+        FileResWriteDto fsDto = FileResHelper.genFileFsDto(subFile);
+        // 追加到DB
+        fileDbService.appendFile(fsDto);
+    }
+
+    private void removeFile(FileViewDto subFile) {
+        log.info("processTask will remove {}", subFile.getPath());
+        fileDbService.updateFileState(subFile.getFileId(), FileStateEnum.INVALID);
+    }
+
+    private void removeDirectory(FileViewDto subDir) {
+        log.info("processTask will remove {}", subDir.getPath());
+        fileDbService.updateDirectoryState(subDir.getPath(), FileStateEnum.INVALID);
     }
 
 }

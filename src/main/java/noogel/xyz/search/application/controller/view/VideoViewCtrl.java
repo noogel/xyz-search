@@ -1,4 +1,4 @@
-package noogel.xyz.search.application.controller;
+package noogel.xyz.search.application.controller.view;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
@@ -15,7 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -27,6 +30,7 @@ public class VideoViewCtrl {
 
     /**
      * 视频渲染页面
+     *
      * @param resId
      * @return
      */
@@ -44,6 +48,7 @@ public class VideoViewCtrl {
 
     /**
      * 视频切片列表
+     *
      * @param resId
      * @return
      * @throws IOException
@@ -86,11 +91,12 @@ public class VideoViewCtrl {
 
     /**
      * 视频切片获取
+     *
      * @param resId
      * @param tsId
      * @param response
      */
-    @RequestMapping(value = "/video/{resId}/ts/{tsId}", method = RequestMethod.GET)
+    @RequestMapping(value = {"/video/{resId}/ts/{tsId}", "/video/undefined/video/{resId}/ts/{tsId}"}, method = RequestMethod.GET)
     public void fileOp(@PathVariable String resId,
                        @PathVariable String tsId,
                        HttpServletResponse response) {

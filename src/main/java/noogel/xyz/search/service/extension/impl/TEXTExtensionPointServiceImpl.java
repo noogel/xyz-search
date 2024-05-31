@@ -2,9 +2,10 @@ package noogel.xyz.search.service.extension.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.dto.TaskDto;
+import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import noogel.xyz.search.service.extension.ExtensionUtilsService;
@@ -12,11 +13,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -29,21 +31,24 @@ public class TEXTExtensionPointServiceImpl implements ExtensionPointService {
     private ExtensionUtilsService extensionUtilsService;
 
     @Override
-    public boolean supportFile(File file) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, file);
+    public boolean supportFile(String filePath) {
+        return extensionUtilsService.supportFileExtension(SUPPORT, filePath);
     }
 
     @Nullable
     @Override
-    public ResourceModel parseFile(File file, TaskDto task) {
+    public FileResContentDto parseFile(FileResReadDto resReadDto) {
+        File file = resReadDto.genFile();
         Path path = Paths.get(file.toURI());
-        String text = "";
+        StringBuilder text = new StringBuilder();
         try {
             Charset charset = FileHelper.detectCharset(file);
-            text = Files.readString(path, charset);
-        } catch (IOException e) {
-            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
+            List<String> allLines = Files.readAllLines(path, charset);
+            allLines.forEach(text::append);
+        } catch (Exception ex) {
+            log.error("TEXTExtensionPointServiceImpl error {}", path, ex);
+            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
         }
-        return ResourceModel.buildBaseInfo(file, text, task);
+        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text.toString())), null);
     }
 }

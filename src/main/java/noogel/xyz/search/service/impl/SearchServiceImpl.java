@@ -2,12 +2,12 @@ package noogel.xyz.search.service.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConstConfig;
+import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
-import noogel.xyz.search.infrastructure.dao.ElasticSearchFtsDao;
+import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.*;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
+import noogel.xyz.search.infrastructure.model.elastic.FileEsModel;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
@@ -25,13 +25,13 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     @Resource
-    private ElasticSearchFtsDao dao;
+    private ElasticDao elasticDao;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
     @Override
     public SearchResultShowDto pageSearch(SearchQueryDto query) {
-        SearchResultDto result = dao.search(query);
+        SearchResultDto result = elasticDao.search(query);
         SearchResultShowDto showDto = new SearchResultShowDto();
         PagingDto pagingDto = PagingDto.of(query, result.getSize());
         showDto.setPaging(pagingDto);
@@ -51,7 +51,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public OPDSResultShowDto opdsSearch(SearchQueryDto query) {
-        SearchResultDto result = dao.search(query);
+        SearchResultDto result = elasticDao.search(query);
         OPDSResultShowDto showDto = new OPDSResultShowDto();
         showDto.setSize(Math.toIntExact(result.getSize()));
         showDto.setExactSize(result.isExactSize());
@@ -78,11 +78,11 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public ResourcePageDto searchByResId(String resId, String search) {
-        ResourceHighlightHitsDto dto = dao.searchByResId(resId, search);
+        ResourceHighlightHitsDto dto = elasticDao.searchByResId(resId, search);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(Objects.isNull(dto), "资源不存在");
         String highlightHtml = HTMLTemplateHelper.render("highlight.html",
                 Collections.singletonMap("highlight", dto.getHighlights()));
-        ResourceModel t = dto.getResource();
+        FileEsModel t = dto.getResource();
         ResourcePageDto page = new ResourcePageDto();
         page.setResId(t.getResId());
         page.setResTitle(t.getResTitle());
@@ -98,13 +98,13 @@ public class SearchServiceImpl implements SearchService {
         String contentType = FileHelper.getContentType(file);
         page.setContentType(contentType);
         String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
-        page.setSupportView(CommonsConstConfig.SUPPORT_VIEW_EXT.contains(fileExtension));
+        page.setSupportView(CommonsConsts.SUPPORT_VIEW_EXT.contains(fileExtension));
         return page;
     }
 
     @Override
     public List<ResourceSimpleDto> searchByResHash(String resHash) {
-        List<ResourceModel> models = dao.findByResHash(resHash);
+        List<FileEsModel> models = elasticDao.findByResHash(resHash);
         return models.stream().map(t -> {
             ResourceSimpleDto page = new ResourceSimpleDto();
             page.setResId(t.getResId());
@@ -120,7 +120,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public ResourceDownloadDto getDownloadResource(String resId) {
         ResourceDownloadDto dto = new ResourceDownloadDto();
-        ResourceModel res = dao.findByResId(resId);
+        FileEsModel res = elasticDao.findByResId(resId);
         dto.setResId(resId);
         dto.setResTitle(res.getResTitle());
         dto.setAbsolutePath(res.calculateAbsolutePath());

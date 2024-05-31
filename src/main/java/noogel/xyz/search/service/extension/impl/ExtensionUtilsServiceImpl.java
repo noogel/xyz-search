@@ -20,11 +20,8 @@ import java.util.Set;
 public class ExtensionUtilsServiceImpl implements ExtensionUtilsService {
 
     @Override
-    public boolean supportFileExtension(Set<String> supportExtension, File file) {
-        if (file.isDirectory()) {
-            return false;
-        }
-        String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
+    public boolean supportFileExtension(Set<String> supportExtension, String filePath) {
+        String fileExtension = FileHelper.getFileExtension(filePath);
         return supportExtension.contains(fileExtension);
     }
 

@@ -3,16 +3,16 @@ package noogel.xyz.search.service.extension.impl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
-import noogel.xyz.search.infrastructure.dto.TaskDto;
+import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -31,20 +31,19 @@ public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
     private ExtensionUtilsService extensionUtilsService;
 
     @Override
-    public boolean supportFile(File file) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, file);
+    public boolean supportFile(String filePath) {
+        return extensionUtilsService.supportFileExtension(SUPPORT, filePath);
     }
 
-
-    private String parseFileToText(File zipFile) {
-        StringBuilder data = new StringBuilder();
+    private List<ChapterDto> parseFileToChapters(File zipFile) {
+        List<ChapterDto> resp = new ArrayList<>();
         File tmp = null;
         try (ZipFile zip = new ZipFile(zipFile, Charset.defaultCharset())) {
             // 创建临时文件夹
             tmp = Files.createTempDirectory("tmp").toFile();
             // 解压缩 epub 文件
             for (Enumeration<? extends ZipEntry> entries = zip.entries(); entries.hasMoreElements(); ) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
+                ZipEntry entry = entries.nextElement();
                 String zipEntryName = entry.getName();
                 try (InputStream in = zip.getInputStream(entry)) {
                     //指定解压后的文件夹+当前zip文件的名称
@@ -75,7 +74,7 @@ public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
                     String ext = FileHelper.getFileExtension(t.getAbsolutePath());
                     // 解析添加
                     if (SUB_SUPPORT.contains(ext)) {
-                        data.append(Jsoup.parse(t).text());
+                        resp.add(ChapterDto.of(t.getName(), Jsoup.parse(t).text()));
                     }
                 }
             }
@@ -87,15 +86,15 @@ public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
                 FileHelper.deleteFile(tmp);
             }
         }
-        return data.toString();
+        return resp;
     }
 
-    @Nullable
     @Override
-    public ResourceModel parseFile(File file, TaskDto task) {
-        String text = parseFileToText(file);
+    public FileResContentDto parseFile(FileResReadDto resReadDto) {
+        File file = resReadDto.genFile();
+        List<ChapterDto> chapters = parseFileToChapters(file);
         ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
-        return ResourceModel.buildBaseInfo(file, text, title, task);
+        return FileResContentDto.of(chapters, title);
     }
 }

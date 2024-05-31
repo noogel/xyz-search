@@ -23,6 +23,10 @@ public class ConfigAppUpdateEvent extends ApplicationEvent {
         super(source);
     }
 
+    public ConfigAppUpdateEvent(Object source, Clock clock) {
+        super(source, clock);
+    }
+
     public static ConfigAppUpdateEvent of(Object source,
                                           SearchPropertyConfig.AppConfig oldApp,
                                           SearchPropertyConfig.AppConfig newApp) {
@@ -30,10 +34,6 @@ public class ConfigAppUpdateEvent extends ApplicationEvent {
         event.oldApp = oldApp;
         event.newApp = newApp;
         return event;
-    }
-
-    public ConfigAppUpdateEvent(Object source, Clock clock) {
-        super(source, clock);
     }
 
 }

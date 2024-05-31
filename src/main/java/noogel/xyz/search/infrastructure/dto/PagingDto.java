@@ -41,12 +41,15 @@ public class PagingDto {
     public String getStartPageQuery() {
         return query.getUrlQuery(startOffset);
     }
+
     public String getPrevPageQuery() {
         return query.getUrlQuery(prevOffset);
     }
+
     public String getNextPageQuery() {
         return query.getUrlQuery(nextOffset);
     }
+
     public String getEndPageQuery() {
         return query.getUrlQuery(endOffset);
     }
@@ -54,12 +57,14 @@ public class PagingDto {
     public String getPageDesc() {
         return pageDesc;
     }
+
     public String getPrevPageDisable() {
         if (prevPageDisable) {
             return "disabled";
         }
         return "";
     }
+
     public String getNextPageDisable() {
         if (nextPageDisable) {
             return "disabled";

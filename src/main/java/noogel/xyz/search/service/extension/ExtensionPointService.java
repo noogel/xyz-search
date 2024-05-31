@@ -1,23 +1,26 @@
 package noogel.xyz.search.service.extension;
 
-import noogel.xyz.search.infrastructure.dto.TaskDto;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
+import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 
-import java.io.File;
+import javax.annotation.Nullable;
 
 public interface ExtensionPointService {
 
     /**
      * 是否支持文件处理
-     * @param file
+     *
+     * @param filePath
      * @return
      */
-    boolean supportFile(File file);
+    boolean supportFile(String filePath);
 
     /**
      * 解析文件
+     *
      * @param file
      * @return
      */
-    ResourceModel parseFile(File file, TaskDto taskDto);
+    @Nullable
+    FileResContentDto parseFile(FileResReadDto file);
 }

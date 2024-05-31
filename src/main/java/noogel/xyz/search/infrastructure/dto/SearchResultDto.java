@@ -1,7 +1,7 @@
 package noogel.xyz.search.infrastructure.dto;
 
 import lombok.Data;
-import noogel.xyz.search.infrastructure.model.ResourceModel;
+import noogel.xyz.search.infrastructure.model.elastic.FileEsModel;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public class SearchResultDto {
     /**
      * 分页数据
      */
-    private List<ResourceModel> data;
+    private List<FileEsModel> data;
     /**
      * 数量
      */

@@ -3,6 +3,7 @@ package noogel.xyz.search.infrastructure.config;
 import noogel.xyz.search.infrastructure.utils.EnvHelper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,16 +21,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         String authEnv = EnvHelper.FuncEnv.AUTH.getEnv();
         if (Objects.equals("true", authEnv)) {
-            http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
+            http.authorizeHttpRequests((auth) -> auth.anyRequest().authenticated())
+                    .httpBasic(Customizer.withDefaults());
         } else {
-            http.authorizeRequests().anyRequest().permitAll();
+            http.authorizeHttpRequests((auth) -> auth.anyRequest().permitAll());
         }
-//        http.authorizeRequests()
-//                .anyRequest().authenticated()
-//                .and().formLogin().loginProcessingUrl("/login")
-//                .and().logout().permitAll()
-//                .and().csrf().disable();
-//        http.headers().frameOptions().sameOrigin();
         return http.build();
     }
 

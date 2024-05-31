@@ -1,7 +1,6 @@
 package noogel.xyz.search.infrastructure.dto;
 
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 @Data
 public class SearchBaseQueryDto {
@@ -15,6 +14,14 @@ public class SearchBaseQueryDto {
     private Boolean randomScore;
     private QueryOrderDto order;
 
+    public static QueryOrderDto buildRankOrder(boolean ascOrder) {
+        return QueryOrderDto.of("rank", ascOrder);
+    }
+
+    public static QueryOrderDto buildLatestOrder(boolean ascOrder) {
+        return QueryOrderDto.of("modifiedAt", ascOrder);
+    }
+
     @Data
     public static class QueryOrderDto {
         private String field;
@@ -26,14 +33,6 @@ public class SearchBaseQueryDto {
             dto.setAscOrder(ascOrder);
             return dto;
         }
-    }
-
-    public static QueryOrderDto buildRankOrder(boolean ascOrder) {
-        return QueryOrderDto.of("rank", ascOrder);
-    }
-
-    public static QueryOrderDto buildLatestOrder(boolean ascOrder) {
-        return QueryOrderDto.of("modifiedAt", ascOrder);
     }
 
 }

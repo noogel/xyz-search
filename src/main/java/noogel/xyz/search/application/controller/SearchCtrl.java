@@ -1,6 +1,7 @@
 package noogel.xyz.search.application.controller;
 
 import jakarta.annotation.Resource;
+import noogel.xyz.search.infrastructure.dto.ResourcePageDto;
 import noogel.xyz.search.infrastructure.dto.SearchBaseQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultShowDto;
@@ -8,9 +9,7 @@ import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.service.SearchService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
@@ -69,6 +68,12 @@ public class SearchCtrl {
         mv.addObject("result", result);
         mv.addObject("random", String.valueOf(random));
         return mv;
+    }
+
+    @RequestMapping(value = "/search/{resId}", method = RequestMethod.GET)
+    public @ResponseBody
+    ResourcePageDto searchByResId(@PathVariable String resId, @RequestParam(required = false) String search) {
+        return searchService.searchByResId(resId, search);
     }
 
 }
