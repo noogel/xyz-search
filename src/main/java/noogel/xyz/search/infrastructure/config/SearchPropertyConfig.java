@@ -169,6 +169,15 @@ public class SearchPropertyConfig {
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PaddleOcr {
+        @ConfigNote(desc = "paddleOcr:OCR服务地址")
+        private String url;
+        @ConfigNote(desc = "paddleOcr:超时时间(毫秒)")
+        private Integer timeout;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AppConfig {
         @ConfigNote(desc = "ES 地址，地址格式 http[s]://xxx:9200")
         private String elasticsearchHost;
@@ -198,6 +207,16 @@ public class SearchPropertyConfig {
         private String uploadFileDirectory;
         @ConfigNote(desc = "标记删除文件转移到的目录")
         private String markDeleteDirectory;
+        @ConfigNote(desc = "外部 OCR 服务")
+        private PaddleOcr paddleOcr;
+
+        /**
+         * 是否开启了 ocr 服务
+         * @return
+         */
+        public boolean supportPaddleOcr() {
+            return Objects.nonNull(paddleOcr) && StringUtils.isNotBlank(paddleOcr.url);
+        }
 
         public static AppConfig init() {
             AppConfig appConfig = new AppConfig();
