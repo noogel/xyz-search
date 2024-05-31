@@ -8,35 +8,43 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class HttpClient {
     // 设置连接主机服务超时时间
-    private static final int CONNECT_TIMEOUT = 3000;
+    private static final int CONNECT_TIMEOUT = 6000;
     // 设置连接请求超时时间
-    private static final int CONNECT_REQ_TIMEOUT = 3000;
+    private static final int CONNECT_REQ_TIMEOUT = 6000;
     // 设置读取数据连接超时时间
     private static final int CONNECT_SOCKET_TIMEOUT = 6000;
-    // 配置请求参数实例
-    private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
-            .setConnectTimeout(CONNECT_TIMEOUT)
-            .setConnectionRequestTimeout(CONNECT_REQ_TIMEOUT)
-            .setSocketTimeout(CONNECT_SOCKET_TIMEOUT)
-            .build();
+
+    private static final Map<Integer, RequestConfig> REQUEST_CONFIG_MAP = new ConcurrentHashMap<>();
 
     public static String doGet(String url) {
+        return doGet(url, CONNECT_SOCKET_TIMEOUT);
+    }
+    public static String doGet(String url, int socketTimeout) {
+        RequestConfig requestConfig = REQUEST_CONFIG_MAP.computeIfAbsent(
+                socketTimeout,
+                t -> RequestConfig.custom()
+                        .setConnectTimeout(CONNECT_TIMEOUT)
+                        .setConnectionRequestTimeout(CONNECT_REQ_TIMEOUT)
+                        .setSocketTimeout(t)
+                        .build());
         // 通过址默认配置创建一个httpClient实例
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             // 创建httpGet远程连接实例
             HttpGet httpGet = new HttpGet(url);
-            // 设置请求头信息，鉴权
-//            httpGet.setHeader("Authorization", "Bearer da3efcbf-0845-4fe3-8aba-ee040be542c0");
             // 为httpGet实例设置配置
-            httpGet.setConfig(REQUEST_CONFIG);
+            httpGet.setConfig(requestConfig);
             // 执行get请求得到返回对象
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 // 通过返回对象获取返回数据
@@ -51,12 +59,23 @@ public class HttpClient {
     }
 
     public static String doPost(String url, String jsonString) {
+        return doPost(url, jsonString, CONNECT_SOCKET_TIMEOUT);
+    }
+
+    public static String doPost(String url, String jsonString, int socketTimeout) {
+        RequestConfig requestConfig = REQUEST_CONFIG_MAP.computeIfAbsent(
+                socketTimeout,
+                t -> RequestConfig.custom()
+                        .setConnectTimeout(CONNECT_TIMEOUT)
+                        .setConnectionRequestTimeout(CONNECT_REQ_TIMEOUT)
+                        .setSocketTimeout(t)
+                        .build());
         // 创建httpClient实例
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             // 创建httpPost远程连接实例
             HttpPost httpPost = new HttpPost(url);
             // 为httpPost实例设置配置
-            httpPost.setConfig(REQUEST_CONFIG);
+            httpPost.setConfig(requestConfig);
             // 设置请求头
             httpPost.addHeader("Content-Type", "application/json; charset=utf-8");
             httpPost.addHeader("Accept", "application/json");
