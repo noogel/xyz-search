@@ -49,6 +49,8 @@ public class SettingServiceImpl implements SettingService {
         SearchSettingDto dto = new SearchSettingDto();
         dto.setUsername(searchConfig.getBase().getUsername());
         dto.setPassword(searchConfig.getBase().getPassword());
+        dto.setConfigFilePath(searchConfig.getBase().getConfigFilePath());
+        dto.setFtsIndexName(searchConfig.getBase().getFtsIndexName());
         dto.setAppConfig(Optional.ofNullable(searchConfig.getApp()).map(JsonHelper::toJson).orElse("{}"));
         dto.setConfigDesc(SearchPropertyConfig.AppConfig.getNotes());
         return dto;

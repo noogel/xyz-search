@@ -65,6 +65,19 @@
                         <input type="password" class="form-control" id="password" name="password"
                                placeholder="" th:value="${searchConfig.password}">
                     </div>
+                    <div class="col-sm-6">
+                        <label for="configFilePath" class="form-label">配置路径
+                            <span class="text-muted">（只读）</span></label>
+                        <input type="text" class="form-control" id="configFilePath" name="configFilePath"
+                               placeholder="" th:value="${searchConfig.configFilePath}" disabled>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="ftsIndexName" class="form-label">索引名
+                            <span class="text-muted">（只读）</span></label>
+                        <input type="text" class="form-control" id="ftsIndexName" name="ftsIndexName"
+                               placeholder="" th:value="${searchConfig.ftsIndexName}" disabled>
+                    </div>
                     <div class="col-12">
                         <label class="form-label">应用配置</label>
                         <div id="jsoneditor" style="width: auto; height: 600px;"></div>

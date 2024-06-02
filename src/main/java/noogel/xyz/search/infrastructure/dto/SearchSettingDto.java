@@ -12,6 +12,8 @@ public class SearchSettingDto {
      */
     private String username;
     private String password;
+    private String ftsIndexName;
+    private String configFilePath;
     private String appConfig;
     private List<Pair<String, String>> configDesc;
 }
