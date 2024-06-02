@@ -1,5 +1,6 @@
 package noogel.xyz.search.infrastructure.dao.elastic;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
@@ -345,6 +346,11 @@ public class ElasticDao {
             log.info("search:{}", searchRequest.toString());
             SearchResponse<FileEsModel> search = config.getClient().search(searchRequest, FileEsModel.class);
             parseSearchResult(resp, search);
+        } catch (ElasticsearchException ex) {
+            if (ex.getMessage().contains("index_not_found_exception")) {
+                createIndex(true);
+            }
+            log.error("search err", ex);
         } catch (IOException ex) {
             log.error("search err", ex);
         }

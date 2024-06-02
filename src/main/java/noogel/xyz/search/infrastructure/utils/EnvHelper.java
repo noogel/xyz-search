@@ -19,6 +19,8 @@ public class EnvHelper {
     @Getter
     public enum FuncEnv {
         AUTH("是否开启鉴权", "true"),
+        FTS_IDX("自定义索引", ""),
+        SUB_TITLE("副标题", ""),
         ;
 
         private final String desc;

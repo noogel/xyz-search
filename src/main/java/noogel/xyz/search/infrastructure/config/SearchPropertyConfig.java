@@ -124,6 +124,8 @@ public class SearchPropertyConfig {
         // 先从启动命令中读取配置
         SearchConfig commandConfig = readConfigByProperty();
         if (Objects.nonNull(commandConfig)) {
+            // 从启动环境变量中覆盖配置
+            overrideFromEnv(commandConfig);
             return commandConfig;
         }
 
@@ -131,8 +133,13 @@ public class SearchPropertyConfig {
         String pCfgPath = propertyConfigPath(searchConfig.base.configFilePath);
         SearchConfig propertyConfig = readConfigByFile(pCfgPath);
         if (Objects.nonNull(propertyConfig)) {
+            // 从启动环境变量中覆盖配置
+            overrideFromEnv(propertyConfig);
             return propertyConfig;
         }
+
+        // 从启动环境变量中覆盖配置
+        overrideFromEnv(searchConfig);
 
         // 最后填充配置对象返回
         if (Objects.isNull(searchConfig.getApp())) {
@@ -141,8 +148,16 @@ public class SearchPropertyConfig {
         if (Objects.isNull(searchConfig.getRuntime())) {
             searchConfig.setRuntime(RuntimeConfig.init());
         }
+
         searchConfig.saveToFile();
         return searchConfig;
+    }
+
+    private void overrideFromEnv(SearchConfig searchConfig) {
+        String esIdxEnv = EnvHelper.FuncEnv.FTS_IDX.getEnv();
+        if (StringUtils.isNotBlank(esIdxEnv)) {
+            searchConfig.getBase().setFtsIndexName(esIdxEnv);
+        }
     }
 
     @Data
