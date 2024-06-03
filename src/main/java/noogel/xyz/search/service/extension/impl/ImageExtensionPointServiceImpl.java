@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class ImageExtensionPointServiceImpl implements ExtensionPointService {
-    private static final Set<String> SUPPORT = Set.of("jpg", "jpeg", "png", "webp", "bmp", "tiff");
+    public static final Set<String> SUPPORT = Set.of("jpg", "jpeg", "png", "webp", "bmp", "tiff");
     // todo "heif", "heic",
 
     @Resource

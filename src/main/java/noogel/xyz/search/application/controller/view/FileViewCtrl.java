@@ -42,4 +42,26 @@ public class FileViewCtrl {
         }
     }
 
+    @RequestMapping(value = "/file/view/{resId}/thumbnail", method = RequestMethod.GET)
+    public void fileViewThumbnail(@PathVariable String resId,
+                       HttpServletResponse response) {
+        ResourceDownloadDto downloadResource = searchService.getDownloadResource(resId);
+        File file = new File(downloadResource.getAbsolutePath());
+        ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
+        try (InputStream inputStream = new FileInputStream(file)) {
+            response.reset();
+            String contentType = FileHelper.getContentType(file);
+            response.setContentType(contentType);
+            try (ServletOutputStream outputStream = response.getOutputStream()) {
+                byte[] b = new byte[1024];
+                int len;
+                while ((len = inputStream.read(b)) > 0) {
+                    outputStream.write(b, 0, len);
+                }
+            }
+        } catch (Exception ex) {
+            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
+        }
+    }
+
 }

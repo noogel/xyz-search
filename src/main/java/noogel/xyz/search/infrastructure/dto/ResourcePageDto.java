@@ -3,6 +3,7 @@ package noogel.xyz.search.infrastructure.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import noogel.xyz.search.service.extension.impl.ImageExtensionPointServiceImpl;
 
 import java.util.List;
 import java.util.Objects;
@@ -56,5 +57,18 @@ public class ResourcePageDto extends ResourceSimpleDto {
         } else {
             return "/file/view/" + getResId();
         }
+    }
+
+    // todo 优化
+    public String getViewThumbnailUrl() {
+        if (ImageExtensionPointServiceImpl.SUPPORT.stream().anyMatch(t-> resType.toLowerCase().contains(t))) {
+            return "/file/view/" + getResId() + "/thumbnail";
+        } else  {
+            return "#";
+        }
+    }
+
+    public boolean getSupportViewThumbnail() {
+        return !getViewThumbnailUrl().contains("#");
     }
 }
