@@ -13,7 +13,7 @@ import noogel.xyz.search.infrastructure.model.elastic.FileEsModel;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.TickService;
-import noogel.xyz.search.service.extension.ExtensionPointService;
+import noogel.xyz.search.service.extension.ExtensionService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +29,7 @@ public class TickServiceImpl implements TickService {
     @Resource
     private FileDbService fileDbService;
     @Resource
-    private List<ExtensionPointService> extServices;
+    private ExtensionService extensionService;
     @Resource
     private ElasticDao elasticDao;
     @Resource
@@ -76,9 +76,7 @@ public class TickServiceImpl implements TickService {
     private void indexFileToEs(FileResReadDto t) {
         try {
             // 解析子文件
-            extServices.stream()
-                    .filter(l -> l.supportFile(t.calFilePath()))
-                    .findFirst()
+            extensionService.findParser(t.calFilePath())
                     .ifPresent(l -> {
                         // 解析文件
                         FileResContentDto contentDto = l.parseFile(t);

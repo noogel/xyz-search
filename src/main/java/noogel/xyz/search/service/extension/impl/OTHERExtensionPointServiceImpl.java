@@ -1,14 +1,14 @@
 package noogel.xyz.search.service.extension.impl;
 
-import jakarta.annotation.Resource;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.consts.FileExtEnum;
+import noogel.xyz.search.infrastructure.consts.FileProcessClassEnum;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
-import noogel.xyz.search.service.extension.ExtensionPointService;
-import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,19 +20,21 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class OTHERExtensionPointServiceImpl implements ExtensionPointService {
+public class OTHERExtensionPointServiceImpl extends AbstractExtensionPointService {
+    @Getter
+    private final FileProcessClassEnum fileClass = FileProcessClassEnum.OTHER;
 
-    private static final Set<String> SUPPORT = Set.of("mobi", "azw3", "azw", "mp4", "mkv", "avi");
-
-    @Resource
-    private ExtensionUtilsService extensionUtilsService;
+    @Getter
+    private final Set<FileExtEnum> supportParseFileExtension = Set.of(
+            FileExtEnum.MOBI, FileExtEnum.AZW3, FileExtEnum.AZW, FileExtEnum.MP4, FileExtEnum.MKV, FileExtEnum.AVI
+    );
 
     @Override
     public boolean supportFile(String filePath) {
-        boolean supportFile = extensionUtilsService.supportFileExtension(SUPPORT, filePath);
+        boolean supportFile = super.supportFile(filePath);
         if (supportFile) {
-            String fileExtension = FileHelper.getFileExtension(filePath);
-            if ("mp4".equals(fileExtension)) {
+            FileExtEnum fileExtension = FileHelper.getFileExtension(filePath);
+            if (FileExtEnum.MP4.equals(fileExtension)) {
                 // 小于 10M 的是视频不索引，扩展点
                 if (new File(filePath).length() < 1024 * 1024 * 10) {
                     supportFile = false;
@@ -46,7 +48,7 @@ public class OTHERExtensionPointServiceImpl implements ExtensionPointService {
     @Override
     public FileResContentDto parseFile(FileResReadDto resReadDto) {
         File file = resReadDto.genFile();
-        ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
+        ResRelationInfoDto resRel = autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
         String text = file.getName();
         if (StringUtils.isNotBlank(title)) {

@@ -1,6 +1,8 @@
-package noogel.xyz.search.infrastructure.dto;
+package noogel.xyz.search.infrastructure.dto.page;
 
 import lombok.Data;
+import noogel.xyz.search.infrastructure.dto.BreadcrumbDto;
+import noogel.xyz.search.infrastructure.dto.PagingDto;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;

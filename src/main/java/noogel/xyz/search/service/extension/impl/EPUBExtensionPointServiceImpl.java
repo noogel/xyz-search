@@ -1,15 +1,15 @@
 package noogel.xyz.search.service.extension.impl;
 
-import jakarta.annotation.Resource;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.consts.FileExtEnum;
+import noogel.xyz.search.infrastructure.consts.FileProcessClassEnum;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
-import noogel.xyz.search.service.extension.ExtensionPointService;
-import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
@@ -22,18 +22,16 @@ import java.util.zip.ZipFile;
 
 @Service
 @Slf4j
-public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
+public class EPUBExtensionPointServiceImpl extends AbstractExtensionPointService {
 
-    private static final Set<String> SUPPORT = Set.of("epub");
-    private static final Set<String> SUB_SUPPORT = Set.of("html", "xhtml", "xml");
+    @Getter
+    private final FileProcessClassEnum fileClass = FileProcessClassEnum.EPUB;
 
-    @Resource
-    private ExtensionUtilsService extensionUtilsService;
-
-    @Override
-    public boolean supportFile(String filePath) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, filePath);
-    }
+    @Getter
+    private final Set<FileExtEnum> supportParseFileExtension = Set.of(FileExtEnum.EPUB);
+    private final Set<FileExtEnum> subSupportFileExtension = Set.of(
+            FileExtEnum.HTML, FileExtEnum.XHTML, FileExtEnum.XML
+    );
 
     private List<ChapterDto> parseFileToChapters(File zipFile) {
         List<ChapterDto> resp = new ArrayList<>();
@@ -71,9 +69,9 @@ public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
             List<File> subFiles = FileHelper.parseAllSubFiles(tmp);
             for (File t : subFiles) {
                 if (t.isFile()) {
-                    String ext = FileHelper.getFileExtension(t.getAbsolutePath());
+                    FileExtEnum ext = FileHelper.getFileExtension(t.getAbsolutePath());
                     // 解析添加
-                    if (SUB_SUPPORT.contains(ext)) {
+                    if (subSupportFileExtension.contains(ext)) {
                         resp.add(ChapterDto.of(t.getName(), Jsoup.parse(t).text()));
                     }
                 }
@@ -93,7 +91,7 @@ public class EPUBExtensionPointServiceImpl implements ExtensionPointService {
     public FileResContentDto parseFile(FileResReadDto resReadDto) {
         File file = resReadDto.genFile();
         List<ChapterDto> chapters = parseFileToChapters(file);
-        ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
+        ResRelationInfoDto resRel = autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
         return FileResContentDto.of(chapters, title);
     }

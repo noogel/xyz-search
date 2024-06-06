@@ -1,14 +1,14 @@
 package noogel.xyz.search.service.extension.impl;
 
-import jakarta.annotation.Resource;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.consts.FileExtEnum;
+import noogel.xyz.search.infrastructure.consts.FileProcessClassEnum;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.service.extension.ExtensionPointService;
-import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
@@ -24,12 +24,12 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class PDFExtensionPointServiceImpl implements ExtensionPointService {
+public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService {
 
-    private static final Set<String> SUPPORT = Set.of("pdf");
-
-    @Resource
-    private ExtensionUtilsService extensionUtilsService;
+    @Getter
+    private final FileProcessClassEnum fileClass = FileProcessClassEnum.PDF;
+    @Getter
+    private final Set<FileExtEnum> supportParseFileExtension = Set.of(FileExtEnum.PDF);
 
     /**
      * 读取pdf中文字信息(全部)
@@ -63,17 +63,12 @@ public class PDFExtensionPointServiceImpl implements ExtensionPointService {
         return resp;
     }
 
-    @Override
-    public boolean supportFile(String filePath) {
-        return extensionUtilsService.supportFileExtension(SUPPORT, filePath);
-    }
-
     @Nullable
     @Override
     public FileResContentDto parseFile(FileResReadDto resReadDto) {
         File file = resReadDto.genFile();
         List<ChapterDto> chapters = readPdfChapters(file);
-        ResRelationInfoDto resRel = extensionUtilsService.autoFindRelationInfo(file);
+        ResRelationInfoDto resRel = autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
         // 补偿内容
         if (chapters.size() == 1) {

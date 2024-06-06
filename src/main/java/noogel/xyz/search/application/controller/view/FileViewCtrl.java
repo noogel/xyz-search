@@ -8,7 +8,10 @@ import noogel.xyz.search.infrastructure.dto.ResourceDownloadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.service.SearchService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +25,7 @@ public class FileViewCtrl {
 
     @RequestMapping(value = "/file/view/{resId}", method = RequestMethod.GET)
     public void fileView(@PathVariable String resId,
-                       HttpServletResponse response) {
+                         HttpServletResponse response) {
         ResourceDownloadDto downloadResource = searchService.getDownloadResource(resId);
         File file = new File(downloadResource.getAbsolutePath());
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
@@ -42,9 +45,9 @@ public class FileViewCtrl {
         }
     }
 
-    @RequestMapping(value = "/file/view/{resId}/thumbnail", method = RequestMethod.GET)
+    @RequestMapping(value = "/file/view/thumbnail/{resId}", method = RequestMethod.GET)
     public void fileViewThumbnail(@PathVariable String resId,
-                       HttpServletResponse response) {
+                                  HttpServletResponse response) {
         ResourceDownloadDto downloadResource = searchService.getDownloadResource(resId);
         File file = new File(downloadResource.getAbsolutePath());
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");

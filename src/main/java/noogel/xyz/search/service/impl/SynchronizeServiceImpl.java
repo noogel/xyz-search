@@ -11,7 +11,7 @@ import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 import noogel.xyz.search.infrastructure.utils.FileResHelper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.SynchronizeService;
-import noogel.xyz.search.service.extension.ExtensionPointService;
+import noogel.xyz.search.service.extension.ExtensionService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -27,13 +27,50 @@ import java.util.Optional;
 public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Resource
-    private List<ExtensionPointService> extServices;
+    private ExtensionService extensionService;
     @Resource
     private ElasticDao elasticDao;
     @Resource
     private FileDbService fileDbService;
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
+
+    private static List<FileViewDto> calculateRemoveFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
+        List<String> fsFilesUk = fsFiles.stream().map(t -> {
+            if (t.isDirectory()) {
+                return t.getAbsolutePath();
+            } else if (t.isFile()) {
+                return String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
+            }
+            return "";
+        }).filter(StringUtils::isNotBlank).toList();
+        return dbFiles.stream().filter(t -> {
+            String uk = "";
+            if (t.isDirectory()) {
+                uk = t.getPath();
+            } else if (t.isFile()) {
+                uk = String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
+            }
+            return !fsFilesUk.contains(uk);
+        }).toList();
+    }
+
+    private static List<File> calculateAppendFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
+        List<File> resp = new ArrayList<>();
+        // 添加所有目录
+        fsFiles.stream().filter(File::isDirectory).forEach(resp::add);
+        // 添加文件
+        List<String> existFilesUk = dbFiles.stream().filter(FileViewDto::isFile).map(t -> {
+            return String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
+        }).toList();
+        fsFiles.stream().filter(File::isFile).forEach(t -> {
+            String uk = String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
+            if (!existFilesUk.contains(uk)) {
+                resp.add(t);
+            }
+        });
+        return resp;
+    }
 
     @Override
     public void asyncDirectories() {
@@ -76,7 +113,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     public void appendFiles(List<File> files) {
         // 添加执行
         for (File file : files) {
-            if (extServices.stream().anyMatch(t-> t.supportFile(file.getAbsolutePath()))) {
+            if (extensionService.findParser(file.getAbsolutePath()).isPresent()) {
                 CommonsConsts.SHORT_EXECUTOR_SERVICE.submit(() -> this.processFile(file));
             }
         }
@@ -128,43 +165,6 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         }
     }
 
-    private static List<FileViewDto> calculateRemoveFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
-        List<String> fsFilesUk = fsFiles.stream().map(t -> {
-            if (t.isDirectory()) {
-                return t.getAbsolutePath();
-            } else if (t.isFile()) {
-                return String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
-            }
-            return "";
-        }).filter(StringUtils::isNotBlank).toList();
-        return dbFiles.stream().filter(t -> {
-            String uk = "";
-            if (t.isDirectory()) {
-                uk = t.getPath();
-            } else if (t.isFile()) {
-                uk = String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
-            }
-            return !fsFilesUk.contains(uk);
-        }).toList();
-    }
-
-    private static List<File> calculateAppendFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
-        List<File> resp = new ArrayList<>();
-        // 添加所有目录
-        fsFiles.stream().filter(File::isDirectory).forEach(resp::add);
-        // 添加文件
-        List<String> existFilesUk = dbFiles.stream().filter(FileViewDto::isFile).map(t -> {
-            return String.format("%s_%s_%s", t.getPath(), t.getSize(), t.getModifiedAt());
-        }).toList();
-        fsFiles.stream().filter(File::isFile).forEach(t -> {
-            String uk = String.format("%s_%s_%s", t.getAbsolutePath(), t.length(), t.lastModified());
-            if (!existFilesUk.contains(uk)) {
-                resp.add(t);
-            }
-        });
-        return resp;
-    }
-
     private List<File> parseValidSubFsFiles(File rootDir) {
         // 被排除的目录不会索引
         List<String> excludeDirectories = Optional.ofNullable(searchConfig.getApp().getExcludeSearchDirectories())
@@ -175,7 +175,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         List<File> fsFiles = Optional.ofNullable(rootDir.listFiles())
                 .map(List::of).orElse(Collections.emptyList());
         return fsFiles.stream().filter(t -> {
-            return t.isDirectory() || extServices.stream().anyMatch(l -> l.supportFile(t.getAbsolutePath()));
+            return t.isDirectory() || extensionService.findParser(t.getAbsolutePath()).isPresent();
         }).toList();
     }
 

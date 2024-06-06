@@ -1,11 +1,20 @@
 package noogel.xyz.search.service.extension;
 
-import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
-import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
+import noogel.xyz.search.infrastructure.consts.FileExtEnum;
+import noogel.xyz.search.infrastructure.consts.FileProcessClassEnum;
 
-import javax.annotation.Nullable;
+import java.util.Set;
 
-public interface ExtensionPointService {
+public interface ExtensionPointService extends ExtensionParserService {
+
+    FileProcessClassEnum getFileClass();
+
+    /**
+     * 获取支持的文件扩展
+     *
+     * @return
+     */
+    Set<FileExtEnum> getSupportParseFileExtension();
 
     /**
      * 是否支持文件处理
@@ -15,12 +24,4 @@ public interface ExtensionPointService {
      */
     boolean supportFile(String filePath);
 
-    /**
-     * 解析文件
-     *
-     * @param file
-     * @return
-     */
-    @Nullable
-    FileResContentDto parseFile(FileResReadDto file);
 }

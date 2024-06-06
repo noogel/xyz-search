@@ -224,14 +224,8 @@ public class SearchPropertyConfig {
         private String markDeleteDirectory;
         @ConfigNote(desc = "外部 OCR 服务")
         private PaddleOcr paddleOcr;
-
-        /**
-         * 是否开启了 ocr 服务
-         * @return
-         */
-        public boolean supportPaddleOcr() {
-            return Objects.nonNull(paddleOcr) && StringUtils.isNotBlank(paddleOcr.url);
-        }
+        @ConfigNote(desc = "排除的文件处理类，“;”分割")
+        private String excludeFileProcessClass;
 
         public static AppConfig init() {
             AppConfig appConfig = new AppConfig();
@@ -247,6 +241,15 @@ public class SearchPropertyConfig {
                 ConfigNote annotation = t.getAnnotation(ConfigNote.class);
                 return Pair.of(name, annotation.desc());
             }).collect(Collectors.toList());
+        }
+
+        /**
+         * 是否开启了 ocr 服务
+         *
+         * @return
+         */
+        public boolean supportPaddleOcr() {
+            return Objects.nonNull(paddleOcr) && StringUtils.isNotBlank(paddleOcr.url);
         }
     }
 

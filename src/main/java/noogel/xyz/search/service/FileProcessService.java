@@ -17,6 +17,7 @@ public interface FileProcessService {
 
     /**
      * 标记删除文件
+     *
      * @param resId
      */
     void fileMarkDelete(String resId);

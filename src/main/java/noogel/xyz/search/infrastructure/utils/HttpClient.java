@@ -8,13 +8,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -31,6 +29,7 @@ public class HttpClient {
     public static String doGet(String url) {
         return doGet(url, CONNECT_SOCKET_TIMEOUT);
     }
+
     public static String doGet(String url, int socketTimeout) {
         RequestConfig requestConfig = REQUEST_CONFIG_MAP.computeIfAbsent(
                 socketTimeout,

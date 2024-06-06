@@ -307,7 +307,7 @@ public class ElasticDao {
             SearchRequest searchRequest = SearchRequest.of(s -> s
                     .index(getIndexName())
                     .query(q -> q.bool(t -> builder))
-                    .source(l -> l.filter(m -> m.excludes("searchableText")))
+                    .source(l -> l.filter(m -> m.excludes(StringUtils.isBlank(text) ? Collections.emptyList(): Collections.singletonList("searchableText"))))
                     .highlight(highlight)
             );
             log.info("search:{}", searchRequest.toString());

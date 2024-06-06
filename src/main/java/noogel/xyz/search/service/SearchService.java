@@ -1,6 +1,9 @@
 package noogel.xyz.search.service;
 
 import noogel.xyz.search.infrastructure.dto.*;
+import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
+import noogel.xyz.search.infrastructure.dto.page.ResourceSimpleDto;
+import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
 
 import java.util.List;
 

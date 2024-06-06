@@ -2,6 +2,7 @@ package noogel.xyz.search.infrastructure.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.consts.CustomContentTypeEnum;
+import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedInputStream;
@@ -47,13 +48,13 @@ public class FileHelper {
      * @param path
      * @return
      */
-    public static String getFileExtension(String path) {
+    public static FileExtEnum getFileExtension(String path) {
         String extension = "";
         int i = path.lastIndexOf('.');
         if (i > 0) {
             extension = path.substring(i + 1).toLowerCase();
         }
-        return extension.toLowerCase();
+        return FileExtEnum.parse(extension.toLowerCase());
     }
 
     /**

@@ -1,4 +1,4 @@
-package noogel.xyz.search.infrastructure.dto;
+package noogel.xyz.search.infrastructure.dto.page;
 
 import lombok.Data;
 import noogel.xyz.search.infrastructure.utils.UrlHelper;

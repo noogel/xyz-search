@@ -4,18 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.annotation.Resource;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.consts.FileExtEnum;
+import noogel.xyz.search.infrastructure.consts.FileProcessClassEnum;
 import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.FileToBase64;
 import noogel.xyz.search.infrastructure.utils.HttpClient;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
-import noogel.xyz.search.service.extension.ExtensionPointService;
-import noogel.xyz.search.service.extension.ExtensionUtilsService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -26,25 +26,27 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
-public class ImageExtensionPointServiceImpl implements ExtensionPointService {
-    public static final Set<String> SUPPORT = Set.of("jpg", "jpeg", "png", "webp", "bmp", "tiff");
+public class ImageExtensionPointServiceImpl extends AbstractExtensionPointService {
+
+    @Getter
+    private final FileProcessClassEnum fileClass = FileProcessClassEnum.IMAGE;
+
+    @Getter
+    private final Set<FileExtEnum> supportParseFileExtension = Set.of(
+            FileExtEnum.JPEG, FileExtEnum.JPG, FileExtEnum.PNG, FileExtEnum.WEBP, FileExtEnum.BMP, FileExtEnum.TIFF
+    );
     // todo "heif", "heic",
 
     @Resource
     private SearchPropertyConfig.SearchConfig searchConfig;
 
-    @Resource
-    private ExtensionUtilsService extensionUtilsService;
-
     @Override
     public boolean supportFile(String filePath) {
         // 开启 ocr 并且是图片格式
-        return extensionUtilsService.supportFileExtension(SUPPORT, filePath)
-                && searchConfig.getApp().supportPaddleOcr();
+        return super.supportFile(filePath) && searchConfig.getApp().supportPaddleOcr();
     }
 
     @Nullable
