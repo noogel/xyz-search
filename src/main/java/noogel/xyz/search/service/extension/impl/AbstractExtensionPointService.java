@@ -1,33 +1,25 @@
 package noogel.xyz.search.service.extension.impl;
 
+
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.dto.OPDSResMetaDataDto;
 import noogel.xyz.search.infrastructure.dto.ResRelationInfoDto;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.OPDSHelper;
-import noogel.xyz.search.service.extension.ExtensionUtilsService;
-import org.springframework.stereotype.Service;
+import noogel.xyz.search.service.extension.ExtensionPointService;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
-@Service
 @Slf4j
-public class ExtensionUtilsServiceImpl implements ExtensionUtilsService {
-
-    @Override
-    public boolean supportFileExtension(Set<String> supportExtension, String filePath) {
-        String fileExtension = FileHelper.getFileExtension(filePath);
-        return supportExtension.contains(fileExtension);
-    }
+public abstract class AbstractExtensionPointService implements ExtensionPointService {
 
     @Nullable
-    @Override
-    public ResRelationInfoDto autoFindRelationInfo(File file) {
+    protected static ResRelationInfoDto autoFindRelationInfo(File file) {
         ResRelationInfoDto dto = new ResRelationInfoDto();
         String parent = file.getParent();
         OPDSResMetaDataDto metaData = OPDSHelper.readMetaData(parent);
@@ -55,4 +47,10 @@ public class ExtensionUtilsServiceImpl implements ExtensionUtilsService {
         }
         return null;
     }
+
+    public boolean supportFile(String filePath) {
+        FileExtEnum fileExtension = FileHelper.getFileExtension(filePath);
+        return this.getSupportParseFileExtension().contains(fileExtension);
+    }
+
 }

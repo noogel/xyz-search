@@ -21,6 +21,8 @@
             document.querySelector("#selectedResId").value = '';
             document.querySelector("#dirViewA").href = '';
             document.querySelector("#fileViewA").href = '';
+            document.querySelector("#imageThumbnail").src = '#';
+            document.querySelector("#resTextSnippet").textContent = '';
 
             fetch(href).then(function (r) {
                 if (!r.ok) {
@@ -36,9 +38,11 @@
                 document.querySelector("#fileInfoSize").textContent = data.resSize;
                 document.querySelector("#fileInfoModifiedAt").textContent = data.modifiedAt;
                 document.querySelector("#fileInfoHighlight").innerHTML = data.highlightHtml;
-                document.querySelector("#fileDownloadA").href = "/file/" + data.resId + "/download";
-                document.querySelector("#dirViewA").href = "/?resId=" + data.resId + "&relativeResDir=" + encodeURIComponent(data.relativeResDir);
+                document.querySelector("#fileDownloadA").href = data.downloadUrl;
+                document.querySelector("#dirViewA").href = data.dirViewUrl;
                 document.querySelector("#fileViewA").href = data.viewUrl;
+                document.querySelector("#imageThumbnail").src = data.thumbnailViewUrl;
+                document.querySelector("#resTextSnippet").textContent = data.resTextSnippet;
                 // 是否支持查看
                 if (data.supportView) {
                     document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success");
@@ -46,6 +50,12 @@
                 } else {
                     document.querySelector("#fileViewBtn").setAttribute("class", "btn btn-success disabled");
                     document.querySelector("#fileViewA").setAttribute("class", "page-link disabled");
+                }
+                // 是否支持缩略图
+                if (data.supportViewThumbnail) {
+                    document.querySelector("#imageThumbnail").setAttribute("class", "img-thumbnail");
+                } else {
+                    document.querySelector("#imageThumbnail").setAttribute("class", "img-thumbnail invisible");
                 }
 
                 document.querySelector("#linkCalibre").href = "http://192.168.124.13:8080/#library_id=%E7%94%B5%E5%AD%90%E4%B9%A6%E5%BA%93&panel=book_list&search=" + data.searchableTitle + "&sort=last_modified.desc";
@@ -375,6 +385,15 @@
                                 </li>
                             </ul>
                         </div>
+                    </div>
+                    <div class="my-3 row justify-content-end">
+                        <div class="col-12">
+                            <p id="resTextSnippet" class="text-start"></p>
+                        </div>
+                        <div class="col-12">
+                            <img id="imageThumbnail" src="#" class="img-thumbnail" alt="Image preview..."/>
+                        </div>
+
                     </div>
                     <div class="my-3 row justify-content-end">
                         <!-- 文件内容结果列表 操作 -->

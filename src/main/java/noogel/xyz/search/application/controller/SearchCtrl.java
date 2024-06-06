@@ -1,10 +1,10 @@
 package noogel.xyz.search.application.controller;
 
 import jakarta.annotation.Resource;
-import noogel.xyz.search.infrastructure.dto.ResourcePageDto;
+import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
 import noogel.xyz.search.infrastructure.dto.SearchBaseQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchQueryDto;
-import noogel.xyz.search.infrastructure.dto.SearchResultShowDto;
+import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.service.SearchService;
 import org.apache.commons.lang3.StringUtils;

@@ -2,22 +2,28 @@ package noogel.xyz.search.service.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.*;
+import noogel.xyz.search.infrastructure.dto.page.PageViewExtEnum;
+import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
+import noogel.xyz.search.infrastructure.dto.page.ResourceSimpleDto;
+import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.elastic.FileEsModel;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
 import noogel.xyz.search.service.SearchService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -90,16 +96,32 @@ public class SearchServiceImpl implements SearchService {
         page.setResSize(FileHelper.formatFileSize(t.getResSize()));
         page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
         page.setRelativeResPath(t.calculateRelativePath(searchConfig.getApp().getSearchDirectories()));
-        page.setRelativeResDir(t.calculateRelativeDir(searchConfig.getApp().getSearchDirectories()));
         page.setResType(t.getResType());
         page.setHighlightHtml(highlightHtml);
         File file = new File(t.calculateAbsolutePath());
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
         String contentType = FileHelper.getContentType(file);
         page.setContentType(contentType);
-        String fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
-        page.setSupportView(CommonsConsts.SUPPORT_VIEW_EXT.contains(fileExtension));
+        FileExtEnum fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
+        Optional<PageViewExtEnum> pageViewExtEnum = PageViewExtEnum.find(fileExtension);
+        page.setSupportView(pageViewExtEnum.map(PageViewExtEnum::supportView).orElse(false));
+        page.setViewUrl(pageViewExtEnum.map(l-> l.calViewUrl(t.getResId())).orElse(""));
+        page.setSupportThumbnailView(pageViewExtEnum.map(PageViewExtEnum::isThumbnail).orElse(false));
+        page.setThumbnailViewUrl(pageViewExtEnum.map(l-> l.calThumbnailUrl(t.getResId())).orElse("#"));
+        page.setDownloadUrl(PageViewExtEnum.downloadUrl(t.getResId()));
+        page.setDirViewUrl(PageViewExtEnum.dirViewUrl(t.getResId(), t.calculateRelativeDir(searchConfig.getApp().getSearchDirectories())));
+        page.setResTextSnippet(genResTextSnippet(t.getSearchableText()));
         return page;
+    }
+
+    private String genResTextSnippet(String txt) {
+        if (StringUtils.isBlank(txt)) {
+            return "";
+        }
+        if (StringUtils.isNotBlank(txt) && txt.length() > 500) {
+            return txt.substring(0, 500) + "...";
+        }
+        return txt;
     }
 
     @Override

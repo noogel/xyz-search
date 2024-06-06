@@ -19,7 +19,7 @@ public abstract class FileResHelper {
         dto.setName(file.getName());
         dto.setSize(file.length());
         dto.setRank(RankHelper.calcRank(file.getName()));
-        dto.setType("FILE:" + FileHelper.getFileExtension(file.getName()).toUpperCase());
+        dto.setType("FILE:" + FileHelper.getFileExtension(file.getName()).name());
         try {
             dto.setHash(MD5Helper.getMD5(file));
         } catch (Exception ex) {

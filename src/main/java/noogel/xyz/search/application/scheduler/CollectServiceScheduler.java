@@ -6,8 +6,8 @@ import noogel.xyz.search.infrastructure.config.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.service.FileDbService;
-import noogel.xyz.search.service.SynchronizeService;
 import noogel.xyz.search.service.FileProcessService;
+import noogel.xyz.search.service.SynchronizeService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 

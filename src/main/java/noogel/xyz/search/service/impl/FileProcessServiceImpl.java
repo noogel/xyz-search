@@ -13,8 +13,8 @@ import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
-import noogel.xyz.search.service.SynchronizeService;
 import noogel.xyz.search.service.FileProcessService;
+import noogel.xyz.search.service.SynchronizeService;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
@@ -179,7 +179,7 @@ public class FileProcessServiceImpl implements FileProcessService {
     public void fileMarkDelete(String resId) {
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(searchConfig.getApp().getMarkDeleteDirectory()),
                 "需要先配置标记清理目录");
-        fileDbService.findByResIdFilterState(resId, FileStateEnum.INDEXED).ifPresent(t-> {
+        fileDbService.findByResIdFilterState(resId, FileStateEnum.INDEXED).ifPresent(t -> {
             // 转移文件
             Path sourcePath = Paths.get(t.calFilePath());
             ExceptionCode.FILE_ACCESS_ERROR.throwOn(!sourcePath.toFile().exists(), "文件不存在");
