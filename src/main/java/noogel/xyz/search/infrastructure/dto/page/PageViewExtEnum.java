@@ -54,6 +54,18 @@ public enum PageViewExtEnum {
      */
     private final String viewUrl;
 
+    public static String downloadUrl(String resId) {
+        return String.format(DOWNLOAD_URL_TPL, resId.trim());
+    }
+
+    public static String dirViewUrl(String resId, String relativeResDir) {
+        return String.format(DIR_VIEW_URL_TPL, resId.trim(), UrlHelper.ct(relativeResDir));
+    }
+
+    public static Optional<PageViewExtEnum> find(FileExtEnum extEnum) {
+        return Arrays.stream(values()).filter(t -> t.name().equalsIgnoreCase(extEnum.name())).findFirst();
+    }
+
     public boolean supportView() {
         return StringUtils.isNotBlank(viewUrl);
     }
@@ -70,17 +82,5 @@ public enum PageViewExtEnum {
             return String.format(THUMBNAIL_URL_TPL, resId.trim());
         }
         return "#";
-    }
-
-    public static String downloadUrl(String resId) {
-        return String.format(DOWNLOAD_URL_TPL, resId.trim());
-    }
-
-    public static String dirViewUrl(String resId, String relativeResDir) {
-        return String.format(DIR_VIEW_URL_TPL, resId.trim(), UrlHelper.ct(relativeResDir));
-    }
-
-    public static Optional<PageViewExtEnum> find(FileExtEnum extEnum) {
-        return Arrays.stream(values()).filter(t-> t.name().equalsIgnoreCase(extEnum.name())).findFirst();
     }
 }

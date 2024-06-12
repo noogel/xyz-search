@@ -37,7 +37,7 @@ public enum FileExtEnum {
 
     @Nonnull
     public static FileExtEnum parse(String val) {
-        return Arrays.stream(values()).filter(t-> t.name().equalsIgnoreCase(val))
+        return Arrays.stream(values()).filter(t -> t.name().equalsIgnoreCase(val))
                 .findFirst().orElse(UNKNOWN_IGNORE);
     }
 }
