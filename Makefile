@@ -2,7 +2,7 @@
 
 version = 1.1.1
 project = xyz-search
-hub = nas.noogel.xyz
+hub = 192.168.124.11
 port = 8111
 
 build:
