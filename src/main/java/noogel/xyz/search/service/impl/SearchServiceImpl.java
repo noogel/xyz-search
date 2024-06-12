@@ -105,9 +105,9 @@ public class SearchServiceImpl implements SearchService {
         FileExtEnum fileExtension = FileHelper.getFileExtension(file.getAbsolutePath());
         Optional<PageViewExtEnum> pageViewExtEnum = PageViewExtEnum.find(fileExtension);
         page.setSupportView(pageViewExtEnum.map(PageViewExtEnum::supportView).orElse(false));
-        page.setViewUrl(pageViewExtEnum.map(l-> l.calViewUrl(t.getResId())).orElse(""));
+        page.setViewUrl(pageViewExtEnum.map(l -> l.calViewUrl(t.getResId())).orElse(""));
         page.setSupportThumbnailView(pageViewExtEnum.map(PageViewExtEnum::isThumbnail).orElse(false));
-        page.setThumbnailViewUrl(pageViewExtEnum.map(l-> l.calThumbnailUrl(t.getResId())).orElse("#"));
+        page.setThumbnailViewUrl(pageViewExtEnum.map(l -> l.calThumbnailUrl(t.getResId())).orElse("#"));
         page.setDownloadUrl(PageViewExtEnum.downloadUrl(t.getResId()));
         page.setDirViewUrl(PageViewExtEnum.dirViewUrl(t.getResId(), t.calculateRelativeDir(searchConfig.getApp().getSearchDirectories())));
         page.setResTextSnippet(genResTextSnippet(t.getSearchableText()));

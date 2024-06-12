@@ -1,6 +1,8 @@
 package noogel.xyz.search.service;
 
-import noogel.xyz.search.infrastructure.dto.*;
+import noogel.xyz.search.infrastructure.dto.OPDSResultShowDto;
+import noogel.xyz.search.infrastructure.dto.ResourceDownloadDto;
+import noogel.xyz.search.infrastructure.dto.SearchQueryDto;
 import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
 import noogel.xyz.search.infrastructure.dto.page.ResourceSimpleDto;
 import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
