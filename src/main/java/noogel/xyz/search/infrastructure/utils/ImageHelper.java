@@ -1,61 +1,60 @@
 package noogel.xyz.search.infrastructure.utils;
 
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
-import static org.opencv.imgcodecs.Imgcodecs.imread;
-
 public class ImageHelper {
 
-    static {
-        nu.pattern.OpenCV.loadLocally();
-    }
+    public static byte[] genThumbnailToByteArray(String originalImagePath, Integer width, Integer height) throws IOException {
+        // 读取原始图像
+        File originalImageFile = new File(originalImagePath);
+        BufferedImage originalImage = ImageIO.read(originalImageFile);
+        // 缩略图的宽度和高度
+        Pair<Double, Double> newSize = calResize(
+                Pair.of((double) originalImage.getWidth(), (double) originalImage.getHeight()),
+                Objects.nonNull(width) ? (double) width : null,
+                Objects.nonNull(height) ? (double) height : null
+        );
 
-    public static byte[] genThumbnailToByteArray(String filepath, Double width, Double height) throws IOException {
-        Mat src = imread(filepath);
-        Mat dest = new Mat();
-        Size scaleSize = calResize(src.size(), width, height);
-        Imgproc.resize(src, dest, scaleSize, 0, 0, Imgproc.INTER_AREA);
-        BufferedImage bufferedImage = toBufferedImage(dest);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageIO.write(bufferedImage, "jpg", outputStream);
-        return outputStream.toByteArray();
-    }
+        int thumbWidth = newSize.getLeft().intValue();
+        int thumbHeight = newSize.getRight().intValue();
 
-    private static byte[] toByteList(Mat matrix) {
-        int bufferSize = matrix.channels() * matrix.cols() * matrix.rows();
-        byte[] buffer = new byte[bufferSize];
-        matrix.get(0, 0, buffer); // get all pixel from martix
-        return buffer;
-    }
+        // 创建缩略图图像
+        BufferedImage bufferedImage = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_3BYTE_BGR);
 
-    private static BufferedImage toBufferedImage(Mat matrix) {
-        byte[] buffer = toByteList(matrix);
-        int type = BufferedImage.TYPE_BYTE_GRAY;
-        if (matrix.channels() > 1) {
-            type = BufferedImage.TYPE_3BYTE_BGR;
+        // 创建Graphics2D对象
+        Graphics2D graphics = bufferedImage.createGraphics();
+
+        // 设置缩放质量
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+        // 绘制图像
+        graphics.drawImage(originalImage, 0, 0, thumbWidth, thumbHeight, null);
+
+        // 释放资源
+        graphics.dispose();
+
+        // 写入缩略图
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(bufferedImage, "jpg", baos);
+            return baos.toByteArray();
         }
-        BufferedImage image = new BufferedImage(matrix.cols(), matrix.rows(), type);
-        final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-        System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);
-        return image;
     }
 
-    private static Size calResize(Size src, Double width, Double height) {
+    private static Pair<Double, Double> calResize(Pair<Double, Double> src, Double width, Double height) {
         if (Objects.nonNull(width) && Objects.nonNull(height)) {
-            return new Size(width, height);
+            return Pair.of(width, height);
         } else if (Objects.nonNull(width)) {
-            return new Size(width, width / src.width * src.height);
+            return Pair.of(width, width / src.getLeft() * src.getRight());
         } else if (Objects.nonNull(height)) {
-            return new Size(height / src.height * src.width, height);
+            return Pair.of(height / src.getRight() * src.getLeft(), height);
         } else {
             return src;
         }

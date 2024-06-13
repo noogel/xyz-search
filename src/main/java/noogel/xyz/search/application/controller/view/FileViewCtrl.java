@@ -53,7 +53,7 @@ public class FileViewCtrl {
         File file = new File(downloadResource.getAbsolutePath());
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
         try {
-            byte[] smallImageByteList = ImageHelper.genThumbnailToByteArray(file.getAbsolutePath(), 600D, null);
+            byte[] smallImageByteList = ImageHelper.genThumbnailToByteArray(file.getAbsolutePath(), 600, null);
             response.reset();
             String contentType = FileHelper.getContentType(file);
             response.setContentType(contentType);
@@ -61,6 +61,7 @@ public class FileViewCtrl {
                 outputStream.write(smallImageByteList, 0, smallImageByteList.length);
             }
         } catch (Exception ex) {
+            log.error("fileViewThumbnail error.", ex);
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
         }
     }

@@ -23,6 +23,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -36,7 +37,8 @@ public class ImageExtensionPointServiceImpl extends AbstractExtensionPointServic
 
     @Getter
     private final Set<FileExtEnum> supportParseFileExtension = Set.of(
-            FileExtEnum.JPEG, FileExtEnum.JPG, FileExtEnum.PNG, FileExtEnum.WEBP, FileExtEnum.BMP, FileExtEnum.TIFF
+            FileExtEnum.JPEG, FileExtEnum.JPG, FileExtEnum.PNG, FileExtEnum.WEBP, FileExtEnum.BMP,
+            FileExtEnum.PSD, FileExtEnum.TIFF, FileExtEnum.JFIF, FileExtEnum.SGI
     );
     // todo "heif", "heic",
 
