@@ -151,13 +151,12 @@
 
         <!-- 修复安全问题的包 end -->
 
-        <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
+        <!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-webp -->
         <dependency>
-            <groupId>org.openpnp</groupId>
-            <artifactId>opencv</artifactId>
-            <version>4.9.0-0</version>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-webp</artifactId>
+            <version>3.11.0</version>
         </dependency>
-
 
     </dependencies>
     <build>

@@ -87,7 +87,7 @@ public class HttpClient {
                 return EntityUtils.toString(entity);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("doPost error {} | {}", url, jsonString.length());
         }
         return "";
     }
