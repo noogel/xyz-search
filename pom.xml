@@ -15,9 +15,9 @@
     <name>xyz-search</name>
     <description>xyz-search</description>
     <properties>
-        <java.version>${java.specification.version}</java.version>
-        <maven.compiler.source>${java.specification.version}</maven.compiler.source>
-        <maven.compiler.target>${java.specification.version}</maven.compiler.target>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
         <jakarta-json.version>2.1.2</jakarta-json.version>
         <mainClass>noogel.xyz.search.MainApp</mainClass>
@@ -212,6 +212,13 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                     <encoding>UTF-8</encoding>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.30</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
