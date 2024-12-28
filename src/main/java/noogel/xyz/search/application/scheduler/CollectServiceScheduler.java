@@ -28,7 +28,7 @@ public class CollectServiceScheduler {
     /**
      * diff 一遍文件
      */
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 0 1 1 * *")
     public void asyncScanFsFiles() {
         synchronizeService.asyncDirectories();
     }
