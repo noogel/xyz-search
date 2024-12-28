@@ -1,5 +1,5 @@
 base:
-  configFilePath: /home/xyz/DockerSharingData/xyzSearchRuntimeTmp
+  configFilePath:
   ftsIndexName: xyz_search
   username: xyz
   password: search
@@ -11,5 +11,5 @@ app:
   elasticsearchConnectionTimeout: 1000
   elasticsearchSocketTimeout: 5000
   searchDirectories:
-    - /home/xyz/DockerSharingData/TestSearch
+    - /Users/xyz/MyDebug/XyzSearchTestData
   indexLimitMs: 10
