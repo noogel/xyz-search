@@ -1,4 +1,4 @@
-FROM openjdk:17-alpine
+FROM  192.168.124.11:8111/dockerhub/openjdk:17-alpine-20250102
 MAINTAINER noogel@163.com
 RUN apk add --no-cache ffmpeg
 RUN #apk update && apk add --no-cache ffmpeg gcompat opencv opencv-dev

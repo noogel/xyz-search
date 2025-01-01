@@ -8,7 +8,7 @@ port = 8111
 build:
 	mvn clean package \
  && cd docker/dep1 \
- && docker build -t $(project)\:$(version) . \
+ && docker build --platform linux/amd64 -t $(project)\:$(version) . \
  && rm $(project)-*.war \
  && docker tag $(project)\:$(version) $(hub)\:$(port)/noogel/$(project)\:$(version) \
  && cd ../../
