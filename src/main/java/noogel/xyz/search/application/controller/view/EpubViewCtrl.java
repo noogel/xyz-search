@@ -4,7 +4,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import noogel.xyz.search.infrastructure.config.CommonsConsts;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.service.SearchService;

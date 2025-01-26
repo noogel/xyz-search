@@ -2,7 +2,7 @@ package noogel.xyz.search.service.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.*;
@@ -33,7 +33,7 @@ public class SearchServiceImpl implements SearchService {
     @Resource
     private ElasticDao elasticDao;
     @Resource
-    private SearchPropertiesConfig.SearchConfig searchConfig;
+    private ConfigProperties configProperties;
 
     @Override
     public SearchResultShowDto pageSearch(SearchQueryDto query) {
@@ -95,7 +95,7 @@ public class SearchServiceImpl implements SearchService {
         page.calculateSearchableResTitle();
         page.setResSize(FileHelper.formatFileSize(t.getResSize()));
         page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
-        page.setRelativeResPath(t.calculateRelativePath(searchConfig.getApp().getSearchDirectories()));
+        page.setRelativeResPath(t.calculateRelativePath(configProperties.getApp().indexDirectories()));
         page.setResType(t.getResType());
         page.setHighlightHtml(highlightHtml);
         File file = new File(t.calculateAbsolutePath());
@@ -109,7 +109,7 @@ public class SearchServiceImpl implements SearchService {
         page.setSupportThumbnailView(pageViewExtEnum.map(PageViewExtEnum::isThumbnail).orElse(false));
         page.setThumbnailViewUrl(pageViewExtEnum.map(l -> l.calThumbnailUrl(t.getResId())).orElse("#"));
         page.setDownloadUrl(PageViewExtEnum.downloadUrl(t.getResId()));
-        page.setDirViewUrl(PageViewExtEnum.dirViewUrl(t.getResId(), t.calculateRelativeDir(searchConfig.getApp().getSearchDirectories())));
+        page.setDirViewUrl(PageViewExtEnum.dirViewUrl(t.getResId(), t.calculateRelativeDir(configProperties.getApp().indexDirectories())));
         page.setResTextSnippet(genResTextSnippet(t.getSearchableText()));
         return page;
     }

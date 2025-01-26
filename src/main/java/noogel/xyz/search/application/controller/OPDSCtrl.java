@@ -8,7 +8,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.BaseConsts;
 import noogel.xyz.search.infrastructure.dto.*;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
@@ -38,7 +38,7 @@ public class OPDSCtrl {
     @Resource
     private SearchService searchService;
     @Resource
-    private SearchPropertiesConfig.SearchConfig searchConfig;
+    private ConfigProperties configProperties;
 
     private static UrlDto collectUrls(HttpServletRequest httpServletRequest) {
         String requestUrl = httpServletRequest.getRequestURL().toString();
@@ -54,7 +54,7 @@ public class OPDSCtrl {
     }
 
     private void checkConfig() {
-        String opdsDirectory = searchConfig.getApp().getOpdsDirectory();
+        String opdsDirectory = configProperties.getApp().getOpdsDirectory();
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(opdsDirectory), "OPDS 未开启");
     }
 
@@ -127,7 +127,7 @@ public class OPDSCtrl {
         query.setLimit(BaseConsts.DEFAULT_LIMIT);
         query.setOffset(offset);
         query.setSearch(text);
-        query.setResDirPrefix(searchConfig.getApp().getOpdsDirectory());
+        query.setResDirPrefix(configProperties.getApp().getOpdsDirectory());
         if (StringUtils.isEmpty(text)) {
             query.setOrder(SearchBaseQueryDto.buildRankOrder(true));
         }

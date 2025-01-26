@@ -3,8 +3,8 @@ package noogel.xyz.search.service.impl;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConsts;
-import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
@@ -33,7 +33,7 @@ public class TickServiceImpl implements TickService {
     @Resource
     private ElasticDao elasticDao;
     @Resource
-    private SearchPropertiesConfig.SearchConfig searchConfig;
+    private ConfigProperties configProperties;
 
     @PostConstruct
     public void init() {
@@ -56,7 +56,7 @@ public class TickServiceImpl implements TickService {
                 if (waitReadDtoList.isEmpty()) {
                     Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
                 } else {
-                    Long indexLimit = Optional.ofNullable(searchConfig.getApp().getIndexLimitMs()).orElse(10L);
+                    Long indexLimit = Optional.ofNullable(configProperties.getApp().getScanFileLimitMs()).orElse(10L);
                     Thread.sleep(indexLimit);
                 }
             } catch (Exception ex) {
@@ -134,7 +134,7 @@ public class TickServiceImpl implements TickService {
                 if (waitDtoList.isEmpty()) {
                     Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
                 } else {
-                    Long indexLimit = Optional.ofNullable(searchConfig.getApp().getIndexLimitMs()).orElse(10L);
+                    Long indexLimit = Optional.ofNullable(configProperties.getApp().getScanFileLimitMs()).orElse(10L);
                     Thread.sleep(indexLimit);
                 }
             } catch (Exception ex) {

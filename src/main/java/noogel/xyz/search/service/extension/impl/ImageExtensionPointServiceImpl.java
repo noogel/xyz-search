@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.annotation.Resource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.consts.FileProcessClassEnum;
 import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
@@ -42,19 +42,19 @@ public class ImageExtensionPointServiceImpl extends AbstractExtensionPointServic
     // todo "heif", "heic",
 
     @Resource
-    private SearchPropertiesConfig.SearchConfig searchConfig;
+    private ConfigProperties configProperties;
 
     @Override
     public boolean supportFile(String filePath) {
         // 开启 ocr 并且是图片格式
-        return super.supportFile(filePath) && searchConfig.getApp().supportPaddleOcr();
+        return super.supportFile(filePath) && configProperties.getApp().supportPaddleOcr();
     }
 
     @Nullable
     @Override
     public FileResContentDto parseFile(FileResReadDto resReadDto) {
-        String url = searchConfig.getApp().getPaddleOcr().getUrl();
-        Integer timeout = searchConfig.getApp().getPaddleOcr().getTimeout();
+        String url = configProperties.getApp().getPaddleOcr().getUrl();
+        Integer timeout = configProperties.getApp().getPaddleOcr().getTimeout();
         if (Objects.isNull(timeout) || timeout == 0) {
             timeout = 60_000;
         }

@@ -3,8 +3,8 @@ package noogel.xyz.search.service.impl;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConsts;
-import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
@@ -48,17 +48,17 @@ public class FileProcessServiceImpl implements FileProcessService {
     @Resource
     private SynchronizeService synchronizeService;
     @Resource
-    private SearchPropertiesConfig.SearchConfig searchConfig;
+    private ConfigProperties configProperties;
 
 
     @PostConstruct
     public void init() {
         // 初始化正则匹配器
-        List<SearchPropertiesConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
+        List<ConfigProperties.CollectItem> itemList = configProperties.getApp().getCollectDirectories();
         if (CollectionUtils.isEmpty(itemList)) {
             return;
         }
-        for (SearchPropertiesConfig.CollectItem item : itemList) {
+        for (ConfigProperties.CollectItem item : itemList) {
             String filterRegex = item.getFilterRegex();
             if (StringUtils.isNotBlank(filterRegex)) {
                 PATTERN.add(Pattern.compile(filterRegex));
@@ -72,11 +72,11 @@ public class FileProcessServiceImpl implements FileProcessService {
     public void configAppUpdate(ConfigAppUpdateEvent event) {
         // 更新正则匹配器
         PATTERN.clear();
-        List<SearchPropertiesConfig.CollectItem> itemList = event.getNewApp().getCollectDirectories();
+        List<ConfigProperties.CollectItem> itemList = event.getNewApp().getCollectDirectories();
         if (CollectionUtils.isEmpty(itemList)) {
             return;
         }
-        for (SearchPropertiesConfig.CollectItem item : itemList) {
+        for (ConfigProperties.CollectItem item : itemList) {
             String newRegex = item.getFilterRegex();
             if (StringUtils.isNotBlank(newRegex)) {
                 PATTERN.add(Pattern.compile(newRegex));
@@ -136,7 +136,7 @@ public class FileProcessServiceImpl implements FileProcessService {
                 log.warn("transferFileIfNotExist already running {}.", TRANSFER_RUNNING_COUNT.get());
                 return;
             }
-            List<SearchPropertiesConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
+            List<ConfigProperties.CollectItem> itemList = configProperties.getApp().getCollectDirectories();
             if (CollectionUtils.isEmpty(itemList)) {
                 return;
             }
@@ -177,7 +177,7 @@ public class FileProcessServiceImpl implements FileProcessService {
 
     @Override
     public void fileMarkDelete(String resId) {
-        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(searchConfig.getApp().getMarkDeleteDirectory()),
+        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(configProperties.getApp().getMarkDeleteDirectory()),
                 "需要先配置标记清理目录");
         fileDbService.findByResIdFilterState(resId, FileStateEnum.INDEXED).ifPresent(t -> {
             // 转移文件
@@ -188,7 +188,7 @@ public class FileProcessServiceImpl implements FileProcessService {
             while (true) {
                 ExceptionCode.FILE_ACCESS_ERROR.throwOn(flag > 200, "重名文件太多");
                 String prefix = flag > 0 ? String.format("(%s)", flag) : "";
-                targetPath = Paths.get(searchConfig.getApp().getMarkDeleteDirectory())
+                targetPath = Paths.get(configProperties.getApp().getMarkDeleteDirectory())
                         .resolve(prefix + t.getName())
                         .normalize().toAbsolutePath();
                 if (!targetPath.toFile().exists()) {
@@ -197,7 +197,7 @@ public class FileProcessServiceImpl implements FileProcessService {
                 flag++;
             }
             try {
-                Path descPath = Paths.get(searchConfig.getApp().getMarkDeleteDirectory())
+                Path descPath = Paths.get(configProperties.getApp().getMarkDeleteDirectory())
                         .resolve(targetPath.getFileName() + ".转移说明.txt")
                         .normalize().toAbsolutePath();
                 try (BufferedWriter writer = Files.newBufferedWriter(descPath, StandardCharsets.UTF_8)) {

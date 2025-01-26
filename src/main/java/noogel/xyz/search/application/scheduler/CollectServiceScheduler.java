@@ -2,7 +2,7 @@ package noogel.xyz.search.application.scheduler;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConsts;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.service.FileDbService;

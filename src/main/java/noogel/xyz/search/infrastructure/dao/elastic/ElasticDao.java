@@ -1,5 +1,6 @@
 package noogel.xyz.search.infrastructure.dao.elastic;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
@@ -12,8 +13,7 @@ import co.elastic.clients.elasticsearch.indices.ForcemergeRequest;
 import co.elastic.clients.util.ObjectBuilder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
-import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
 import noogel.xyz.search.infrastructure.dto.SearchBaseQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
@@ -34,9 +34,9 @@ import java.util.function.Function;
 public class ElasticDao {
 
     @Resource
-    private ElasticsearchConfig config;
+    private ElasticsearchClient elasticsearchClient;
     @Resource
-    private volatile SearchPropertiesConfig.SearchConfig searchConfig;
+    private volatile ConfigProperties configProperties;
 
     private static void parseSearchResult(SearchResultDto resp, SearchResponse<FileEsModel> search) {
         TotalHits total = search.hits().total();
@@ -146,15 +146,15 @@ public class ElasticDao {
     public boolean createIndex(boolean deleteIfExist) {
         try {
             // 查询是否存在
-            boolean indexExist = config.getClient().indices().exists(b -> b.index(getIndexName())).value();
+            boolean indexExist = elasticsearchClient.indices().exists(b -> b.index(getIndexName())).value();
             if (indexExist && deleteIfExist) {
                 // 删除索引
-                DeleteIndexResponse delete = config.getClient().indices().delete(c -> c.index(getIndexName()));
+                DeleteIndexResponse delete = elasticsearchClient.indices().delete(c -> c.index(getIndexName()));
                 log.info("DeleteIndexResponse delete: {}", delete.acknowledged());
             }
             if (!indexExist || deleteIfExist) {
                 // 创建索引和 mapping
-                CreateIndexResponse response = config.getClient().indices().create(c -> c
+                CreateIndexResponse response = elasticsearchClient.indices().create(c -> c
                         .index(getIndexName()).mappings(d -> d.properties(FileEsModel.generateEsMapping()))
                         .settings(s ->
                                 s.analysis(k ->
@@ -163,8 +163,8 @@ public class ElasticDao {
                                                 a.custom(l -> l.tokenizer("path_hierarchy"))))));
                 log.info("CreateIndexResponse delete: {}", response.acknowledged());
                 // 持久化配置
-                searchConfig.getRuntime().setInitIndex(true);
-                searchConfig.saveToFile();
+                configProperties.getRuntime().setInitIndex(true);
+                configProperties.overrideToFile();
             }
             return true;
         } catch (IOException ex) {
@@ -179,16 +179,16 @@ public class ElasticDao {
      * @return
      */
     private String getIndexName() {
-        return searchConfig.getBase().getFtsIndexName();
+        return configProperties.getBase().getFtsIndexName();
     }
 
     public boolean upsertData(FileEsModel model) {
         try {
             // 如果没有初始化索引，则创建。
-            if (!searchConfig.getRuntime().isInitIndex()) {
+            if (!configProperties.getRuntime().isInitIndex()) {
                 createIndex(false);
             }
-            IndexResponse response = config.getClient().index(i -> i
+            IndexResponse response = elasticsearchClient.index(i -> i
                     .index(getIndexName())
                     .id(model.getResId())
                     .document(model)
@@ -203,7 +203,7 @@ public class ElasticDao {
 
     public boolean deleteByResId(String resId) {
         try {
-            DeleteResponse delete = config.getClient().delete(b -> b.index(getIndexName()).id(resId));
+            DeleteResponse delete = elasticsearchClient.delete(b -> b.index(getIndexName()).id(resId));
             boolean result = delete.version() > 0;
             log.info("deleteByResId {}", resId);
             return result;
@@ -218,7 +218,7 @@ public class ElasticDao {
                 .of(t -> t.onlyExpungeDeletes(true));
         try {
             log.info("run forceMerge");
-            config.getClient().indices().forcemerge(forcemergeRequest);
+            elasticsearchClient.indices().forcemerge(forcemergeRequest);
         } catch (IOException e) {
             log.error("forceMerge error.", e);
         }
@@ -226,7 +226,7 @@ public class ElasticDao {
 
     public FileEsModel findByResId(String resId) {
         try {
-            GetResponse<FileEsModel> response = config.getClient().get(t -> t.index(getIndexName()).id(resId),
+            GetResponse<FileEsModel> response = elasticsearchClient.get(t -> t.index(getIndexName()).id(resId),
                     FileEsModel.class);
             return response.source();
         } catch (Exception ex) {
@@ -242,7 +242,7 @@ public class ElasticDao {
                     .query(q -> q.bool(t -> t.must(query)))
                     .source(l -> l.filter(m -> m.excludes("searchableText")))
             );
-            SearchResponse<FileEsModel> search = config.getClient().search(searchRequest, FileEsModel.class);
+            SearchResponse<FileEsModel> search = elasticsearchClient.search(searchRequest, FileEsModel.class);
             List<Hit<FileEsModel>> hits = search.hits().hits();
 
             List<FileEsModel> resp = new ArrayList<>();
@@ -267,7 +267,7 @@ public class ElasticDao {
             Query q2 = ElasticSearchQueryHelper.buildRangeQuery("taskOpAt",
                     String.format("%s:%s", "LT", taskOpAt), Double::valueOf);
             builder.must(q2);
-            SearchResponse<FileEsModel> search = config.getClient().search(s -> s
+            SearchResponse<FileEsModel> search = elasticsearchClient.search(s -> s
                             .index(getIndexName())
                             .query(q -> q.bool(t -> builder))
                             .source(l -> l.filter(m -> m.excludes("searchableText")))
@@ -311,7 +311,7 @@ public class ElasticDao {
                     .highlight(highlight)
             );
             log.info("search:{}", searchRequest.toString());
-            SearchResponse<FileEsModel> search = config.getClient().search(searchRequest, FileEsModel.class);
+            SearchResponse<FileEsModel> search = elasticsearchClient.search(searchRequest, FileEsModel.class);
 
             List<Hit<FileEsModel>> hits = search.hits().hits();
 
@@ -329,7 +329,7 @@ public class ElasticDao {
 
     public SearchResultDto search(SearchBaseQueryDto queryDto) {
         // 如果没有初始化索引，则创建。
-        if (!searchConfig.getRuntime().isInitIndex()) {
+        if (!configProperties.getRuntime().isInitIndex()) {
             createIndex(false);
         }
         // 执行搜索
@@ -344,7 +344,7 @@ public class ElasticDao {
                     .size(queryDto.getLimit())
                     .from(queryDto.getOffset()));
             log.info("search:{}", searchRequest.toString());
-            SearchResponse<FileEsModel> search = config.getClient().search(searchRequest, FileEsModel.class);
+            SearchResponse<FileEsModel> search = elasticsearchClient.search(searchRequest, FileEsModel.class);
             parseSearchResult(resp, search);
         } catch (ElasticsearchException ex) {
             if (ex.getMessage().contains("index_not_found_exception")) {

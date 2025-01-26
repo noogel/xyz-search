@@ -1,5 +1,8 @@
 base:
-  configFilePath:
+  dataPath: data/
+  configSubPath: config/
+  indexerSubPath: indexer/
+  tmpSubPath: tmp/
   ftsIndexName: xyz_search
   username: xyz
   password: search

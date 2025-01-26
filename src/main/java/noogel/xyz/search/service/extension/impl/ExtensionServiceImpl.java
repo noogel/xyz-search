@@ -2,13 +2,12 @@ package noogel.xyz.search.service.extension.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.consts.FileProcessClassEnum;
 import noogel.xyz.search.service.extension.ExtensionParserService;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import noogel.xyz.search.service.extension.ExtensionService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 public class ExtensionServiceImpl implements ExtensionService {
 
     @Resource
-    private SearchPropertiesConfig.SearchConfig searchConfig;
+    private ConfigProperties configProperties;
 
     @Resource
     private List<ExtensionPointService> pointServiceList;
@@ -34,7 +33,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 
     @Override
     public Optional<ExtensionParserService> findParser(String filePath) {
-        Set<String> excludeExtensionConfig = excludeFileClassConfig();
+        Set<String> excludeExtensionConfig = excludeFileClassConfig(filePath);
         return pointServiceList.stream()
                 // 支持的文件类型
                 .filter(l -> l.supportFile(filePath))
@@ -45,14 +44,13 @@ public class ExtensionServiceImpl implements ExtensionService {
                 .findFirst();
     }
 
-    private Set<String> excludeFileClassConfig() {
+    private Set<String> excludeFileClassConfig(String filePath) {
         try {
-            String excludeExtension = searchConfig.getApp().getExcludeFileProcessClass();
-            if (StringUtils.isBlank(excludeExtension)) {
-                return Collections.emptySet();
-            }
-            return Set.of(excludeExtension.split(";")).stream()
-                    .map(String::toUpperCase).collect(Collectors.toSet());
+            return configProperties.getApp().getIndexDirectories().stream()
+                    .filter(t -> filePath.startsWith(t.getDirectory()))
+                    .map(ConfigProperties.IndexItem::getExcludeFileProcessClass)
+                    .findFirst().map(t -> t.stream().map(String::toUpperCase).collect(Collectors.toSet()))
+                    .orElse(new HashSet<>());
         } catch (Exception ex) {
             log.error("excludeExtensionConfig error.", ex);
         }

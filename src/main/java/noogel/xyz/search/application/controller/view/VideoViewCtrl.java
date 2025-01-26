@@ -3,7 +3,7 @@ package noogel.xyz.search.application.controller.view;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.dto.ResourceDownloadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 public class VideoViewCtrl {
     @Resource
-    private SearchPropertiesConfig.SearchConfig config;
+    private ConfigProperties config;
     @Resource
     private SearchService searchService;
 
@@ -60,7 +60,7 @@ public class VideoViewCtrl {
         String videoFilePath = downloadResource.getAbsolutePath();
         File file = new File(videoFilePath);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
-        String tmpDir = config.getBase().getConfigFilePath() + "/tmp/" + resId;
+        String tmpDir = config.getBase().getDataPath() + "/tmp/" + resId;
         File tmp = new File(tmpDir);
         if (!tmp.exists()) {
             tmp.mkdirs();
@@ -100,7 +100,7 @@ public class VideoViewCtrl {
     public void fileOp(@PathVariable String resId,
                        @PathVariable String tsId,
                        HttpServletResponse response) {
-        String tmpDir = config.getBase().getConfigFilePath() + "/tmp/" + resId + "/" + tsId;
+        String tmpDir = config.getBase().getDataPath() + "/tmp/" + resId + "/" + tsId;
         File file = new File(tmpDir);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(!file.exists(), "资源不存在");
         try (InputStream inputStream = new FileInputStream(file)) {

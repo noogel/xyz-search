@@ -1,4 +1,4 @@
-package noogel.xyz.search.infrastructure.config;
+package noogel.xyz.search.infrastructure.consts;
 
 import java.util.Set;
 import java.util.concurrent.*;

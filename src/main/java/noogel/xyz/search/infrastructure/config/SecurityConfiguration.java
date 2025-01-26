@@ -15,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.Objects;
 
 @Configuration
-public class SecurityConfig {
+public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,9 +30,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder, SearchPropertiesConfig.SearchConfig searchConfig) {
-        UserDetails user = User.withUsername(searchConfig.getBase().getUsername())
-                .password(passwordEncoder.encode(searchConfig.getBase().getPassword()))
+    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder, ConfigProperties configProperties) {
+        UserDetails user = User.withUsername(configProperties.getBase().getUsername())
+                .password(passwordEncoder.encode(configProperties.getBase().getPassword()))
                 .roles("USER")
                 .build();
 

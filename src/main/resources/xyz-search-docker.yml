@@ -1,5 +1,8 @@
 base:
-  configFilePath: /usr/share/xyz-search/data
+  dataPath: /usr/share/xyz-search/data/
+  configSubPath: config/
+  indexerSubPath: indexer/
+  tmpSubPath: tmp/
   ftsIndexName: xyz_search
   username: xyz
   password: search

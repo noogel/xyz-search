@@ -4,7 +4,6 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +15,9 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import javax.net.ssl.SSLContext;
 import java.io.InputStream;
@@ -26,44 +27,20 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
-import java.util.Objects;
 
-@Component
 @Slf4j
-public class ElasticsearchConfig {
-
-    private ElasticsearchClient client = null;
-
-    @Resource
-    private SearchPropertiesConfig.SearchConfig searchConfig;
-
-    /**
-     * 重新创建客户端
-     */
-    public void reloadClient() {
-        client = genClient(searchConfig.getApp());
-    }
-
-    /**
-     * 获取客户端
-     *
-     * @return
-     */
-    public ElasticsearchClient getClient() {
-        if (Objects.isNull(client)) {
-            client = genClient(searchConfig.getApp());
-        }
-        return client;
-    }
+@Configuration
+public class ElasticsearchConfiguration {
 
     /**
      * 生成客户端
      *
-     * @param sc
      * @return
      */
-    public ElasticsearchClient genClient(SearchPropertiesConfig.AppConfig sc) {
-
+    @Bean
+    @ConditionalOnMissingBean(ElasticsearchClient.class)
+    public ElasticsearchClient elasticsearchClient(ConfigProperties configProperties) {
+        ConfigProperties.App sc = configProperties.getApp();
         // Create the low-level client
         final RestClient restClient = RestClient
                 .builder(HttpHost.create(sc.getElasticsearchHost()))
