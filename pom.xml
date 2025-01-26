@@ -10,6 +10,7 @@
     <description>xyz-search</description>
     <properties>
         <java.version>17</java.version>
+        <lucene.version>9.12.1</lucene.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <mainClass>noogel.xyz.search.MainApp</mainClass>
@@ -93,19 +94,25 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>10.1.0</version>
+            <version>${lucene.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analysis-common -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analysis-common</artifactId>
-            <version>10.1.0</version>
+            <version>${lucene.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>10.1.0</version>
+            <version>${lucene.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analysis-smartcn -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-smartcn</artifactId>
+            <version>${lucene.version}</version>
         </dependency>
 
         <!-- Hibernate and Jakarta Persistence API Dependencies -->
