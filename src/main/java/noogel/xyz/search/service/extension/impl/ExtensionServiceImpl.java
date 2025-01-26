@@ -2,7 +2,7 @@ package noogel.xyz.search.service.extension.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.consts.FileProcessClassEnum;
 import noogel.xyz.search.service.extension.ExtensionParserService;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class ExtensionServiceImpl implements ExtensionService {
 
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private SearchPropertiesConfig.SearchConfig searchConfig;
 
     @Resource
     private List<ExtensionPointService> pointServiceList;

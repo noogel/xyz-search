@@ -3,7 +3,7 @@ package noogel.xyz.search.service.impl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConsts;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
@@ -33,7 +33,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Resource
     private FileDbService fileDbService;
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private SearchPropertiesConfig.SearchConfig searchConfig;
 
     private static List<FileViewDto> calculateRemoveFiles(List<File> fsFiles, List<FileViewDto> dbFiles) {
         List<String> fsFilesUk = fsFiles.stream().map(t -> {

@@ -2,7 +2,7 @@ package noogel.xyz.search.service.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.*;
@@ -33,7 +33,7 @@ public class SearchServiceImpl implements SearchService {
     @Resource
     private ElasticDao elasticDao;
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private SearchPropertiesConfig.SearchConfig searchConfig;
 
     @Override
     public SearchResultShowDto pageSearch(SearchQueryDto query) {

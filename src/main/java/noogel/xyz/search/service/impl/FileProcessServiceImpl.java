@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConsts;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
@@ -48,17 +48,17 @@ public class FileProcessServiceImpl implements FileProcessService {
     @Resource
     private SynchronizeService synchronizeService;
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private SearchPropertiesConfig.SearchConfig searchConfig;
 
 
     @PostConstruct
     public void init() {
         // 初始化正则匹配器
-        List<SearchPropertyConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
+        List<SearchPropertiesConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
         if (CollectionUtils.isEmpty(itemList)) {
             return;
         }
-        for (SearchPropertyConfig.CollectItem item : itemList) {
+        for (SearchPropertiesConfig.CollectItem item : itemList) {
             String filterRegex = item.getFilterRegex();
             if (StringUtils.isNotBlank(filterRegex)) {
                 PATTERN.add(Pattern.compile(filterRegex));
@@ -72,11 +72,11 @@ public class FileProcessServiceImpl implements FileProcessService {
     public void configAppUpdate(ConfigAppUpdateEvent event) {
         // 更新正则匹配器
         PATTERN.clear();
-        List<SearchPropertyConfig.CollectItem> itemList = event.getNewApp().getCollectDirectories();
+        List<SearchPropertiesConfig.CollectItem> itemList = event.getNewApp().getCollectDirectories();
         if (CollectionUtils.isEmpty(itemList)) {
             return;
         }
-        for (SearchPropertyConfig.CollectItem item : itemList) {
+        for (SearchPropertiesConfig.CollectItem item : itemList) {
             String newRegex = item.getFilterRegex();
             if (StringUtils.isNotBlank(newRegex)) {
                 PATTERN.add(Pattern.compile(newRegex));
@@ -136,7 +136,7 @@ public class FileProcessServiceImpl implements FileProcessService {
                 log.warn("transferFileIfNotExist already running {}.", TRANSFER_RUNNING_COUNT.get());
                 return;
             }
-            List<SearchPropertyConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
+            List<SearchPropertiesConfig.CollectItem> itemList = searchConfig.getApp().getCollectDirectories();
             if (CollectionUtils.isEmpty(itemList)) {
                 return;
             }

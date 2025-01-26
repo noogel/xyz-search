@@ -10,6 +10,7 @@ import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -22,13 +23,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@Getter
 @Service
 @Slf4j
 public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService {
 
-    @Getter
     private final FileProcessClassEnum fileClass = FileProcessClassEnum.PDF;
-    @Getter
     private final Set<FileExtEnum> supportParseFileExtension = Set.of(FileExtEnum.PDF);
 
     /**
@@ -36,7 +36,7 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
      */
     public static List<ChapterDto> readPdfChapters(File inputFile) {
         List<ChapterDto> resp = new ArrayList<>();
-        try (PDDocument doc = PDDocument.load(inputFile)) {
+        try (PDDocument doc = Loader.loadPDF(inputFile)) {
             int pages = doc.getNumberOfPages();
             // 获取一个PDFTextStripper文本剥离对象
             PDFTextStripper textStripper = new PDFTextStripper();

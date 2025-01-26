@@ -1,7 +1,7 @@
 package noogel.xyz.search.infrastructure.event;
 
 import lombok.Getter;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import org.springframework.context.ApplicationEvent;
 
 import java.time.Clock;
@@ -12,12 +12,12 @@ public class ConfigAppUpdateEvent extends ApplicationEvent {
      * 变更前
      */
     @Getter
-    private SearchPropertyConfig.AppConfig oldApp;
+    private SearchPropertiesConfig.AppConfig oldApp;
     /**
      * 变更后
      */
     @Getter
-    private SearchPropertyConfig.AppConfig newApp;
+    private SearchPropertiesConfig.AppConfig newApp;
 
     public ConfigAppUpdateEvent(Object source) {
         super(source);
@@ -28,8 +28,8 @@ public class ConfigAppUpdateEvent extends ApplicationEvent {
     }
 
     public static ConfigAppUpdateEvent of(Object source,
-                                          SearchPropertyConfig.AppConfig oldApp,
-                                          SearchPropertyConfig.AppConfig newApp) {
+                                          SearchPropertiesConfig.AppConfig oldApp,
+                                          SearchPropertiesConfig.AppConfig newApp) {
         ConfigAppUpdateEvent event = new ConfigAppUpdateEvent(source);
         event.oldApp = oldApp;
         event.newApp = newApp;

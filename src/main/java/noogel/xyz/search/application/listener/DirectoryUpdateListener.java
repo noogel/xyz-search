@@ -1,7 +1,7 @@
 package noogel.xyz.search.application.listener;
 
 import jakarta.annotation.Resource;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.service.SynchronizeService;
 import org.springframework.context.event.EventListener;
@@ -24,8 +24,8 @@ public class DirectoryUpdateListener {
      */
     @EventListener(ConfigAppUpdateEvent.class)
     public void configAppUpdate(ConfigAppUpdateEvent event) {
-        SearchPropertyConfig.AppConfig newApp = event.getNewApp();
-        SearchPropertyConfig.AppConfig oldApp = event.getOldApp();
+        SearchPropertiesConfig.AppConfig newApp = event.getNewApp();
+        SearchPropertiesConfig.AppConfig oldApp = event.getOldApp();
 
         // 计算并更新目录
         List<String> oldDirList = new ArrayList<>(oldApp.getSearchDirectories());

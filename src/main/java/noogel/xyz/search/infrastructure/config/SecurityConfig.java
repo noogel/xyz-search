@@ -30,7 +30,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder, SearchPropertyConfig.SearchConfig searchConfig) {
+    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder, SearchPropertiesConfig.SearchConfig searchConfig) {
         UserDetails user = User.withUsername(searchConfig.getBase().getUsername())
                 .password(passwordEncoder.encode(searchConfig.getBase().getPassword()))
                 .roles("USER")

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.CommonsConsts;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -27,7 +27,7 @@ public class EmailNotifyHelper {
      * @param sendCondition
      * @param successRunnable
      */
-    public static void send(SearchPropertyConfig.AppConfig cfg, String subject, String message,
+    public static void send(SearchPropertiesConfig.AppConfig cfg, String subject, String message,
                             Supplier<Boolean> sendCondition, Runnable successRunnable) {
         if (Objects.isNull(cfg.getNotifyEmail())) {
             return;

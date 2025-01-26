@@ -5,7 +5,7 @@ import co.elastic.clients.transport.endpoints.BooleanResponse;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.dto.SearchSettingDto;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 public class SettingServiceImpl implements SettingService {
 
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private SearchPropertiesConfig.SearchConfig searchConfig;
     @Resource
     private ElasticsearchConfig elasticsearchConfig;
     @Resource
@@ -52,14 +52,14 @@ public class SettingServiceImpl implements SettingService {
         dto.setConfigFilePath(searchConfig.getBase().getConfigFilePath());
         dto.setFtsIndexName(searchConfig.getBase().getFtsIndexName());
         dto.setAppConfig(Optional.ofNullable(searchConfig.getApp()).map(JsonHelper::toJson).orElse("{}"));
-        dto.setConfigDesc(SearchPropertyConfig.AppConfig.getNotes());
+        dto.setConfigDesc(SearchPropertiesConfig.AppConfig.getNotes());
         return dto;
     }
 
     @Override
     public SearchSettingDto update(SearchSettingDto cfg) {
-        SearchPropertyConfig.AppConfig newApp = validateAndCopyToNewConfig(cfg);
-        SearchPropertyConfig.AppConfig oldApp = searchConfig.getApp();
+        SearchPropertiesConfig.AppConfig newApp = validateAndCopyToNewConfig(cfg);
+        SearchPropertiesConfig.AppConfig oldApp = searchConfig.getApp();
         // 判断是否需要更新密码
         boolean updateUserPass = !Objects.equals(cfg.getPassword(), searchConfig.getBase().getPassword());
 
@@ -82,7 +82,7 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public boolean connectTesting(SearchSettingDto cfg) {
-        SearchPropertyConfig.AppConfig appConfig = validateAndCopyToNewConfig(cfg);
+        SearchPropertiesConfig.AppConfig appConfig = validateAndCopyToNewConfig(cfg);
         try {
             ElasticsearchClient elasticsearchClient = elasticsearchConfig.genClient(appConfig);
             BooleanResponse ping = elasticsearchClient.ping();
@@ -106,9 +106,9 @@ public class SettingServiceImpl implements SettingService {
      * @param scr
      * @return
      */
-    public SearchPropertyConfig.AppConfig validateAndCopyToNewConfig(SearchSettingDto scr) {
-        SearchPropertyConfig.AppConfig cfg = JsonHelper.fromJson(scr.getAppConfig(),
-                SearchPropertyConfig.AppConfig.class);
+    public SearchPropertiesConfig.AppConfig validateAndCopyToNewConfig(SearchSettingDto scr) {
+        SearchPropertiesConfig.AppConfig cfg = JsonHelper.fromJson(scr.getAppConfig(),
+                SearchPropertiesConfig.AppConfig.class);
         ExceptionCode.CONFIG_ERROR.throwOn(Objects.isNull(cfg), "配置对象不能为空");
         // 校验数据
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(cfg.getElasticsearchHost()),
@@ -133,9 +133,9 @@ public class SettingServiceImpl implements SettingService {
                             String.format("目录 %s 不存在", k));
                 });
         // 校验正则
-        List<SearchPropertyConfig.CollectItem> itemList = Optional.ofNullable(cfg.getCollectDirectories())
+        List<SearchPropertiesConfig.CollectItem> itemList = Optional.ofNullable(cfg.getCollectDirectories())
                 .orElse(Collections.emptyList());
-        for (SearchPropertyConfig.CollectItem collectItem : itemList) {
+        for (SearchPropertiesConfig.CollectItem collectItem : itemList) {
             if (StringUtils.isNotBlank(collectItem.getFilterRegex())) {
                 // 检查是否可编译
                 Pattern.compile(collectItem.getFilterRegex());

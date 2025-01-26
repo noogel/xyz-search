@@ -35,7 +35,7 @@ public class ElasticsearchConfig {
     private ElasticsearchClient client = null;
 
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private SearchPropertiesConfig.SearchConfig searchConfig;
 
     /**
      * 重新创建客户端
@@ -62,7 +62,7 @@ public class ElasticsearchConfig {
      * @param sc
      * @return
      */
-    public ElasticsearchClient genClient(SearchPropertyConfig.AppConfig sc) {
+    public ElasticsearchClient genClient(SearchPropertiesConfig.AppConfig sc) {
 
         // Create the low-level client
         final RestClient restClient = RestClient

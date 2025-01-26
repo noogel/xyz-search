@@ -2,7 +2,7 @@ package noogel.xyz.search.application.controller;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.dto.dropzone.UploadRespDto;
 import noogel.xyz.search.infrastructure.exception.BizException;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
@@ -22,7 +22,7 @@ public class UploadCtrl {
     @Resource
     private FileProcessService fileProcessService;
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private SearchPropertiesConfig.SearchConfig searchConfig;
 
     @RequestMapping(value = "/upload", method = RequestMethod.GET)
     public ModelAndView uploadPage() {

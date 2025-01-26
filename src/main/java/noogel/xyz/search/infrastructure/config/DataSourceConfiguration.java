@@ -13,7 +13,7 @@ import java.util.Optional;
 public class DataSourceConfiguration {
 
     @Bean(name = "EmbeddeddataSource")
-    public DataSource dataSource(@Autowired SearchPropertyConfig.SearchConfig searchConfig) {
+    public DataSource dataSource(@Autowired SearchPropertiesConfig.SearchConfig searchConfig) {
         String dbPath = Optional.ofNullable(searchConfig.getBase().getConfigFilePath()).orElse("");
         if (StringUtils.isNotBlank(dbPath)) {
             dbPath += "/";

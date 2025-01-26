@@ -4,7 +4,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
 import noogel.xyz.search.infrastructure.utils.IpUtils;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
@@ -27,7 +27,7 @@ public class RequestFilter implements Filter {
     private static final long TIME_SHIFT = 600 * 1000L; // 10 分钟
 
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private SearchPropertiesConfig.SearchConfig searchConfig;
 
     @Scheduled(fixedRate = TIME_SHIFT * 144)
     public void removeExpiredRecord() {

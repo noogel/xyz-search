@@ -13,7 +13,7 @@ import co.elastic.clients.util.ObjectBuilder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ElasticsearchConfig;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
 import noogel.xyz.search.infrastructure.dto.SearchBaseQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
@@ -36,7 +36,7 @@ public class ElasticDao {
     @Resource
     private ElasticsearchConfig config;
     @Resource
-    private volatile SearchPropertyConfig.SearchConfig searchConfig;
+    private volatile SearchPropertiesConfig.SearchConfig searchConfig;
 
     private static void parseSearchResult(SearchResultDto resp, SearchResponse<FileEsModel> search) {
         TotalHits total = search.hits().total();
@@ -116,11 +116,11 @@ public class ElasticDao {
             builder.must(resId);
         }
         if (!StringUtils.isEmpty(queryDto.getResSize())) {
-            Query resSize = ElasticSearchQueryHelper.buildRangeQuery("resSize", queryDto.getResSize(), t -> t);
+            Query resSize = ElasticSearchQueryHelper.buildRangeQuery("resSize", queryDto.getResSize(), Double::valueOf);
             builder.must(resSize);
         }
         if (!StringUtils.isEmpty(queryDto.getModifiedAt())) {
-            Function<String, String> fn = (t) -> String.valueOf(Instant.now().getEpochSecond() - Long.parseLong(t));
+            Function<String, Double> fn = (t) -> Double.valueOf(Instant.now().getEpochSecond() - Long.parseLong(t));
             Query modifiedAt = ElasticSearchQueryHelper.buildRangeQuery("modifiedAt",
                     queryDto.getModifiedAt(), fn);
             builder.must(modifiedAt);
@@ -265,7 +265,7 @@ public class ElasticDao {
                 builder.must(q1);
             }
             Query q2 = ElasticSearchQueryHelper.buildRangeQuery("taskOpAt",
-                    String.format("%s:%s", "LT", taskOpAt), t -> t);
+                    String.format("%s:%s", "LT", taskOpAt), Double::valueOf);
             builder.must(q2);
             SearchResponse<FileEsModel> search = config.getClient().search(s -> s
                             .index(getIndexName())

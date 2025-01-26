@@ -3,7 +3,7 @@ package noogel.xyz.search.application.controller.view;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.SearchPropertiesConfig;
 import noogel.xyz.search.infrastructure.dto.ResourceDownloadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 public class VideoViewCtrl {
     @Resource
-    private SearchPropertyConfig.SearchConfig config;
+    private SearchPropertiesConfig.SearchConfig config;
     @Resource
     private SearchService searchService;
 
