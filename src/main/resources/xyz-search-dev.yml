@@ -13,6 +13,36 @@ app:
   elasticsearchCAPath:
   elasticsearchConnectionTimeout: 1000
   elasticsearchSocketTimeout: 5000
-  searchDirectories:
-    - /Users/xyz/MyDebug/XyzSearchTestData
-  indexLimitMs: 10
+  indexDirectories:
+    -
+      directory: /Users/xyz/MyDebug/XyzSearchTestData
+      excludesDirectories:
+        - /Users/xyz/MyDebug/XyzSearchTestData/skip
+      excludeFileProcessClass:
+        - Eaa
+  collectDirectories:
+    -
+      fromList:
+        - /a
+        - /b
+      to: /c
+      filterRegex: "pdf"
+      autoDelete: true
+  scanFileLimitMs: 10
+  opdsDirectory:
+  uploadFileDirectory: /d
+  markDeleteDirectory: /Users/xyz/MyDebug/XyzSearchTestData/skip
+  notifyEmail:
+    senderEmail:
+    emailHost:
+    emailPort:
+    emailPass:
+    receivers:
+      - aaa@email.com
+  paddleOcr:
+    url:
+    timeout: 10000
+  linkItems:
+    -
+      desc: aaa
+      searchUrl: https

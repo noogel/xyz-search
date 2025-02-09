@@ -1,7 +1,7 @@
 package noogel.xyz.search.infrastructure.dto;
 
 import lombok.Data;
-import noogel.xyz.search.infrastructure.model.elastic.FileEsModel;
+import noogel.xyz.search.infrastructure.model.FileEsModel;
 
 import java.util.List;
 

@@ -59,29 +59,15 @@
                         <input type="text" class="form-control" id="username" name="username"
                                placeholder="elastic" th:value="${configProperties.username}" disabled>
                     </div>
-
                     <div class="col-sm-6">
                         <label for="password" class="form-label">密码</label>
                         <input type="password" class="form-control" id="password" name="password"
                                placeholder="" th:value="${configProperties.password}">
                     </div>
-                    <div class="col-sm-6">
-                        <label for="configFilePath" class="form-label">配置路径
-                            <span class="text-muted">（只读）</span></label>
-                        <input type="text" class="form-control" id="configFilePath" name="configFilePath"
-                               placeholder="" th:value="${configProperties.configFilePath}" disabled>
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="ftsIndexName" class="form-label">索引名
-                            <span class="text-muted">（只读）</span></label>
-                        <input type="text" class="form-control" id="ftsIndexName" name="ftsIndexName"
-                               placeholder="" th:value="${configProperties.ftsIndexName}" disabled>
-                    </div>
                     <div class="col-12">
                         <label class="form-label">应用配置</label>
                         <div id="jsoneditor" style="width: auto; height: 600px;"></div>
-                        <input type="hidden" id="app" name="app" th:value="${configProperties.app}">
+                        <input type="hidden" id="app" name="appConfig" th:value="${configProperties.appConfig}">
                     </div>
                 </div>
                 <div class="row justify-content-end my-4">
@@ -89,16 +75,13 @@
                         <button class="btn btn-primary" type="submit">保存</button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-info" onclick="fetch_data_post('/settings/connect/testing', this)">测试连接</button>
+                        <button type="button" class="btn btn-warning" onclick="fetch_data_post('/settings/sync/all', this)">全量更新</button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-warning" onclick="fetch_data_post('/settings/data/reset', this)">重建索引</button>
+                        <button type="button" class="btn btn-success" onclick="fetch_data_post('/settings/sync/fast', this)">快速更新</button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-success" onclick="fetch_data_post('/settings/data/sync', this)">更新索引</button>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-info" onclick="fetch_data_post('/settings/data/collect', this)">收集文件</button>
+                        <button type="button" class="btn btn-info" onclick="fetch_data_post('/settings/sync/collect', this)">收集文件</button>
                     </div>
                 </div>
                 <div class="accordion" id="accordionExample">

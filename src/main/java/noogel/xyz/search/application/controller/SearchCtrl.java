@@ -1,7 +1,6 @@
 package noogel.xyz.search.application.controller;
 
 import jakarta.annotation.Resource;
-import noogel.xyz.search.infrastructure.dto.SearchBaseQueryDto;
 import noogel.xyz.search.infrastructure.dto.SearchQueryDto;
 import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
 import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
@@ -59,10 +58,10 @@ public class SearchCtrl {
             query.setRandomScore(true);
         } else if (SearchQueryDto.indexEmptySearch(query)) {
             // 主页设置最近更新
-            query.setOrder(SearchBaseQueryDto.buildLatestOrder(false));
+            query.setOrder(SearchQueryDto.buildLatestOrder(false));
         } else if (SearchQueryDto.dirEmptySearch(query)) {
             // 目录页默认 rank
-            query.setOrder(SearchBaseQueryDto.buildRankOrder(true));
+            query.setOrder(SearchQueryDto.buildRankOrder(true));
         }
         SearchResultShowDto result = searchService.pageSearch(query);
         mv.addObject("result", result);

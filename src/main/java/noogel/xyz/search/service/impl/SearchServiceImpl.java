@@ -10,8 +10,10 @@ import noogel.xyz.search.infrastructure.dto.page.PageViewExtEnum;
 import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
 import noogel.xyz.search.infrastructure.dto.page.ResourceSimpleDto;
 import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
+import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.elastic.FileEsModel;
+import noogel.xyz.search.infrastructure.model.FileEsModel;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,22 +34,27 @@ public class SearchServiceImpl implements SearchService {
     @Resource
     private ElasticDao elasticDao;
     @Resource
+    private FullTextSearchRepo fullTextSearchRepo;
+    @Resource
     private ConfigProperties configProperties;
 
     @Override
     public SearchResultShowDto pageSearch(SearchQueryDto query) {
-        SearchResultDto result = elasticDao.search(query);
+        CommonSearchDto searchDto = new CommonSearchDto();
+        searchDto.setSearchQuery(query.getSearch());
+//        SearchResultDto result = elasticDao.search(query);
+        SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
         SearchResultShowDto showDto = new SearchResultShowDto();
         PagingDto pagingDto = PagingDto.of(query, result.getSize());
         showDto.setPaging(pagingDto);
         showDto.setBreadcrumb(BreadcrumbDto.of(query.getResId(), query.getRelativeResDir()));
-        showDto.setData(result.getData().stream().map(t -> {
+        showDto.setData(result.getData2().stream().map(t -> {
             ResourceSimpleDto page = new ResourceSimpleDto();
             page.setResId(t.getResId());
             page.setResTitle(t.getResTitle());
             page.calculateSearchableResTitle();
             page.setResSize(String.format("%s | %s", FileHelper.formatFileSize(t.getResSize()),
-                    FileHelper.formatFileSize(t.getTextSize())));
+                    FileHelper.formatFileSize(t.getContentSize())));
             page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
             return page;
         }).collect(Collectors.toList()));
@@ -122,21 +128,6 @@ public class SearchServiceImpl implements SearchService {
             return txt.substring(0, 500) + "...";
         }
         return txt;
-    }
-
-    @Override
-    public List<ResourceSimpleDto> searchByResHash(String resHash) {
-        List<FileEsModel> models = elasticDao.findByResHash(resHash);
-        return models.stream().map(t -> {
-            ResourceSimpleDto page = new ResourceSimpleDto();
-            page.setResId(t.getResId());
-            page.setResTitle(t.getResTitle());
-            page.calculateSearchableResTitle();
-            page.setResSize(String.format("%s | %s", FileHelper.formatFileSize(t.getResSize()),
-                    FileHelper.formatFileSize(t.getTextSize())));
-            page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
-            return page;
-        }).collect(Collectors.toList());
     }
 
     @Override

@@ -129,7 +129,7 @@ public class OPDSCtrl {
         query.setSearch(text);
         query.setResDirPrefix(configProperties.getApp().getOpdsDirectory());
         if (StringUtils.isEmpty(text)) {
-            query.setOrder(SearchBaseQueryDto.buildRankOrder(true));
+            query.setOrder(SearchQueryDto.buildRankOrder(true));
         }
         OPDSResultShowDto result = searchService.opdsSearch(query);
 

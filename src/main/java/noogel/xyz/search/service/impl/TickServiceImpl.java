@@ -6,10 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
-import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
-import noogel.xyz.search.infrastructure.model.elastic.FileEsModel;
+import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.TickService;
@@ -31,7 +31,7 @@ public class TickServiceImpl implements TickService {
     @Resource
     private ExtensionService extensionService;
     @Resource
-    private ElasticDao elasticDao;
+    private FullTextSearchRepo fullTextSearchRepo;
     @Resource
     private ConfigProperties configProperties;
 
@@ -86,10 +86,8 @@ public class TickServiceImpl implements TickService {
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
                             return;
                         }
-                        // ES 文件
-                        FileEsModel fileEsModel = buildEsModel(t, contentDto);
-                        // 同步到 es
-                        elasticDao.upsertData(fileEsModel);
+                        FullTextSearchModel fullTextSearchModel = buildLuceneModel(t, contentDto);
+                        fullTextSearchRepo.upsert(fullTextSearchModel);
                         // 更新状态
                         fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                     });
@@ -101,27 +99,25 @@ public class TickServiceImpl implements TickService {
         }
     }
 
-    private FileEsModel buildEsModel(FileResReadDto t, FileResContentDto dto) {
+    private FullTextSearchModel buildLuceneModel(FileResReadDto t, FileResContentDto dto) {
         String content = dto.genContent();
         String title = Optional.ofNullable(dto.getMetaTitle())
                 .filter(StringUtils::isNotBlank).orElse(t.getName());
-        FileEsModel es = new FileEsModel();
+        FullTextSearchModel es = new FullTextSearchModel();
         es.setResId(t.getResId());
         es.setResName(t.getName());
         es.setResTitle(title);
-        es.setRank(t.getRank());
+        es.setResRank(t.getRank());
         es.setResDir(t.getDir());
         es.setResHash(t.getHash());
         es.setResType(t.getDir());
         es.setResType(t.getType());
         es.setResSize(t.getSize());
-        es.setModifiedAt(t.getModifiedAt());
-        es.setSearchableText(content);
-        es.setTextHash(MD5Helper.getMD5(content));
-        es.setTextSize(content.length());
+        es.setContent(content);
+        es.setContentHash(MD5Helper.getMD5(content));
+        es.setContentSize(content.length());
         return es;
     }
-
 
     /**
      * 扫描未索引的文件
@@ -155,7 +151,7 @@ public class TickServiceImpl implements TickService {
         log.info("removeEsAndFile {}", t.calFilePath());
         try {
             // 清理ES
-            if (elasticDao.deleteByResId(t.getResId())) {
+            if (fullTextSearchRepo.delete(t.getResId())) {
                 // 清理DB
                 fileDbService.deleteFile(t.getFieldId());
             }

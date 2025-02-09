@@ -8,11 +8,39 @@ import org.apache.commons.lang3.StringUtils;
 import static noogel.xyz.search.infrastructure.utils.UrlHelper.ct;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class SearchQueryDto extends SearchBaseQueryDto {
+public class SearchQueryDto {
     private String relativeResDir;
     private String resId;
+    private String search;
+    private String resDirPrefix;
+    private String resSize;
+    private String resType;
+    private String modifiedAt;
+    private Integer limit = 10;
+    private Integer offset = 0;
+    private Boolean randomScore;
+    private QueryOrderDto order;
+
+    @Data
+    public static class QueryOrderDto {
+        private String field;
+        private boolean ascOrder;
+
+        public static QueryOrderDto of(String field, boolean ascOrder) {
+            QueryOrderDto dto = new QueryOrderDto();
+            dto.setField(field);
+            dto.setAscOrder(ascOrder);
+            return dto;
+        }
+    }
+
+    public static QueryOrderDto buildRankOrder(boolean ascOrder) {
+        return QueryOrderDto.of("rank", ascOrder);
+    }
+
+    public static QueryOrderDto buildLatestOrder(boolean ascOrder) {
+        return QueryOrderDto.of("modifiedAt", ascOrder);
+    }
 
     public static boolean indexEmptySearch(SearchQueryDto dto) {
         return StringUtils.isEmpty(dto.getSearch())

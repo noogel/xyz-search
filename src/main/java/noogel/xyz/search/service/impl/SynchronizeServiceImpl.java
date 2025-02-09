@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
-import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.utils.FileResHelper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.SynchronizeService;
@@ -29,7 +29,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Resource
     private ExtensionService extensionService;
     @Resource
-    private ElasticDao elasticDao;
+    private FullTextSearchRepo fullTextSearchRepo;
     @Resource
     private FileDbService fileDbService;
     @Resource
@@ -104,7 +104,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void resetIndex() {
-        elasticDao.createIndex(true);
+        fullTextSearchRepo.reset();
         configProperties.getApp().getIndexDirectories().forEach(t -> {
             int updateCount = fileDbService.updateDirectoryState(t.getDirectory(), FileStateEnum.VALID);
             log.info("resetIndex dir {} count {}", t, updateCount);

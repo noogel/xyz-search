@@ -1,12 +1,13 @@
-package noogel.xyz.search.infrastructure.model.elastic;
+package noogel.xyz.search.infrastructure.model;
 
 import co.elastic.clients.elasticsearch._types.mapping.*;
 import lombok.Data;
+import noogel.xyz.search.infrastructure.lucene.LuceneDocument;
 
 import java.util.*;
 
 @Data
-public class FileEsModel {
+public class FileEsModel implements LuceneDocument {
 
     /**
      * 资源完整路径 HASH
