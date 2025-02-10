@@ -1,5 +1,6 @@
 package noogel.xyz.search.infrastructure.lucene;
 
+import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -107,7 +108,7 @@ public class LuceneWriter {
 
     public Field convert(Class<?> clazz, String name, Object value, PkId pkId) {
         if (Objects.nonNull(pkId)) {
-            return new StoredField(name, Objects.isNull(value) ? "" : ((String) value));
+            return new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
         } else if (String.class.equals(clazz)) {
             return new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
         } else if (Long.class.equals(clazz)) {

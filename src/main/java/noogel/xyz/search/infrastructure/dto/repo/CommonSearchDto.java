@@ -9,6 +9,10 @@ import java.util.List;
 @Data
 public class CommonSearchDto {
     /**
+     * 资源 ID
+     */
+    private String resId;
+    /**
      * 搜索内容
      */
     private String searchQuery;

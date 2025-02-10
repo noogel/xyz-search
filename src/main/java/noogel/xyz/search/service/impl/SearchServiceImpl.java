@@ -4,7 +4,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
-import noogel.xyz.search.infrastructure.dao.elastic.ElasticDao;
 import noogel.xyz.search.infrastructure.dto.*;
 import noogel.xyz.search.infrastructure.dto.page.PageViewExtEnum;
 import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
@@ -12,7 +11,7 @@ import noogel.xyz.search.infrastructure.dto.page.ResourceSimpleDto;
 import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.FileEsModel;
+import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
@@ -20,6 +19,7 @@ import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
 import noogel.xyz.search.service.SearchService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.util.Collections;
@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     @Resource
-    private ElasticDao elasticDao;
-    @Resource
     private FullTextSearchRepo fullTextSearchRepo;
     @Resource
     private ConfigProperties configProperties;
@@ -42,13 +40,12 @@ public class SearchServiceImpl implements SearchService {
     public SearchResultShowDto pageSearch(SearchQueryDto query) {
         CommonSearchDto searchDto = new CommonSearchDto();
         searchDto.setSearchQuery(query.getSearch());
-//        SearchResultDto result = elasticDao.search(query);
         SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
         SearchResultShowDto showDto = new SearchResultShowDto();
         PagingDto pagingDto = PagingDto.of(query, result.getSize());
         showDto.setPaging(pagingDto);
         showDto.setBreadcrumb(BreadcrumbDto.of(query.getResId(), query.getRelativeResDir()));
-        showDto.setData(result.getData2().stream().map(t -> {
+        showDto.setData(result.getData().stream().map(t -> {
             ResourceSimpleDto page = new ResourceSimpleDto();
             page.setResId(t.getResId());
             page.setResTitle(t.getResTitle());
@@ -63,24 +60,24 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public OPDSResultShowDto opdsSearch(SearchQueryDto query) {
-        SearchResultDto result = elasticDao.search(query);
+        CommonSearchDto searchDto = new CommonSearchDto();
+        searchDto.setSearchQuery(query.getSearch());
+        SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
         OPDSResultShowDto showDto = new OPDSResultShowDto();
         showDto.setSize(Math.toIntExact(result.getSize()));
-        showDto.setExactSize(result.isExactSize());
         showDto.setData(result.getData().stream().map(t -> {
             File file = new File(t.calculateAbsolutePath());
             if (!file.exists()) {
                 return null;
             }
             String contentType = FileHelper.getContentType(file);
-
             OPDSItemShowDto dto = new OPDSItemShowDto();
             dto.setResId(t.getResId());
             dto.setResName(t.getResName());
             dto.setResTitle(t.getResTitle());
             dto.setResSize(t.getResSize());
             dto.setModifiedAt(t.getModifiedAt());
-            dto.setSearchableText(t.getSearchableText());
+            dto.setSearchableText(t.getContent());
             dto.setResDir(t.getResDir());
             dto.setContentType(contentType);
             return dto;
@@ -90,11 +87,11 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public ResourcePageDto searchByResId(String resId, String search) {
-        ResourceHighlightHitsDto dto = elasticDao.searchByResId(resId, search);
+        ResourceHighlightHitsDto dto = fullTextSearchRepo.searchByResId(resId, search);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(Objects.isNull(dto), "资源不存在");
         String highlightHtml = HTMLTemplateHelper.render("highlight.html",
                 Collections.singletonMap("highlight", dto.getHighlights()));
-        FileEsModel t = dto.getResource();
+        var t = dto.getResource();
         ResourcePageDto page = new ResourcePageDto();
         page.setResId(t.getResId());
         page.setResTitle(t.getResTitle());
@@ -116,7 +113,9 @@ public class SearchServiceImpl implements SearchService {
         page.setThumbnailViewUrl(pageViewExtEnum.map(l -> l.calThumbnailUrl(t.getResId())).orElse("#"));
         page.setDownloadUrl(PageViewExtEnum.downloadUrl(t.getResId()));
         page.setDirViewUrl(PageViewExtEnum.dirViewUrl(t.getResId(), t.calculateRelativeDir(configProperties.getApp().indexDirectories())));
-        page.setResTextSnippet(genResTextSnippet(t.getSearchableText()));
+        if (CollectionUtils.isEmpty(dto.getHighlights())) {
+            page.setResTextSnippet(genResTextSnippet(t.getContent()));
+        }
         return page;
     }
 
@@ -133,7 +132,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public ResourceDownloadDto getDownloadResource(String resId) {
         ResourceDownloadDto dto = new ResourceDownloadDto();
-        FileEsModel res = elasticDao.findByResId(resId);
+        FullTextSearchModel res = fullTextSearchRepo.findByResId(resId);
         dto.setResId(resId);
         dto.setResTitle(res.getResTitle());
         dto.setAbsolutePath(res.calculateAbsolutePath());

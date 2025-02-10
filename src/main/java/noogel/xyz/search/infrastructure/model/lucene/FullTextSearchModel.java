@@ -2,7 +2,7 @@ package noogel.xyz.search.infrastructure.model.lucene;
 
 import lombok.Data;
 import noogel.xyz.search.infrastructure.lucene.LuceneDocument;
-import noogel.xyz.search.infrastructure.lucene.PkId;
+import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
 
 import java.util.Collections;
 import java.util.List;

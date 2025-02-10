@@ -4,35 +4,27 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer;
-import noogel.xyz.search.infrastructure.lucene.LuceneSearcher;
-import noogel.xyz.search.infrastructure.lucene.LuceneWriter;
-import noogel.xyz.search.infrastructure.lucene.Paging;
-import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
-import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
-import noogel.xyz.search.infrastructure.utils.ElasticSearchQueryHelper;
-import noogel.xyz.search.infrastructure.utils.JsonHelper;
+import noogel.xyz.search.infrastructure.lucene.*;
+import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.*;
-import java.util.function.Function;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -60,7 +52,6 @@ public class LuceneFullTextSearchRepoImpl implements FullTextSearchRepo {
 
     @Override
     public boolean upsert(FullTextSearchModel model) {
-        log.info("full {}", JsonHelper.toJson(model));
         luceneWriter.write(model);
         return true;
     }
@@ -77,28 +68,54 @@ public class LuceneFullTextSearchRepoImpl implements FullTextSearchRepo {
 
     @Override
     public FullTextSearchModel findByResId(String resId) {
-        return null;
+        try {
+            CommonSearchDto searchDto = new CommonSearchDto();
+            searchDto.setResId(resId);
+            Query query = genQueryBuilder(searchDto);
+            return (FullTextSearchModel) luceneSearcher.findFirst(query);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public List<FullTextSearchModel> findByResHash(String resHash) {
-        return List.of();
-    }
-
-    @Override
-    public ResourceHighlightHitsDto searchByResId(String resId, @Nullable String text) {
-        return null;
+    public ResourceHighlightHitsDto searchByResId(String resId, @Nullable String searchQuery) {
+        try {
+            CommonSearchDto searchDto = new CommonSearchDto();
+            searchDto.setSearchQuery(searchQuery);
+            searchDto.setResId(resId);
+            Query query = genQueryBuilder(searchDto);
+            Pair<LuceneDocument, List<String>> resp = luceneSearcher.findFirstWithHighlight(query);
+            ResourceHighlightHitsDto dto = new ResourceHighlightHitsDto();
+            dto.setResource((FullTextSearchModel) resp.getLeft());
+            dto.setHighlights(resp.getRight());
+            return dto;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public SearchResultDto commonSearch(CommonSearchDto searchDto) {
         try {
             Query query = genQueryBuilder(searchDto);
-            Pair<TotalHits, List<Document>> totalHitsListPair = luceneSearcher.pagingSearch(query, Paging.of(1, 2));
+            if (StringUtils.isBlank(query.toString())) {
+                query = new WildcardQuery(new Term("content", "*"));
+            }
+
+            Paging paging;
+            if (Objects.nonNull(searchDto.getPaging())) {
+                Integer limit = searchDto.getPaging().getLimit();
+                Integer offset = searchDto.getPaging().getOffset();
+                paging = Paging.of(offset / limit + 1, limit);
+            } else {
+                paging = Paging.of(1, 20);
+            }
+
+            Pair<Integer, List<LuceneDocument>> totalHitsListPair = luceneSearcher.pagingSearch(query, paging);
             SearchResultDto resultDto = new SearchResultDto();
-            resultDto.setData2(new ArrayList<>());
-            resultDto.setSize(totalHitsListPair.getKey().value);
-            resultDto.setExactSize(TotalHits.Relation.EQUAL_TO.equals(totalHitsListPair.getKey().relation));
+            resultDto.setData(totalHitsListPair.getValue().stream().map(t -> (FullTextSearchModel) t).toList());
+            resultDto.setSize(totalHitsListPair.getKey());
             return resultDto;
         } catch (ParseException e) {
             throw new RuntimeException(e);
@@ -119,6 +136,11 @@ public class LuceneFullTextSearchRepoImpl implements FullTextSearchRepo {
             MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, LuceneAnalyzer.ANALYZER_MAP.get("content"), boosts);
             Query query = parser.parse(searchDto.getSearchQuery());
             builder.add(query, BooleanClause.Occur.MUST);
+        }
+        if (StringUtils.isNotBlank(searchDto.getResId())) {
+            Term term = new Term("resId", searchDto.getResId());
+            TermQuery resDir = new TermQuery(term);
+            builder.add(resDir, BooleanClause.Occur.MUST);
         }
         if (!CollectionUtils.isEmpty(searchDto.getResTypeList())) {
             BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
@@ -160,5 +182,4 @@ public class LuceneFullTextSearchRepoImpl implements FullTextSearchRepo {
         }
         return builder.build();
     }
-
 }

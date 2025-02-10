@@ -1,4 +1,4 @@
-package noogel.xyz.search.infrastructure.lucene;
+package noogel.xyz.search.infrastructure.lucene.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -4,11 +4,9 @@ import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
-import noogel.xyz.search.infrastructure.model.FileEsModel;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * 全文搜索资源库
@@ -45,13 +43,6 @@ public interface FullTextSearchRepo {
      * @return
      */
     FullTextSearchModel findByResId(String resId);
-
-    /**
-     * 查询
-     * @param resHash
-     * @return
-     */
-    List<FullTextSearchModel> findByResHash(String resHash);
 
     /**
      * 按资源搜索
