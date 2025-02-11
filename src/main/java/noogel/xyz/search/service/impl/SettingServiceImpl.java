@@ -106,19 +106,12 @@ public class SettingServiceImpl implements SettingService {
         ConfigProperties.App cfg = JsonHelper.fromJson(scr.getAppConfig(), ConfigProperties.App.class);
         ExceptionCode.CONFIG_ERROR.throwOn(Objects.isNull(cfg), "配置对象不能为空");
         // 校验数据
-        ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(cfg.getElasticsearchHost()),
-                "Elasticsearch host 不能为空");
         ExceptionCode.CONFIG_ERROR.throwOn(StringUtils.isBlank(scr.getPassword()),
                 "密码不能为空");
         ExceptionCode.CONFIG_ERROR.throwOn(Objects.nonNull(cfg.getNotifyEmail())
                 && StringUtils.isNotBlank(cfg.getNotifyEmail().getSenderEmail())
                 && CollectionUtils.isEmpty(cfg.getNotifyEmail().getReceivers()), "邮件通知接收人不能为空");
-        // 校验证书
-        if (StringUtils.isNotBlank(cfg.getElasticsearchCAPath())) {
-            File file = new File(cfg.getElasticsearchCAPath());
-            ExceptionCode.CONFIG_ERROR.throwOn(!file.exists() || !file.isFile(),
-                    String.format("证书文件 %s 不存在", cfg.getElasticsearchCAPath()));
-        }
+
         // 校验目录
         Optional.ofNullable(cfg.indexDirectories()).orElse(Collections.emptyList()).stream()
                 .filter(StringUtils::isNotBlank)

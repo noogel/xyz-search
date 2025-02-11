@@ -7,12 +7,6 @@ base:
   username: xyz
   password: search
 app:
-  elasticsearchHost: "http://localhost:9200"
-  elasticsearchUser:
-  elasticsearchPassword:
-  elasticsearchCAPath:
-  elasticsearchConnectionTimeout: 1000
-  elasticsearchSocketTimeout: 5000
   indexDirectories:
     -
       directory: /Users/xyz/MyDebug/XyzSearchTestData

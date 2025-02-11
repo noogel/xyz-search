@@ -7,12 +7,35 @@ base:
   username: xyz
   password: search
 app:
-  elasticsearchHost: "http://xyzEs:9200"
-  elasticsearchUser:
-  elasticsearchPassword:
-  elasticsearchCAPath:
-  elasticsearchConnectionTimeout: 6000
-  elasticsearchSocketTimeout: 18000
-  searchDirectories:
-    - /data/share
-  indexLimitMs: 10
+  indexDirectories:
+    -
+      directory: /data/share
+      excludesDirectories:
+        - /data/share/skip
+      excludeFileProcessClass:
+        -
+  collectDirectories:
+    -
+      fromList:
+        - /collect
+      to: /data/share/collect
+      filterRegex: "pdf"
+      autoDelete: false
+  scanFileLimitMs: 10
+  opdsDirectory:
+  uploadFileDirectory: /data/share/upload
+  markDeleteDirectory: /data/share/skip/deleted
+  notifyEmail:
+    senderEmail:
+    emailHost:
+    emailPort:
+    emailPass:
+    receivers:
+      - aaa@email.com
+  paddleOcr:
+    url:
+    timeout: 10000
+  linkItems:
+    -
+      desc: aaa
+      searchUrl: https

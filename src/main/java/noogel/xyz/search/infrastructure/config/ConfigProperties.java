@@ -101,28 +101,7 @@ public class ConfigProperties {
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class App {
-        @Deprecated
-        @ConfigNote(desc = "ES 地址，地址格式 http[s]://xxx:9200")
-        private String elasticsearchHost;
-        @Deprecated
-        @ConfigNote(desc = "ES 用户名（可选）")
-        private String elasticsearchUser;
-        @Deprecated
-        @ConfigNote(desc = "ES 密码（可选）")
-        private String elasticsearchPassword;
-        @Deprecated
-        @ConfigNote(desc = "ES 证书位置（可选）")
-        private String elasticsearchCAPath;
-        @Deprecated
-        @ConfigNote(desc = "ES 连接超时时间")
-        private Integer elasticsearchConnectionTimeout;
-        @Deprecated
-        @ConfigNote(desc = "ES Socket 超时时间")
-        private Integer elasticsearchSocketTimeout;
-        // 1. 索引器
-        // TODO
-
-        // 2. 目录配置
+        //目录配置
         @ConfigNote(desc = "索引目录")
         private List<IndexItem> indexDirectories;
         @ConfigNote(desc = "资源收集目录映射")
