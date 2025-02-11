@@ -134,7 +134,26 @@ public class LuceneFullTextSearchRepoImpl implements FullTextSearchRepo {
             String[] fields = {"resName", "content"};
             Map<String, Float> boosts = Map.of("resName", 500.F, "content", 100.F);
             MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, LuceneAnalyzer.ANALYZER_MAP.get("content"), boosts);
-            Query query = parser.parse(searchDto.getSearchQuery());
+            String searchQuery = searchDto.getSearchQuery()
+                    .replace("+", "\\+")
+                    .replace("-", "\\-")
+                    .replace("&", "\\&")
+                    .replace("|", "\\|")
+                    .replace("!", "\\!")
+                    .replace("(", "\\(")
+                    .replace(")", "\\)")
+                    .replace("{", "\\{")
+                    .replace("}", "\\}")
+                    .replace("[", "\\[")
+                    .replace("]", "\\]")
+                    .replace("^", "\\^")
+                    .replace("\"", "\\\"")
+                    .replace("~", "\\~")
+                    .replace("*", "\\*")
+                    .replace("?", "\\?")
+                    .replace(":", "\\:")
+                    .replace("\\", "\\\\");
+            Query query = parser.parse(searchQuery);
             builder.add(query, BooleanClause.Occur.MUST);
         }
         if (StringUtils.isNotBlank(searchDto.getResId())) {

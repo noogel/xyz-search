@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.dto.*;
+import noogel.xyz.search.infrastructure.dto.api.SearchQueryApiDto;
+import noogel.xyz.search.infrastructure.dto.api.SearchResultApiDto;
+import noogel.xyz.search.infrastructure.dto.api.SearxngResourceApiDto;
 import noogel.xyz.search.infrastructure.dto.page.PageViewExtEnum;
 import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
 import noogel.xyz.search.infrastructure.dto.page.ResourceSimpleDto;
@@ -53,6 +56,24 @@ public class SearchServiceImpl implements SearchService {
             page.setResSize(String.format("%s | %s", FileHelper.formatFileSize(t.getResSize()),
                     FileHelper.formatFileSize(t.getContentSize())));
             page.setModifiedAt(DateTimeHelper.tsToDt(t.getModifiedAt()));
+            return page;
+        }).collect(Collectors.toList()));
+        return showDto;
+    }
+
+    @Override
+    public SearchResultApiDto apiSearch(SearchQueryApiDto query) {
+        CommonSearchDto searchDto = new CommonSearchDto();
+        searchDto.setSearchQuery(query.getSearch());
+        SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
+        SearchResultApiDto showDto = new SearchResultApiDto();
+        showDto.setQuery(query.getSearch());
+        showDto.setResults(result.getData().stream().map(t -> {
+            SearxngResourceApiDto page = new SearxngResourceApiDto();
+            page.setResId(t.getResId());
+            page.setTitle(t.getResTitle());
+            page.setContent(t.getContent().substring(0, Math.min(100, t.getContent().length())));
+            page.setUrl(PageViewExtEnum.textUrl(t.getResId()));
             return page;
         }).collect(Collectors.toList()));
         return showDto;
@@ -138,5 +159,11 @@ public class SearchServiceImpl implements SearchService {
         dto.setAbsolutePath(res.calculateAbsolutePath());
         dto.setResDir(res.getResDir());
         return dto;
+    }
+
+    @Override
+    public String getResourceContent(String resId) {
+        FullTextSearchModel res = fullTextSearchRepo.findByResId(resId);
+        return res.getContent();
     }
 }
