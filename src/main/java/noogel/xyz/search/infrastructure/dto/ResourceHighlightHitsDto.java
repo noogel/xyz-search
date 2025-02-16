@@ -1,7 +1,6 @@
 package noogel.xyz.search.infrastructure.dto;
 
 import lombok.Data;
-import noogel.xyz.search.infrastructure.model.FileEsModel;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 
 import java.util.List;
