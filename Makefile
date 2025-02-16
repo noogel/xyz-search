@@ -24,4 +24,4 @@ git-push:
 git-push-dev:
 	git add . \
  && git commit -am "auto update" \
- && git push origin dexyz-feat-spb_3_4
+ && git push origin dev
