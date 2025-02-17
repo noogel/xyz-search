@@ -39,7 +39,7 @@ build/
 ### Custom ###
 **/property-config.json
 **/*.war
-
+**/.DS_Store
 web/
 *.db
 search.xyz

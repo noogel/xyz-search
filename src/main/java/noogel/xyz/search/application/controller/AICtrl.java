@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class EmbeddingCtrl {
+public class AICtrl {
     private final EmbeddingModel embeddingModel;
 
     @Autowired
-    public EmbeddingCtrl(EmbeddingModel embeddingModel) {
+    public AICtrl(EmbeddingModel embeddingModel) {
         this.embeddingModel = embeddingModel;
     }
 
