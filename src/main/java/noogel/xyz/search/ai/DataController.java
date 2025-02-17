@@ -20,7 +20,7 @@ public class DataController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @PostMapping("/load")
+    @GetMapping("/load")
     public ResponseEntity<String> load() {
         try {
             this.dataLoadingService.load();
@@ -31,7 +31,7 @@ public class DataController {
         }
     }
 
-    @PostMapping("/loadJson")
+    @GetMapping("/loadJson")
     public ResponseEntity<String> loadJson() {
         try {
             this.dataLoadingService.loadJson();

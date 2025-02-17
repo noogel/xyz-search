@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LLM 对话演示</title>
+  <style>
+    body {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    #chat-container {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        background: #f9f9f9;
+    }
+
+    .message {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 8px;
+        max-width: 80%;
+    }
+
+    .user-message {
+        background: #e3f2fd;
+        margin-left: auto;
+    }
+
+    .bot-message {
+        background: #fff;
+        margin-right: auto;
+    }
+
+    #input-area {
+        padding: 15px;
+        border-top: 1px solid #ddd;
+        display: flex;
+        gap: 10px;
+    }
+
+    #user-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    #send-btn {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    #send-btn:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+<div id="chat-container">
+  <div id="messages"></div>
+  <div id="input-area">
+    <input type="text" id="user-input" placeholder="输入消息...">
+    <button id="send-btn" onclick="sendMessage()">发送</button>
+  </div>
+</div>
+
+<script>
+  let eventSource = null;
+  let currentResponse = null;
+
+  // 初始化事件监听
+  document.getElementById('user-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+      }
+  });
+
+  function appendMessage(content, isUser = true) {
+      const messages = document.getElementById('messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+      messageDiv.textContent = content;
+      messages.appendChild(messageDiv);
+      messages.scrollTop = messages.scrollHeight; // 自动滚动到底部
+      return messageDiv;
+  }
+
+  function updateLastMessage(content) {
+      const messages = document.getElementById('messages');
+      const lastMessage = messages.lastElementChild;
+      if (lastMessage && !lastMessage.classList.contains('user-message')) {
+          lastMessage.textContent += content;
+          messages.scrollTop = messages.scrollHeight;
+      }
+  }
+
+  async function sendMessage() {
+      const input = document.getElementById('user-input');
+      const btn = document.getElementById('send-btn');
+      const message = input.value.trim();
+
+      if (!message || btn.disabled) return;
+
+      // 禁用输入
+      input.disabled = true;
+      btn.disabled = true;
+
+      // 显示用户消息
+      appendMessage(message, true);
+      input.value = '';
+
+      // 初始化AI消息
+      currentResponse = appendMessage('思考中...', false);
+
+      try {
+          // 关闭之前的连接
+          if (eventSource) eventSource.close();
+
+          // 创建新的EventSource连接
+          eventSource = new EventSource(`/ai/chat/stream?message=${encodeURIComponent(message)}`);
+
+          eventSource.onmessage = (e) => {
+              const data = JSON.parse(e.data);
+              updateLastMessage(data.text);
+          };
+
+          eventSource.onerror = (e) => {
+              console.error('连接错误:', e);
+              eventSource.close();
+              updateLastMessage("[连接异常中断]");
+              input.disabled = false;
+              btn.disabled = false;
+          };
+
+<!--        eventSource.onerror = (e) => {-->
+<!--           if (e.eventPhase === EventSource.CLOSED) {-->
+<!--             console.log('主动关闭');-->
+<!--             return;-->
+<!--           }-->
+
+<!--           if (reconnectAttempts < 5) {-->
+<!--             setTimeout(() => {-->
+<!--               reconnectAttempts++;-->
+<!--               connectSSE();-->
+<!--             }, Math.min(1000 * reconnectAttempts, 10000));-->
+<!--           } else {-->
+<!--             updateLastMessage("[超过最大重试次数]");-->
+<!--           }-->
+<!--         };-->
+
+
+<!--        eventSource.addEventListener('error', (e) => {-->
+<!--         if (e.target.readyState === EventSource.CLOSED) {-->
+<!--           console.log('服务器主动关闭');-->
+<!--         } else if (e.target.readyState === EventSource.CONNECTING) {-->
+<!--           console.log('正在重连...');-->
+<!--         }-->
+<!--        });-->
+
+          eventSource.addEventListener('end', () => {
+              eventSource.close();
+              input.disabled = false;
+              btn.disabled = false;
+          });
+
+      } catch (error) {
+          console.error('请求失败:', error);
+          updateLastMessage("[请求失败]");
+          input.disabled = false;
+          btn.disabled = false;
+      }
+  }
+</script>
+</body>
+</html>

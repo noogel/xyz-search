@@ -50,7 +50,8 @@ public class DataLoadingService {
 
 		logger.info(
 				"Parsing document, splitting, creating embeddings and storing in vector store...  this will take a while.");
-		this.vectorStore.accept(tokenTextSplitter.apply(pdfReader.get()));
+		List<Document> apply = tokenTextSplitter.apply(pdfReader.get());
+		this.vectorStore.accept(apply);
 		logger.info("Done parsing document, splitting, creating embeddings and storing in vector store");
 
 	}

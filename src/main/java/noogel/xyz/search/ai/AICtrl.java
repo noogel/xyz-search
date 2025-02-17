@@ -1,4 +1,4 @@
-package noogel.xyz.search.application.controller;
+package noogel.xyz.search.ai;
 
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingResponse;
