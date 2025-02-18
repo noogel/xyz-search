@@ -1,193 +1,152 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>LLM 对话演示</title>
-  <style>
-    body {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        font-family: Arial, sans-serif;
-    }
-
-    #chat-container {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        height: 600px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    #messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 15px;
-        background: #f9f9f9;
-    }
-
-    .message {
-        margin: 10px 0;
-        padding: 10px;
-        border-radius: 8px;
-        max-width: 80%;
-    }
-
-    .user-message {
-        background: #e3f2fd;
-        margin-left: auto;
-    }
-
-    .bot-message {
-        background: #fff;
-        margin-right: auto;
-    }
-
-    #input-area {
-        padding: 15px;
-        border-top: 1px solid #ddd;
-        display: flex;
-        gap: 10px;
-    }
-
-    #user-input {
-        flex: 1;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-
-    #send-btn {
-        padding: 10px 20px;
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    #send-btn:disabled {
-        background: #6c757d;
-        cursor: not-allowed;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>LLM流式对话演示</title>
+    <meta id="csrf-token" name="csrf-token" th:content="${_csrf.token}" th:if="${_csrf}">
+    <!-- 引入Bootstrap 5 -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: 70vh;
+            overflow-y: auto;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: 20%;
+        }
+        .bot-message {
+            background: #e9ecef;
+            margin-right: 20%;
+        }
+        .message-card {
+            max-width: 80%;
+            transition: opacity 0.3s;
+        }
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-<div id="chat-container">
-  <div id="messages"></div>
-  <div id="input-area">
-    <input type="text" id="user-input" placeholder="输入消息...">
-    <button id="send-btn" onclick="sendMessage()">发送</button>
-  </div>
+<div class="container py-4">
+    <div class="chat-container mb-3" id="chatBox"></div>
+
+    <div class="input-group">
+        <textarea id="inputMessage" class="form-control"
+                  placeholder="输入消息..." rows="2"></textarea>
+        <button id="btnSend" class="btn btn-primary">
+            发送
+        </button>
+    </div>
+
+    <!-- 加载指示器 -->
+    <div id="typingIndicator" class="typing-indicator">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        <span class="ms-2">思考中...</span>
+    </div>
 </div>
 
+<!-- 引入jQuery和Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
 <script>
-  let eventSource = null;
-  let currentResponse = null;
+    $(document).ready(function() {
+        const API_ENDPOINT = "/ai/chat/stream"; // 替换为实际API地址
 
-  // 初始化事件监听
-  document.getElementById('user-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-      }
-  });
+        // 消息发送处理
+        $('#btnSend').click(async function() {
+            const message = $('#inputMessage').val().trim();
+            if (!message) return;
 
-  function appendMessage(content, isUser = true) {
-      const messages = document.getElementById('messages');
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-      messageDiv.textContent = content;
-      messages.appendChild(messageDiv);
-      messages.scrollTop = messages.scrollHeight; // 自动滚动到底部
-      return messageDiv;
-  }
+            // 禁用按钮防止重复提交
+            $(this).prop('disabled', true);
+            $('#typingIndicator').show();
 
-  function updateLastMessage(content) {
-      const messages = document.getElementById('messages');
-      const lastMessage = messages.lastElementChild;
-      if (lastMessage && !lastMessage.classList.contains('user-message')) {
-          lastMessage.textContent += content;
-          messages.scrollTop = messages.scrollHeight;
-      }
-  }
+            // 添加用户消息
+            appendMessage(message, 'user');
+            $('#inputMessage').val('');
 
-  async function sendMessage() {
-      const input = document.getElementById('user-input');
-      const btn = document.getElementById('send-btn');
-      const message = input.value.trim();
+            try {
+                // 创建AI消息占位符
+                const botMsgElement = appendMessage(' ', 'bot');
 
-      if (!message || btn.disabled) return;
+                // 发起流式请求
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', API_ENDPOINT);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.setRequestHeader('x-csrf-token', document.head.querySelector('meta[name="csrf-token"]').content);
 
-      // 禁用输入
-      input.disabled = true;
-      btn.disabled = true;
+                // 流式数据处理
+                let uuid = '';
+                xhr.onprogress = function() {
+                    if (xhr.readyState === 3) {
+                        // 按换行符分割响应块（需与后端约定格式）
+                        const chunks = xhr.responseText.split('data:');
+                        chunks.slice(-2, -1).forEach(chunk => {
+                            const cleanedChunk = chunk.replace(/^data:/, '');
+                            // 二次验证处理后的内容有效性
+                            if (cleanedChunk.trim().length === 0) {
+                                return;
+                            }
+                            const data = JSON.parse(cleanedChunk);
+                            if ( uuid == data.uuid) {
+                                return;
+                            }
+                            let content = data.content;
+                            if ( '\n\n' == content) {
+                                content = '<br>'
+                            }
+                            botMsgElement.textContent += content;
+                            uuid = data.uuid;
+                        });
 
-      // 显示用户消息
-      appendMessage(message, true);
-      input.value = '';
+                        // 自动滚动到底部
+                        $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
+                    }
+                };
 
-      // 初始化AI消息
-      currentResponse = appendMessage('思考中...', false);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        $('#typingIndicator').hide();
+                    }
+                };
 
-      try {
-          // 关闭之前的连接
-          if (eventSource) eventSource.close();
+                xhr.send(JSON.stringify({ message: message }));
+            } catch (error) {
+                console.error('请求失败:', error);
+                appendMessage('服务暂时不可用，请稍后再试', 'bot');
+            } finally {
+                $('#btnSend').prop('disabled', false);
+            }
+        });
 
-          // 创建新的EventSource连接
-          eventSource = new EventSource(`/ai/chat/stream?message=${encodeURIComponent(message)}`);
+        // 消息框回车发送
+        $('#inputMessage').keypress(function(e) {
+            if (e.which === 13 && !e.shiftKey) {
+                e.preventDefault();
+                $('#btnSend').click();
+            }
+        });
 
-          eventSource.onmessage = (e) => {
-              const data = JSON.parse(e.data);
-              updateLastMessage(data.text);
-          };
-
-          eventSource.onerror = (e) => {
-              console.error('连接错误:', e);
-              eventSource.close();
-              updateLastMessage("[连接异常中断]");
-              input.disabled = false;
-              btn.disabled = false;
-          };
-
-<!--        eventSource.onerror = (e) => {-->
-<!--           if (e.eventPhase === EventSource.CLOSED) {-->
-<!--             console.log('主动关闭');-->
-<!--             return;-->
-<!--           }-->
-
-<!--           if (reconnectAttempts < 5) {-->
-<!--             setTimeout(() => {-->
-<!--               reconnectAttempts++;-->
-<!--               connectSSE();-->
-<!--             }, Math.min(1000 * reconnectAttempts, 10000));-->
-<!--           } else {-->
-<!--             updateLastMessage("[超过最大重试次数]");-->
-<!--           }-->
-<!--         };-->
-
-
-<!--        eventSource.addEventListener('error', (e) => {-->
-<!--         if (e.target.readyState === EventSource.CLOSED) {-->
-<!--           console.log('服务器主动关闭');-->
-<!--         } else if (e.target.readyState === EventSource.CONNECTING) {-->
-<!--           console.log('正在重连...');-->
-<!--         }-->
-<!--        });-->
-
-          eventSource.addEventListener('end', () => {
-              eventSource.close();
-              input.disabled = false;
-              btn.disabled = false;
-          });
-
-      } catch (error) {
-          console.error('请求失败:', error);
-          updateLastMessage("[请求失败]");
-          input.disabled = false;
-          btn.disabled = false;
-      }
-  }
+        // 添加消息到对话框
+        function appendMessage(content, role) {
+            const isUser = role === 'user';
+            const msgElement = $(
+                `<div class="message-card card mb-2 ${isUser ? 'user-message ms-auto' : 'bot-message'}">
+                    <div class="card-body p-2">${content}</div>
+                 </div>`
+            );
+            $('#chatBox').append(msgElement);
+            return msgElement.find('.card-body')[0];
+        }
+    });
 </script>
 </body>
 </html>

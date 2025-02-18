@@ -38,6 +38,6 @@ public class HTMLExtensionPointServiceImpl extends AbstractExtensionPointService
         } catch (IOException e) {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
-        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text)), null);
+        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text)));
     }
 }

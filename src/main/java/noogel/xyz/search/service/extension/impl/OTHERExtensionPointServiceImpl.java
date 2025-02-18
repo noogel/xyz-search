@@ -54,6 +54,6 @@ public class OTHERExtensionPointServiceImpl extends AbstractExtensionPointServic
         if (StringUtils.isNotBlank(title)) {
             text = title;
         }
-        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text)), title);
+        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text))).metaData("metaTitle", title);
     }
 }

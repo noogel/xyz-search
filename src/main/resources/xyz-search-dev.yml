@@ -2,6 +2,7 @@ base:
   dataPath: data/
   configSubPath: config/
   indexerSubPath: indexer/
+  vectorSubPath: vector/
   tmpSubPath: tmp/
   ftsIndexName: xyz_search
   username: xyz

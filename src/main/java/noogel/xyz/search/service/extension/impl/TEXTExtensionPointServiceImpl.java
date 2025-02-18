@@ -46,6 +46,6 @@ public class TEXTExtensionPointServiceImpl extends AbstractExtensionPointService
             log.error("TEXTExtensionPointServiceImpl error {}", path, ex);
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(ex);
         }
-        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text.toString())), null);
+        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text.toString())));
     }
 }

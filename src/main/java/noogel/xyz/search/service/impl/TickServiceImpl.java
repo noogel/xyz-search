@@ -101,7 +101,7 @@ public class TickServiceImpl implements TickService {
 
     private FullTextSearchModel buildLuceneModel(FileResReadDto t, FileResContentDto dto) {
         String content = dto.genContent();
-        String title = Optional.ofNullable(dto.getMetaTitle())
+        String title = Optional.ofNullable(dto.getMetadata()).map(l-> l.get("metaTitle"))
                 .filter(StringUtils::isNotBlank).orElse(t.getName());
         FullTextSearchModel es = new FullTextSearchModel();
         es.setResId(t.getResId());

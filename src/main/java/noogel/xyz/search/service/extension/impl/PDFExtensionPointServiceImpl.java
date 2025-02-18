@@ -56,7 +56,7 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
         // PDF 全为空，需要重置
-        if (resp.size() > 1 && resp.stream().allMatch(t -> StringUtils.isBlank(t.getText()))) {
+        if (resp.size() > 1 && resp.stream().allMatch(t -> StringUtils.isBlank(t.getContent()))) {
             resp.clear();
             resp.add(ChapterDto.of(null, ""));
         }
@@ -72,14 +72,14 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
         // 补偿内容
         if (chapters.size() == 1) {
-            chapters.stream().findFirst().filter(t -> StringUtils.isBlank(t.getText())).ifPresent(t -> {
+            chapters.stream().findFirst().filter(t -> StringUtils.isBlank(t.getContent())).ifPresent(t -> {
                 String metaContent = Optional.ofNullable(resRel)
                         .map(ResRelationInfoDto::getMetaContent)
                         .filter(StringUtils::isNotBlank).orElse(file.getName());
-                t.setChapter(metaContent);
+                t.setChapterName(metaContent);
             });
         }
-        return FileResContentDto.of(chapters, title);
+        return FileResContentDto.of(chapters).metaData("metaTitle", title);
     }
 
 }

@@ -189,6 +189,10 @@ public class ConfigProperties {
          */
         private String indexerSubPath;
         /**
+         * 向量库子目录
+         */
+        private String vectorSubPath;
+        /**
          * 临时数据子目录
          */
         private String tmpSubPath;
@@ -211,6 +215,10 @@ public class ConfigProperties {
 
         public Path indexerFilePath() {
             return Paths.get(dataPath).resolve(Paths.get(indexerSubPath));
+        }
+
+        public Path vectoryFilePath() {
+            return Paths.get(dataPath).resolve(Paths.get(vectorSubPath));
         }
 
         public Path tmpFilePath() {
@@ -243,6 +251,7 @@ public class ConfigProperties {
     public void overrideToFile() {
         getBase().configFilePath().toFile().mkdirs();
         getBase().indexerFilePath().toFile().mkdirs();
+        getBase().vectoryFilePath().toFile().mkdirs();
         getBase().tmpFilePath().toFile().mkdirs();
 
         String pCfgPath = getBase().propertiesConfigPath().toString();

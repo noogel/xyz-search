@@ -2,6 +2,7 @@ base:
   dataPath: /usr/share/xyz-search/data/
   configSubPath: config/
   indexerSubPath: indexer/
+  vectorSubPath: vector/
   tmpSubPath: tmp/
   ftsIndexName: xyz_search
   username: xyz
