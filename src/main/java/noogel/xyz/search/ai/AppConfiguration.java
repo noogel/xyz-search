@@ -1,8 +1,11 @@
 package noogel.xyz.search.ai;
 
 import io.qdrant.client.QdrantClient;
+import io.qdrant.client.QdrantGrpcClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.embedding.TokenCountBatchingStrategy;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.qdrant.QdrantVectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +15,8 @@ public class AppConfiguration {
 
     @Bean
     public QdrantClient qdrantClient(ConfigProperties configProperties) {
-        return null;
+        return new QdrantClient(
+                QdrantGrpcClient.newBuilder("localhost", 6334, false).build());
 //
 //        QdrantClient customClient = new QdrantClient.Builder()
 //                .setStorageOptions(
@@ -26,7 +30,11 @@ public class AppConfiguration {
     }
 
     @Bean
-    public QdrantVectorStore qdrantVectorStore(QdrantClient qdrantClient, EmbeddingModel embeddingModel) {
-        return QdrantVectorStore.builder(qdrantClient, embeddingModel).build();
+    public VectorStore qdrantVectorStore(QdrantClient qdrantClient, EmbeddingModel embeddingModel) {
+        return QdrantVectorStore.builder(qdrantClient, embeddingModel)
+                .collectionName("vector_store")
+                .initializeSchema(true)
+                .batchingStrategy(new TokenCountBatchingStrategy())
+                .build();
     }
 }

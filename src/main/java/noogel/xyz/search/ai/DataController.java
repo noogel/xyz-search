@@ -31,29 +31,6 @@ public class DataController {
         }
     }
 
-    @GetMapping("/loadJson")
-    public ResponseEntity<String> loadJson() {
-        try {
-            this.dataLoadingService.loadJson();
-            return ResponseEntity.ok("Data loaded successfully!");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while loading data: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/count")
-    public int count() {
-        String sql = "SELECT COUNT(*) FROM vector_store";
-        return jdbcTemplate.queryForObject(sql, Integer.class);
-    }
-
-    @PostMapping("/delete")
-    public void delete() {
-        String sql = "DELETE FROM vector_store";
-        jdbcTemplate.update(sql);
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

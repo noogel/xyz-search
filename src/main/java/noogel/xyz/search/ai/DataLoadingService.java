@@ -22,11 +22,8 @@ public class DataLoadingService {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataLoadingService.class);
 
-	@Value("classpath:/ai/data/CVS-Health-2023-Annual-Report.pdf")
+	@Value("classpath:/ai/datas/System_Design_2022_5_17.pdf")
 	private Resource pdfResource;
-
-	@Value("classpath:/ai/data/bikes.json")
-	Resource bikesResouce;
 
 	private final VectorStore vectorStore;
 
@@ -55,18 +52,5 @@ public class DataLoadingService {
 		logger.info("Done parsing document, splitting, creating embeddings and storing in vector store");
 
 	}
-	public void loadJson() {
-		// read json file
-		JsonReader jsonReader = new JsonReader(bikesResouce, new ProductMetadataGenerator(),
-				"name","shortDescription", "description", "price","tags");
-
-		// create document object
-		List<Document> documents = jsonReader.get();
-
-		// add to vectorstore
-		vectorStore.add(documents);
-	}
-
-
 
 }
