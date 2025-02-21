@@ -1,5 +1,6 @@
 package noogel.xyz.search.ai;
 
+import io.qdrant.client.QdrantClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.Message;
@@ -18,6 +19,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import javax.print.Doc;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +37,8 @@ public class QAService {
 
     @Autowired
     VectorStore vectorStore;
+    @Autowired
+    private QdrantClient qdrantClient;
     @Autowired
     OllamaChatModel chatModel;
 
@@ -73,11 +77,16 @@ public class QAService {
         return chatResponse.getResult().getOutput().getText();
     }
 
+    public List<Document> test(String query) {
+        return vectorStore.similaritySearch(
+                SearchRequest.builder().query(query).topK(10).similarityThreshold(0.1f).build());
+    }
+
     private Message getSystemMessage(String query, boolean stuffit) {
         if (stuffit) {
             logger.info("Retrieving relevant documents");
             List<Document> similarDocuments = vectorStore.similaritySearch(
-                    SearchRequest.builder().query(query).build());
+                    SearchRequest.builder().query(query).topK(10).similarityThreshold(0.7f).build());
             logger.info("Found {} relevant documents.", similarDocuments.size());
 
             String context = similarDocuments.stream()
