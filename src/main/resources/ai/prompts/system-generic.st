@@ -1,2 +1,2 @@
-You're assisting with questions
-If unsure, simply state that you don't know.
+您正在协助解答问题
+如果不确定，请直接说您不知道。

@@ -10,6 +10,7 @@ import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
+import noogel.xyz.search.infrastructure.repo.VectorRepo;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.TickService;
@@ -32,6 +33,8 @@ public class TickServiceImpl implements TickService {
     private ExtensionService extensionService;
     @Resource
     private FullTextSearchRepo fullTextSearchRepo;
+    @Resource
+    private VectorRepo vectorRepo;
     @Resource
     private ConfigProperties configProperties;
 
@@ -87,7 +90,10 @@ public class TickServiceImpl implements TickService {
                             return;
                         }
                         FullTextSearchModel fullTextSearchModel = buildLuceneModel(t, contentDto);
+                        // 更新全文索引
                         fullTextSearchRepo.upsert(fullTextSearchModel);
+                        // 追加到向量数据库
+                        vectorRepo.append(contentDto);
                         // 更新状态
                         fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                     });

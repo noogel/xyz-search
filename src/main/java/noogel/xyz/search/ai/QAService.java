@@ -10,6 +10,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,7 +76,8 @@ public class QAService {
     private Message getSystemMessage(String query, boolean stuffit) {
         if (stuffit) {
             logger.info("Retrieving relevant documents");
-            List<Document> similarDocuments = vectorStore.similaritySearch(query);
+            List<Document> similarDocuments = vectorStore.similaritySearch(
+                    SearchRequest.builder().query(query).build());
             logger.info("Found {} relevant documents.", similarDocuments.size());
 
             String context = similarDocuments.stream()
