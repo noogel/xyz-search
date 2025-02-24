@@ -1,8 +1,8 @@
 package noogel.xyz.search.ai.controller;
 
-import noogel.xyz.search.ai.service.QuestionAnswerService;
 import noogel.xyz.search.ai.dto.ChatRequestDto;
 import noogel.xyz.search.ai.dto.ChatResponseDto;
+import noogel.xyz.search.ai.service.QuestionAnswerService;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,34 +27,17 @@ public class ChatController {
         return new ModelAndView("chat");
     }
 
-    @GetMapping("/2")
-    public ModelAndView chatPage2() {
-        return new ModelAndView("ai/chat2");
-    }
-
     @PostMapping("/stream")
-    public SseEmitter chatStream(@RequestBody ChatRequestDto request) {
-        SseEmitter emitter = new SseEmitter();
-        Prompt prompt = qaService.getPrompt(request.getMessage(), true);
-        chatModel.stream(prompt)
-                .subscribe(
-                        chatResponse -> {
-                            try {
-                                ChatResponseDto chatResponseDto = new ChatResponseDto(
-                                        UUID.randomUUID().toString(), chatResponse.getResult().getOutput().getText());
-                                emitter.send(chatResponseDto);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        emitter::completeWithError,
-                        emitter::complete
-                );
-        return emitter;
+    public SseEmitter chatStreamPost(@RequestBody ChatRequestDto request) {
+        return chatModelStream(request.getMessage());
     }
 
     @GetMapping("/stream")
     public SseEmitter chatStreamGet(@RequestParam String message) {
+        return chatModelStream(message);
+    }
+
+    private SseEmitter chatModelStream(String message) {
         SseEmitter emitter = new SseEmitter();
         Prompt prompt = qaService.getPrompt(message, true);
         chatModel.stream(prompt)

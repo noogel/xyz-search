@@ -1,152 +1,326 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>LLM流式对话演示</title>
-    <meta id="csrf-token" name="csrf-token" th:content="${_csrf.token}" th:if="${_csrf}">
-    <!-- 引入Bootstrap 5 -->
-    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 聊天</title>
+    <script src="/js/marked.min.js"></script>
+    <script src="/js/highlight.js"></script>
+    <link rel="stylesheet" href="/css/github-dark.css">
     <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.5;
+            color: #374151;
+            background-color: #f9fafb;
+        }
+
+        /* 聊天容器 */
         .chat-container {
-            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+
+        /* 消息列表区域 */
+        .chat-messages {
+            flex: 1;
             overflow-y: auto;
-            background: #f5f5f5;
-            border-radius: 8px;
-            padding: 15px;
+            padding: 20px;
+            gap: 24px;
+            scrollbar-width: thin;
         }
+
+        /* 滚动条美化 */
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        /* 消息样式 */
+        .message {
+            display: flex;
+            margin: 20px 0;
+            max-width: 85%;
+            clear: both;
+            line-height: 1.6;
+        }
+
         .user-message {
-            background: #007bff;
+            float: right;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            float: left;
+        }
+
+        .message-content {
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            font-size: 15px;
+        }
+
+        .user-message .message-content {
+            background-color: #2563eb;
             color: white;
-            margin-left: 20%;
+            border-bottom-right-radius: 4px;
         }
-        .bot-message {
-            background: #e9ecef;
-            margin-right: 20%;
+
+        .ai-message .message-content {
+            background-color: #f3f4f6;
+            color: #111827;
+            border-bottom-left-radius: 4px;
         }
-        .message-card {
-            max-width: 80%;
-            transition: opacity 0.3s;
+
+        /* Markdown 内容样式 */
+        .message-content p {
+            margin-bottom: 8px;
         }
-        .typing-indicator {
-            display: none;
-            padding: 10px;
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-content ul,
+        .message-content ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .message-content li {
+            margin: 4px 0;
+        }
+
+        /* 代码块样式 */
+        .message-content pre {
+            margin: 12px 0;
+            padding: 12px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .message-content code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message-content p code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* 输入区域 */
+        .input-container {
+            display: flex;
+            gap: 12px;
+            padding: 20px 0;
+            border-top: 1px solid #e5e7eb;
+            background-color: #ffffff;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            resize: none;
+            font-size: 15px;
+            line-height: 1.5;
+            height: 50px;
+            transition: border-color 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        button {
+            padding: 0 24px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            height: 50px;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        button:disabled {
+            background-color: #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 12px;
+            }
+
+            .message {
+                max-width: 92%;
+            }
+
+            .input-container {
+                padding: 12px 0;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container py-4">
-    <div class="chat-container mb-3" id="chatBox"></div>
-
-    <div class="input-group">
-        <textarea id="inputMessage" class="form-control"
-                  placeholder="输入消息..." rows="2"></textarea>
-        <button id="btnSend" class="btn btn-primary">
-            发送
-        </button>
-    </div>
-
-    <!-- 加载指示器 -->
-    <div id="typingIndicator" class="typing-indicator">
-        <div class="spinner-border spinner-border-sm" role="status"></div>
-        <span class="ms-2">思考中...</span>
+<div class="chat-container">
+    <div class="chat-messages" id="messageContainer"></div>
+    <div class="input-container">
+        <textarea id="userInput" placeholder="输入消息..." rows="3"></textarea>
+        <button id="sendButton">发送</button>
     </div>
 </div>
+<script type="text/javascript">
+    class ChatUI {
+        constructor() {
+            this.messageContainer = document.getElementById('messageContainer');
+            this.userInput = document.getElementById('userInput');
+            this.sendButton = document.getElementById('sendButton');
 
-<!-- 引入jQuery和Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+            this.initializeEventListeners();
+            this.setupMarkdown();
+        }
 
-<script>
-    $(document).ready(function() {
-        const API_ENDPOINT = "/ai/chat/stream"; // 替换为实际API地址
+        setupMarkdown() {
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    return hljs.highlightAuto(code).value;
+                },
+                breaks: true
+            });
+        }
 
-        // 消息发送处理
-        $('#btnSend').click(async function() {
-            const message = $('#inputMessage').val().trim();
+        initializeEventListeners() {
+            this.sendButton.addEventListener('click', () => this.sendMessage());
+            this.userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.sendMessage();
+                }
+            });
+        }
+
+        createMessageElement(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            if (isUser) {
+                contentDiv.textContent = content;
+            } else {
+                contentDiv.innerHTML = marked.parse(content);
+                // 代码高亮
+                contentDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightBlock(block);
+                });
+            }
+
+            messageDiv.appendChild(contentDiv);
+            return messageDiv;
+        }
+
+        appendMessage(content, isUser = false) {
+            const messageElement = this.createMessageElement(content, isUser);
+            this.messageContainer.appendChild(messageElement);
+            this.scrollToBottom();
+        }
+
+        scrollToBottom() {
+            this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+        }
+
+        async sendMessage() {
+            const message = this.userInput.value.trim();
             if (!message) return;
 
-            // 禁用按钮防止重复提交
-            $(this).prop('disabled', true);
-            $('#typingIndicator').show();
+            // 禁用输入
+            this.userInput.value = '';
+            this.sendButton.disabled = true;
+            this.userInput.disabled = true;
 
-            // 添加用户消息
-            appendMessage(message, 'user');
-            $('#inputMessage').val('');
+            // 显示用户消息
+            this.appendMessage(message, true);
 
             try {
-                // 创建AI消息占位符
-                const botMsgElement = appendMessage(' ', 'bot');
+                const eventSource = new EventSource(`/ai/chat/stream?message=${encodeURIComponent(message)}`);
+                let aiResponse = '';
 
-                // 发起流式请求
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', API_ENDPOINT);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.setRequestHeader('x-csrf-token', document.head.querySelector('meta[name="csrf-token"]').content);
-
-                // 流式数据处理
-                let uuid = '';
-                xhr.onprogress = function() {
-                    if (xhr.readyState === 3) {
-                        // 按换行符分割响应块（需与后端约定格式）
-                        const chunks = xhr.responseText.split('data:');
-                        chunks.slice(-2, -1).forEach(chunk => {
-                            const cleanedChunk = chunk.replace(/^data:/, '');
-                            // 二次验证处理后的内容有效性
-                            if (cleanedChunk.trim().length === 0) {
-                                return;
-                            }
-                            const data = JSON.parse(cleanedChunk);
-                            if ( uuid == data.uuid) {
-                                return;
-                            }
-                            let content = data.content;
-                            if ( '\n\n' == content) {
-                                content = '<br>'
-                            }
-                            botMsgElement.textContent += content;
-                            uuid = data.uuid;
-                        });
-
-                        // 自动滚动到底部
-                        $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
+                eventSource.onmessage = (event) => {
+                    const chunk = event.data;
+                    const data = JSON.parse(chunk);
+                    if (data.content === '') {
+                        eventSource.close();
+                    } else {
+                        aiResponse += data.content;
+                        // 更新最后一条消息的内容
+                        const lastMessage = this.messageContainer.lastElementChild;
+                        if (lastMessage && lastMessage.classList.contains('ai-message')) {
+                            lastMessage.querySelector('.message-content').innerHTML = marked.parse(aiResponse);
+                        } else {
+                            this.appendMessage(aiResponse);
+                        }
                     }
+                    this.scrollToBottom();
                 };
 
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        $('#typingIndicator').hide();
-                    }
+                eventSource.onerror = (error) => {
+                    console.error('SSE Error:', error);
+                    eventSource.close();
+                    this.appendMessage('连接错误，请重试', false);
                 };
-
-                xhr.send(JSON.stringify({ message: message }));
             } catch (error) {
-                console.error('请求失败:', error);
-                appendMessage('服务暂时不可用，请稍后再试', 'bot');
+                console.error('Error:', error);
+                this.appendMessage('发送消息失败，请重试', false);
             } finally {
-                $('#btnSend').prop('disabled', false);
+                // 恢复输入
+                this.sendButton.disabled = false;
+                this.userInput.disabled = false;
+                this.userInput.focus();
             }
-        });
-
-        // 消息框回车发送
-        $('#inputMessage').keypress(function(e) {
-            if (e.which === 13 && !e.shiftKey) {
-                e.preventDefault();
-                $('#btnSend').click();
-            }
-        });
-
-        // 添加消息到对话框
-        function appendMessage(content, role) {
-            const isUser = role === 'user';
-            const msgElement = $(
-                `<div class="message-card card mb-2 ${isUser ? 'user-message ms-auto' : 'bot-message'}">
-                    <div class="card-body p-2">${content}</div>
-                 </div>`
-            );
-            $('#chatBox').append(msgElement);
-            return msgElement.find('.card-body')[0];
         }
-    });
+    }
+
+    // 初始化聊天界面
+    const chatUI = new ChatUI();
 </script>
 </body>
 </html>
