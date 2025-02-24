@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 聊天</title>
+    <link rel="stylesheet" href="/ai/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github-dark.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-messages" id="messageContainer"></div>
+        <div class="input-container">
+            <textarea id="userInput" placeholder="输入消息..." rows="3"></textarea>
+            <button id="sendButton">发送</button>
+        </div>
+    </div>
+    <script src="/ai/chat.js"></script>
+</body>
+</html>

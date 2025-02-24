@@ -1,6 +1,6 @@
 package noogel.xyz.search.ai.service;
 
-import io.qdrant.client.QdrantClient;
+//import io.qdrant.client.QdrantClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -34,8 +34,8 @@ public class QuestionAnswerService {
 
     @Autowired
     VectorStore vectorStore;
-    @Autowired
-    private QdrantClient qdrantClient;
+//    @Autowired
+//    private QdrantClient qdrantClient;
     @Autowired
     OllamaChatModel chatModel;
 
