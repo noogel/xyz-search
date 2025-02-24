@@ -1,13 +1,9 @@
 package noogel.xyz.search.ai;
 
-//import io.qdrant.client.QdrantClient;
-//import io.qdrant.client.QdrantGrpcClient;
-import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.TokenCountBatchingStrategy;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
-//import org.springframework.ai.vectorstore.qdrant.QdrantVectorStore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
