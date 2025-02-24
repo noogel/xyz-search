@@ -1,36 +1,63 @@
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    color: #374151;
+    background-color: #f9fafb;
+}
+
+/* 聊天容器 */
 .chat-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 20px;
+    background-color: #ffffff;
 }
 
+/* 消息列表区域 */
 .chat-messages {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
+    gap: 24px;
     scrollbar-width: thin;
 }
 
+/* 滚动条美化 */
 .chat-messages::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .chat-messages::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
 }
 
+/* 消息样式 */
 .message {
-    margin: 10px 0;
-    max-width: 80%;
+    display: flex;
+    margin: 20px 0;
+    max-width: 85%;
     clear: both;
+    line-height: 1.6;
 }
 
 .user-message {
     float: right;
+    margin-left: auto;
 }
 
 .ai-message {
@@ -40,59 +67,121 @@
 .message-content {
     padding: 12px 16px;
     border-radius: 12px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    font-size: 15px;
 }
 
 .user-message .message-content {
-    background-color: #007AFF;
+    background-color: #2563eb;
     color: white;
+    border-bottom-right-radius: 4px;
 }
 
 .ai-message .message-content {
-    background-color: #f1f1f1;
+    background-color: #f3f4f6;
+    color: #111827;
+    border-bottom-left-radius: 4px;
 }
 
+/* Markdown 内容样式 */
+.message-content p {
+    margin-bottom: 8px;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.message-content ul, 
+.message-content ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.message-content li {
+    margin: 4px 0;
+}
+
+/* 代码块样式 */
+.message-content pre {
+    margin: 12px 0;
+    padding: 12px;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.message-content code {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.message-content p code {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+/* 输入区域 */
 .input-container {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     padding: 20px 0;
+    border-top: 1px solid #e5e7eb;
+    background-color: #ffffff;
 }
 
 textarea {
     flex: 1;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
     resize: none;
+    font-size: 15px;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #2563eb;
 }
 
 button {
-    padding: 0 20px;
-    background-color: #007AFF;
+    padding: 0 24px;
+    background-color: #2563eb;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #1d4ed8;
 }
 
 button:disabled {
-    background-color: #ccc;
+    background-color: #e5e7eb;
+    cursor: not-allowed;
 }
 
-pre code {
-    font-family: 'Courier New', Courier, monospace;
-    background-color: #1e1e1e !important;
-    padding: 12px !important;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
+/* 移动端适配 */
 @media (max-width: 768px) {
     .chat-container {
-        padding: 10px;
+        padding: 12px;
     }
     
     .message {
-        max-width: 90%;
+        max-width: 92%;
+    }
+    
+    .input-container {
+        padding: 12px 0;
     }
 }
