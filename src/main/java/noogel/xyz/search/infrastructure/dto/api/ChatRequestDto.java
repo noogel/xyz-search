@@ -1,4 +1,4 @@
-package noogel.xyz.search.ai.dto;
+package noogel.xyz.search.infrastructure.dto.api;
 
 import lombok.Data;
 

@@ -28,7 +28,7 @@ import java.util.Objects;
 
 @Service
 @Slf4j
-public class LuceneFullTextSearchRepoImpl implements FullTextSearchRepo {
+public class LuceneSearchRepoImpl implements FullTextSearchRepo {
     @Resource
     private volatile ConfigProperties configProperties;
 
@@ -52,8 +52,7 @@ public class LuceneFullTextSearchRepoImpl implements FullTextSearchRepo {
 
     @Override
     public boolean upsert(FullTextSearchModel model) {
-        luceneWriter.write(model);
-        return true;
+        return luceneWriter.write(model);
     }
 
     @Override

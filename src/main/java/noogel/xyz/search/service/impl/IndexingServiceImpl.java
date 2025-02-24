@@ -13,7 +13,7 @@ import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.repo.VectorRepo;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
-import noogel.xyz.search.service.TickService;
+import noogel.xyz.search.service.IndexingService;
 import noogel.xyz.search.service.extension.ExtensionService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-public class TickServiceImpl implements TickService {
+public class IndexingServiceImpl implements IndexingService {
 
     @Resource
     private FileDbService fileDbService;
@@ -93,7 +93,7 @@ public class TickServiceImpl implements TickService {
                         // 更新全文索引
                         fullTextSearchRepo.upsert(fullTextSearchModel);
                         // 追加到向量数据库
-                        vectorRepo.append(contentDto);
+                        vectorRepo.upsert(t, contentDto);
                         // 更新状态
                         fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                     });

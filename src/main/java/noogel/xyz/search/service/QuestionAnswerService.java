@@ -1,4 +1,4 @@
-package noogel.xyz.search.ai.service;
+package noogel.xyz.search.service;
 
 //import io.qdrant.client.QdrantClient;
 import lombok.extern.slf4j.Slf4j;

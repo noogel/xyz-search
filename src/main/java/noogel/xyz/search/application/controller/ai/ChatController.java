@@ -1,8 +1,8 @@
-package noogel.xyz.search.ai.controller;
+package noogel.xyz.search.application.controller.ai;
 
-import noogel.xyz.search.ai.dto.ChatRequestDto;
-import noogel.xyz.search.ai.dto.ChatResponseDto;
-import noogel.xyz.search.ai.service.QuestionAnswerService;
+import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
+import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
+import noogel.xyz.search.service.QuestionAnswerService;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.beans.factory.annotation.Autowired;

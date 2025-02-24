@@ -1,4 +1,4 @@
-package noogel.xyz.search.ai;
+package noogel.xyz.search.infrastructure.config;
 
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.TokenCountBatchingStrategy;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class AppConfiguration {
+public class AiConfiguration {
 //
 //    @Bean
 //    public QdrantClient qdrantClient(ConfigProperties configProperties) {
