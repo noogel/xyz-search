@@ -76,11 +76,11 @@ class ChatUI {
 
             eventSource.onmessage = (event) => {
                 const chunk = event.data;
-                if (chunk === '[DONE]') {
+                const data = JSON.parse(chunk);
+                if (data.content === '') {
                     eventSource.close();
                     this.appendMessage(aiResponse);
                 } else {
-                    const data = JSON.parse(chunk);
                     aiResponse += data.content;
                     // 更新最后一条消息的内容
                     const lastMessage = this.messageContainer.lastElementChild;
