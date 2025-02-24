@@ -44,4 +44,4 @@ web/
 *.db
 search.xyz
 
-data
+appData/
