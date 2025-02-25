@@ -14,18 +14,20 @@ import javax.annotation.Nullable;
 public interface FullTextSearchRepo {
 
     /**
-     * 删除
-     * @param resId
-     * @return
+     * 删除资源（带回调）
+     * @param resId 资源ID
+     * @param onSuccess 成功回调
+     * @return 是否删除成功
      */
-    boolean delete(String resId);
+    boolean delete(String resId, Runnable onSuccess);
 
     /**
      * 创建或更新
      * @param model
+     * @param onSuccess
      * @return
      */
-    boolean upsert(FullTextSearchModel model);
+    boolean upsert(FullTextSearchModel model, Runnable onSuccess);
 
     /**
      * 压缩数据

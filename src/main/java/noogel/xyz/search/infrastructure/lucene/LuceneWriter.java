@@ -12,12 +12,13 @@ import org.apache.lucene.store.FSDirectory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class LuceneWriter {
 
     private final Directory directory;
     private final PerFieldAnalyzerWrapper wrapper;
-
+    private final AtomicReference<IndexWriter> writerRef = new AtomicReference<>();
 
     public LuceneWriter(Path dir, PerFieldAnalyzerWrapper wrapper) {
         try {
@@ -27,10 +28,46 @@ public class LuceneWriter {
             throw new RuntimeException(e);
         }
     }
+    
+    /**
+     * 获取共享的 IndexWriter 实例
+     */
+    private IndexWriter getWriter() {
+        IndexWriter writer = writerRef.get();
+        if (writer == null) {
+            synchronized (this) {
+                writer = writerRef.get();
+                if (writer == null) {
+                    try {
+                        IndexWriterConfig config = new IndexWriterConfig(wrapper);
+                        writer = new IndexWriter(directory, config);
+                        writerRef.set(writer);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+        return writer;
+    }
+    
+    /**
+     * 关闭 IndexWriter
+     */
+    public void close() {
+        IndexWriter writer = writerRef.getAndSet(null);
+        if (writer != null) {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     public boolean write(LuceneDocument data) {
-        IndexWriterConfig config = new IndexWriterConfig(wrapper);
-        try (IndexWriter writer = new IndexWriter(directory, config)) {
+        try {
+            IndexWriter writer = getWriter();
             Document doc = new Document();
             for (var declaredField : data.getClass().getDeclaredFields()) {
                 String name = declaredField.getName();
@@ -47,8 +84,8 @@ public class LuceneWriter {
     }
 
     public void forceMerge() {
-        IndexWriterConfig config = new IndexWriterConfig(wrapper);
-        try (IndexWriter writer = new IndexWriter(directory, config)) {
+        try {
+            IndexWriter writer = getWriter();
             writer.forceMerge(1);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -56,8 +93,8 @@ public class LuceneWriter {
     }
 
     public void reset() {
-        IndexWriterConfig config = new IndexWriterConfig(wrapper);
-        try (IndexWriter writer = new IndexWriter(directory, config)) {
+        try {
+            IndexWriter writer = getWriter();
             writer.deleteAll();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -65,8 +102,8 @@ public class LuceneWriter {
     }
 
     public boolean update(LuceneDocument data) {
-        IndexWriterConfig config = new IndexWriterConfig(wrapper);
-        try (IndexWriter writer = new IndexWriter(directory, config)) {
+        try {
+            IndexWriter writer = getWriter();
             Document doc = new Document();
             Term term = null;
             for (var declaredField : data.getClass().getDeclaredFields()) {
@@ -87,8 +124,8 @@ public class LuceneWriter {
     }
 
     public boolean delete(LuceneDocument data) {
-        IndexWriterConfig config = new IndexWriterConfig(wrapper);
-        try (IndexWriter writer = new IndexWriter(directory, config)) {
+        try {
+            IndexWriter writer = getWriter();
             Term term = null;
             for (var declaredField : data.getClass().getDeclaredFields()) {
                 String name = declaredField.getName();
@@ -102,6 +139,20 @@ public class LuceneWriter {
             }
             return writer.deleteDocuments(term) > 0;
         } catch (IOException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * 提交更改到索引
+     */
+    public void commit() {
+        try {
+            IndexWriter writer = writerRef.get();
+            if (writer != null) {
+                writer.commit();
+            }
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

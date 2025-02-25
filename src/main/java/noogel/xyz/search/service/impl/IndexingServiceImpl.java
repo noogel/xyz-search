@@ -91,11 +91,12 @@ public class IndexingServiceImpl implements IndexingService {
                         }
                         FullTextSearchModel fullTextSearchModel = buildLuceneModel(t, contentDto);
                         // 更新全文索引
-                        fullTextSearchRepo.upsert(fullTextSearchModel);
-                        // 追加到向量数据库
-                        vectorRepo.upsert(t, contentDto);
+                        fullTextSearchRepo.upsert(fullTextSearchModel, () -> {
                         // 更新状态
-                        fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
+                            fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
+                        });
+                        // 追加到向量数据库
+                        // vectorRepo.upsert(t, contentDto);
                     });
         } catch (Exception ex) {
             log.error("indexFileToEs error {}", t.calFilePath(), ex);
@@ -157,10 +158,10 @@ public class IndexingServiceImpl implements IndexingService {
         log.info("removeEsAndFile {}", t.calFilePath());
         try {
             // 清理ES
-            if (fullTextSearchRepo.delete(t.getResId())) {
+            fullTextSearchRepo.delete(t.getResId(), () -> {
                 // 清理DB
                 fileDbService.deleteFile(t.getFieldId());
-            }
+            });
         } catch (Exception ex) {
             log.error("removeEsAndFile error {}", t.calFilePath(), ex);
             Map<String, String> options = t.getOptions();

@@ -1,6 +1,7 @@
 package noogel.xyz.search.infrastructure.repo.impl.lucene;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
@@ -11,6 +12,8 @@ import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.lucene.*;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
+import noogel.xyz.search.infrastructure.utils.pool.BatchProcessor;
+import noogel.xyz.search.infrastructure.utils.pool.BatchProcessorFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.lucene.document.IntPoint;
@@ -32,27 +35,80 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
     @Resource
     private volatile ConfigProperties configProperties;
 
+    @Resource
+    private BatchProcessorFactory batchProcessorFactory;
+
     private LuceneWriter luceneWriter;
     private LuceneSearcher luceneSearcher;
-
+    private BatchProcessor<FullTextSearchModel> batchUpsertProcessor;
+    private BatchProcessor<String> deleteBatchProcessor;
 
     @PostConstruct
     public void init() {
         luceneWriter = new LuceneWriter(configProperties.getBase().indexerFilePath(), LuceneAnalyzer.ANALYZER_WRAPPER);
         luceneSearcher = new LuceneSearcher(configProperties.getBase().indexerFilePath(), LuceneAnalyzer.ANALYZER_WRAPPER);
+        
+        // 初始化批处理器，每100条数据或每5秒处理一次
+        batchUpsertProcessor = batchProcessorFactory.getOrCreate(
+            "lucene-writer", 
+            100, 
+            5000, 
+            this::batchUpsert
+        );
+        
+        // 初始化删除批处理器
+        deleteBatchProcessor = batchProcessorFactory.getOrCreate(
+            "lucene-deleter",
+            50,
+            3000,
+            this::batchDelete
+        );
+    }
+    
+    @PreDestroy
+    public void destroy() {
+        batchUpsertProcessor.shutdown();
+        deleteBatchProcessor.shutdown();
+        luceneSearcher.close();
+        luceneWriter.close();
+    }
+    /**
+     * 批量处理数据
+     */
+    private void batchUpsert(List<FullTextSearchModel> models) {
+        log.info("批量处理 {} 条数据", models.size());
+        for (FullTextSearchModel model : models) {
+            luceneWriter.write(model);
+        }
+        // 批量处理完成后提交更改
+        luceneWriter.commit();
+    }
+    
+    /**
+     * 批量删除数据
+     */
+    private void batchDelete(List<String> resIds) {
+        log.info("批量删除 {} 条数据", resIds.size());
+        for (String resId : resIds) {
+            FullTextSearchModel model = new FullTextSearchModel();
+            model.setResId(resId);
+            luceneWriter.delete(model);
+        }
+        // 批量删除完成后提交更改
+        luceneWriter.commit();
     }
 
 
     @Override
-    public boolean delete(String resId) {
-        FullTextSearchModel model = new FullTextSearchModel();
-        model.setResId(resId);
-        return luceneWriter.delete(model);
+    public boolean delete(String resId, Runnable onSuccess) {
+        // 添加到删除批处理队列，带回调
+        return deleteBatchProcessor.add(resId, onSuccess);
     }
-
+    
     @Override
-    public boolean upsert(FullTextSearchModel model) {
-        return luceneWriter.write(model);
+    public boolean upsert(FullTextSearchModel model, Runnable onSuccess) {
+        // 添加到批处理队列
+        return batchUpsertProcessor.add(model, onSuccess);
     }
 
     @Override
