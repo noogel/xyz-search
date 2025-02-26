@@ -27,8 +27,17 @@ public class LuceneWriter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        initLuceneIndex();
     }
-    
+
+    private void initLuceneIndex() {
+        try {
+            IndexWriter writer = getWriter();
+            writer.commit();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     /**
      * 获取共享的 IndexWriter 实例
      */
@@ -40,6 +49,9 @@ public class LuceneWriter {
                 if (writer == null) {
                     try {
                         IndexWriterConfig config = new IndexWriterConfig(wrapper);
+                        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+                        config.setRAMBufferSizeMB(256);
+                        config.setMaxBufferedDocs(1000);
                         writer = new IndexWriter(directory, config);
                         writerRef.set(writer);
                     } catch (IOException e) {

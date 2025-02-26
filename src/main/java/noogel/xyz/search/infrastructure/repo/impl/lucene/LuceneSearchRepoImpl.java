@@ -5,6 +5,8 @@ import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.consts.BaseConsts;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
@@ -12,6 +14,7 @@ import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.lucene.*;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
+import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessor;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessorFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +55,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         batchUpsertProcessor = batchProcessorFactory.getOrCreate(
             "lucene-writer", 
             100, 
-            5000, 
+            CommonsConsts.DEFAULT_BATCH_COMMIT_LIMIT_MS, 
             this::batchUpsert
         );
         
@@ -60,7 +63,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         deleteBatchProcessor = batchProcessorFactory.getOrCreate(
             "lucene-deleter",
             50,
-            3000,
+            CommonsConsts.DEFAULT_BATCH_COMMIT_LIMIT_MS,
             this::batchDelete
         );
     }
@@ -76,7 +79,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
      * 批量处理数据
      */
     private void batchUpsert(List<FullTextSearchModel> models) {
-        log.info("批量处理 {} 条数据", models.size());
+        log.info("批量处理 {} 条数据:\n", String.join("\n", models.stream().map(FullTextSearchModel::calculateAbsolutePath).toList()));
         for (FullTextSearchModel model : models) {
             luceneWriter.write(model);
         }

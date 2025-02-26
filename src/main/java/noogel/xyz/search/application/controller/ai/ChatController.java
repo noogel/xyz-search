@@ -17,7 +17,7 @@ import java.util.UUID;
 @RequestMapping("/ai/chat")
 public class ChatController {
 
-    @Autowired
+    // @Autowired
     private OllamaChatModel chatModel;
     @Autowired
     private QuestionAnswerService qaService;

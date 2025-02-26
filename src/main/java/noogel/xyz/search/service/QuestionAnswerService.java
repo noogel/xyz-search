@@ -32,19 +32,19 @@ public class QuestionAnswerService {
     @Value("classpath:/ai/prompts/system-generic.st")
     private Resource chatbotSystemPromptResource;
 
-    @Autowired
+    // @Autowired
     VectorStore vectorStore;
 //    @Autowired
 //    private QdrantClient qdrantClient;
-    @Autowired
+    // @Autowired
     OllamaChatModel chatModel;
 
 
-    @Autowired
-    public QuestionAnswerService(OllamaChatModel chatModel, VectorStore vectorStore) {
-        this.chatModel = chatModel;
-        this.vectorStore = vectorStore;
-    }
+    // @Autowired
+    // public QuestionAnswerService(OllamaChatModel chatModel, VectorStore vectorStore) {
+    //     this.chatModel = chatModel;
+    //     this.vectorStore = vectorStore;
+    // }
 
     public Flux<ChatResponse> generateStream(String message, boolean stuffit) {
         Prompt prompt = getPrompt(message, stuffit);

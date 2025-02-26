@@ -106,8 +106,8 @@ public class ConfigProperties {
         private List<IndexItem> indexDirectories;
         @ConfigNote(desc = "资源收集目录映射")
         private List<CollectItem> collectDirectories;
-        @ConfigNote(desc = "扫描文件限速（毫秒）")
-        private Long scanFileLimitMs;
+        // @ConfigNote(desc = "扫描文件限速（毫秒）")
+        // private Long scanFileLimitMs;
         @ConfigNote(desc = "OPDS 资源目录，如果存在则开启")
         private String opdsDirectory;
         @ConfigNote(desc = "上传文件所在目录")

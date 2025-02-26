@@ -59,8 +59,7 @@ public class IndexingServiceImpl implements IndexingService {
                 if (waitReadDtoList.isEmpty()) {
                     Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
                 } else {
-                    Long indexLimit = Optional.ofNullable(configProperties.getApp().getScanFileLimitMs()).orElse(10L);
-                    Thread.sleep(indexLimit);
+                    Thread.sleep(CommonsConsts.DEFAULT_SCAN_FILE_LIMIT_MS);
                 }
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {
