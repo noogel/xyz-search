@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(staticName = "of")
 @NoArgsConstructor
 public class RandomSearchDto {
-    private Integer limit = 10;
+    private Integer limit = 20;
 }

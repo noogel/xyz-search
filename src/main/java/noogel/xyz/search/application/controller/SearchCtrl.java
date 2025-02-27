@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.List;
+
 @Controller
 public class SearchCtrl {
 
@@ -22,11 +24,11 @@ public class SearchCtrl {
                                @RequestParam(required = false) String relativeResDir,
                                @RequestParam(required = false) String resId,
                                @RequestParam(required = false) String resSize,
-                               @RequestParam(required = false) String resType,
+                               @RequestParam(required = false) List<String> resType,
                                @RequestParam(required = false) String modifiedAt,
                                @RequestParam(required = false) Boolean random,
                                @RequestParam(required = false, defaultValue = "20") int limit,
-                               @RequestParam(required = false, defaultValue = "0") int offset) {
+                               @RequestParam(required = false, defaultValue = "1") int page) {
         ModelAndView mv = new ModelAndView("index");
         SearchQueryDto query = new SearchQueryDto();
         // text search
@@ -34,9 +36,8 @@ public class SearchCtrl {
         query.setResSize(resSize);
         query.setModifiedAt(modifiedAt);
         query.setResType(resType);
-        // common
         query.setLimit(limit);
-        query.setOffset(offset);
+        query.setPage(page);
         // path search
         if (StringUtils.isNotBlank(relativeResDir)) {
             ExceptionCode.PARAM_ERROR.throwOn(StringUtils.isBlank(resId), "资源 ID 不存在");

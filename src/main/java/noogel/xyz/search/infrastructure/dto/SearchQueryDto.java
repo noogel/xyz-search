@@ -4,20 +4,24 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static noogel.xyz.search.infrastructure.utils.UrlHelper.ct;
 
 @Data
 public class SearchQueryDto {
-    private String relativeResDir;
-    private String resId;
     private String search;
     private String resDirPrefix;
+    private String relativeResDir;
+    private String resId;
     private String resSize;
-    private String resType;
+    private List<String> resType;
     private String modifiedAt;
     private Integer limit = 10;
-    private Integer offset = 0;
+    private Integer page = 1;
     private Boolean randomScore;
     private QueryOrderDto order;
 
@@ -47,17 +51,23 @@ public class SearchQueryDto {
                 && StringUtils.isEmpty(dto.getResDirPrefix())
                 && StringUtils.isEmpty(dto.getResSize())
                 && StringUtils.isEmpty(dto.getModifiedAt())
-                && StringUtils.isEmpty(dto.getResType());
+                && CollectionUtils.isEmpty(dto.getResType());
     }
 
     public static boolean dirEmptySearch(SearchQueryDto dto) {
         return StringUtils.isEmpty(dto.getSearch()) && StringUtils.isNotEmpty(dto.getResDirPrefix());
     }
 
-    public String getUrlQuery(long offset) {
-        return String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&offset=%s&relativeResDir=%s&resType=%s",
+    public String getUrlQuery(long page) {
+        String queryText = String.format("search=%s&resId=%s&resSize=%s&modifiedAt=%s&limit=%s&page=%s&relativeResDir=%s",
                 ct(getSearch()), ct(resId), ct(getResSize()), ct(getModifiedAt()),
-                ct(getLimit()), ct(offset), ct(relativeResDir), ct(getResType()));
+                ct(getLimit()), ct(page), ct(relativeResDir));
+        if (!CollectionUtils.isEmpty(getResType())) {
+            queryText += "&";
+            queryText += getResType().stream()
+                    .map(l-> String.format("resType=%s", l)).collect(Collectors.joining("&"));
+        }
+        return queryText;
     }
 
 }

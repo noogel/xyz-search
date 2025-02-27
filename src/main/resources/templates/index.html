@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>畅文全索</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/custom.css" rel="stylesheet">
-    <script src="js/bootstrap.bundle.min.js"></script>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/custom.css" rel="stylesheet">
+    <script src="/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
         function fetch_data(obj) {
             const href = obj.href;
@@ -141,20 +141,66 @@
                                                     小于 100MB
                                                 </label>
                                             </div>
-<!--                                            <div class="form-check small">-->
-<!--                                                <input class="form-check-input" type="radio" name="resSize"-->
-<!--                                                       id="resSizeGt1048576" value="GT:1048576"-->
-<!--                                                       th:checked="(${result.paging.query.resSize} == 'GT:1048576') ? 'checked'">-->
-<!--                                                <label class="form-check-label" for="resSizeGt1048576">-->
-<!--                                                    大于 1MB-->
-<!--                                                </label>-->
-<!--                                            </div>-->
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="resSize"
-                                                       id="resSizeGt10485760" value="GT:10485760"
-                                                       th:checked="(${result.paging.query.resSize} == 'GT:10485760') ? 'checked'">
-                                                <label class="form-check-label" for="resSizeGt10485760">
-                                                    大于 10MB
+                                                       id="resSizeGt104857600" value="GT:104857600"
+                                                       th:checked="(${result.paging.query.resSize} == 'GT:104857600') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeGt104857600">
+                                                    大于 100MB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resSize"
+                                                       id="resSizeGt1073741824" value="GT:1073741824"
+                                                       th:checked="(${result.paging.query.resSize} == 'GT:1073741824') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeGt1073741824">
+                                                    大于 1GB
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-auto">
+
+                                        <fieldset>
+                                            <legend>文件类型</legend>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtPDF" value="FILE:PDF"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:PDF')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtPDF">
+                                                    PDF
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtEPUB" value="FILE:EPUB"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:EPUB')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtEPUB">
+                                                    EPUB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtHTML" value="FILE:HTML"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:HTML')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtHTML">
+                                                    HTML
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtMD" value="FILE:MD"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:MD')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtMD">
+                                                    Markdown
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtMP4" value="FILE:MP4"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:MP4')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtMP4">
+                                                    MP4
                                                 </label>
                                             </div>
                                         </fieldset>
@@ -186,74 +232,20 @@
                                                     一个月内
                                                 </label>
                                             </div>
-<!--                                            <div class="form-check small">-->
-<!--                                                <input class="form-check-input" type="radio" name="modifiedAt"-->
-<!--                                                       id="latestModifiedAtLt6Month" value="GT:16070400"-->
-<!--                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:16070400') ? 'checked'">-->
-<!--                                                <label class="form-check-label" for="latestModifiedAtLt6Month">-->
-<!--                                                    半年内-->
-<!--                                                </label>-->
-<!--                                            </div>-->
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="modifiedAt"
-                                                       id="latestModifiedAtGt7Day" value="LT:604800"
-                                                       th:checked="(${result.paging.query.modifiedAt} == 'LT:604800') ? 'checked'">
-                                                <label class="form-check-label" for="latestModifiedAtGt7Day">
-                                                    七天前
+                                                       id="latestModifiedAtLt1Year" value="GT:31536000"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:31536000') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtLt1Year">
+                                                    一年内
                                                 </label>
                                             </div>
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="modifiedAt"
-                                                       id="latestModifiedAtGt1Month" value="LT:2678400"
-                                                       th:checked="(${result.paging.query.modifiedAt} == 'LT:2678400') ? 'checked'">
-                                                <label class="form-check-label" for="latestModifiedAtGt1Month">
-                                                    一个月前
-                                                </label>
-                                            </div>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-auto">
-
-                                        <fieldset>
-                                            <legend>文件类型</legend>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtNone" value=""
-                                                       th:checked="${#strings.isEmpty(result.paging.query.resType)} ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtNone">
-                                                    不限制
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtPDF" value="FILE:PDF"
-                                                       th:checked="(${result.paging.query.resType} == 'FILE:PDF') ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtPDF">
-                                                    PDF
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtEPUB" value="FILE:EPUB"
-                                                       th:checked="(${result.paging.query.resType} == 'FILE:EPUB') ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtEPUB">
-                                                    EPUB
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtHTML" value="FILE:HTML"
-                                                       th:checked="(${result.paging.query.resType} == 'FILE:HTML') ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtHTML">
-                                                    HTML
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtMP4" value="FILE:MP4"
-                                                       th:checked="(${result.paging.query.resType} == 'FILE:MP4') ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtMP4">
-                                                    MP4
+                                                       id="latestModifiedAtGt1Year" value="LT:31536000"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'LT:31536000') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtGt1Year">
+                                                    一年前
                                                 </label>
                                             </div>
                                         </fieldset>

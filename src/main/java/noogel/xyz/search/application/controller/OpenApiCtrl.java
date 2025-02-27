@@ -40,7 +40,7 @@ public class OpenApiCtrl {
         SearchQueryDto queryDto = new SearchQueryDto();
         queryDto.setSearch(q);
         queryDto.setLimit(limit);
-        queryDto.setOffset((pageno - 1) * limit);
+        queryDto.setPage(pageno);
         SearchResultShowDto result = searchService.pageSearch(queryDto);
         mv.addObject("result", result);
         return mv;

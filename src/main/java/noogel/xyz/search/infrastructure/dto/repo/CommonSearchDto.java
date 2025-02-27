@@ -54,8 +54,8 @@ public class CommonSearchDto {
     @AllArgsConstructor(staticName = "of")
     @NoArgsConstructor
     public static class Paging {
-        private Integer limit = 10;
-        private Integer offset = 0;
+        private Integer limit = 20;
+        private Integer page = 1;
     }
 
     @Data

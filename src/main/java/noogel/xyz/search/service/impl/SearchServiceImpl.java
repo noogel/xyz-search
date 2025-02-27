@@ -13,6 +13,7 @@ import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
 import noogel.xyz.search.infrastructure.dto.page.ResourceSimpleDto;
 import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
+import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
@@ -41,9 +42,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public SearchResultShowDto pageSearch(SearchQueryDto query) {
-        CommonSearchDto searchDto = new CommonSearchDto();
-        searchDto.setSearchQuery(query.getSearch());
-        SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
+        SearchResultDto result = Objects.equals(query.getRandomScore(), true) ? randomSearch(query) : commonSearch(query);
         SearchResultShowDto showDto = new SearchResultShowDto();
         PagingDto pagingDto = PagingDto.of(query, result.getSize());
         showDto.setPaging(pagingDto);
@@ -59,6 +58,37 @@ public class SearchServiceImpl implements SearchService {
             return page;
         }).collect(Collectors.toList()));
         return showDto;
+    }
+
+    private SearchResultDto commonSearch(SearchQueryDto query) {
+        CommonSearchDto searchDto = new CommonSearchDto();
+        searchDto.setSearchQuery(query.getSearch());
+        searchDto.setResId(query.getResId());
+        searchDto.setDirPrefix(query.getResDirPrefix());
+        Optional.ofNullable(query.getResDirPrefix()).filter(StringUtils::isNotBlank)
+                .ifPresent(l -> {
+                    searchDto.setDirPrefix(l);
+                    searchDto.setResId(null);
+                });
+        Optional.ofNullable(query.getResSize()).filter(StringUtils::isNotBlank)
+                .map(CommonSearchDto.Field::of).ifPresent(searchDto::setResSize);
+        Optional.ofNullable(query.getResType()).filter(l -> !CollectionUtils.isEmpty(l))
+                .ifPresent(searchDto::setResTypeList);
+        Optional.ofNullable(query.getModifiedAt()).filter(StringUtils::isNotBlank)
+                .map(CommonSearchDto.Field::of).ifPresent(searchDto::setModifiedAt);
+        Optional.of(CommonSearchDto.Paging.of(query.getLimit(), query.getPage()))
+                .ifPresent(searchDto::setPaging);
+        Optional.ofNullable(query.getOrder()).map(l -> CommonSearchDto.OrderBy.of(l.getField(), l.isAscOrder()))
+                .ifPresent(searchDto::setOrder);
+        SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
+        return result;
+    }
+
+    private SearchResultDto randomSearch(SearchQueryDto query) {
+        RandomSearchDto searchDto = new RandomSearchDto();
+        searchDto.setLimit(query.getLimit());
+        SearchResultDto result = fullTextSearchRepo.randomSearch(searchDto);
+        return result;
     }
 
     @Override

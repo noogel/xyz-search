@@ -57,7 +57,7 @@ public class IndexingServiceImpl implements IndexingService {
                 List<FileResReadDto> waitReadDtoList = fileDbService.scanFileResByState(FileStateEnum.VALID);
                 waitReadDtoList.forEach(this::indexFileToEs);
                 if (waitReadDtoList.isEmpty()) {
-                    Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
+                    Thread.sleep(CommonsConsts.DEFAULT_SLEEP_SEC_MS);
                 } else {
                     Thread.sleep(CommonsConsts.DEFAULT_SCAN_FILE_LIMIT_MS);
                 }
@@ -134,10 +134,9 @@ public class IndexingServiceImpl implements IndexingService {
                 List<FileResReadDto> waitDtoList = fileDbService.scanFileResByState(FileStateEnum.INVALID);
                 waitDtoList.forEach(this::removeEsAndFile);
                 if (waitDtoList.isEmpty()) {
-                    Thread.sleep(CommonsConsts.SLEEP_SEC_MS);
+                    Thread.sleep(CommonsConsts.DEFAULT_SLEEP_SEC_MS);
                 } else {
-                    Long indexLimit = Optional.ofNullable(configProperties.getApp().getScanFileLimitMs()).orElse(10L);
-                    Thread.sleep(indexLimit);
+                    Thread.sleep(CommonsConsts.DEFAULT_SCAN_FILE_LIMIT_MS);
                 }
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {

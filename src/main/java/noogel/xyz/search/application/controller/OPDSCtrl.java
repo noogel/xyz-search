@@ -125,7 +125,7 @@ public class OPDSCtrl {
     public SyndFeed entries(UrlDto urlDto, String text, int offset) {
         SearchQueryDto query = new SearchQueryDto();
         query.setLimit(BaseConsts.DEFAULT_LIMIT);
-        query.setOffset(offset);
+        query.setPage(offset / BaseConsts.DEFAULT_LIMIT + 1);
         query.setSearch(text);
         query.setResDirPrefix(configProperties.getApp().getOpdsDirectory());
         if (StringUtils.isEmpty(text)) {

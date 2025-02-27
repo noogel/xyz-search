@@ -20,6 +20,7 @@ import noogel.xyz.search.infrastructure.utils.pool.BatchProcessorFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -164,8 +165,8 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             Paging paging;
             if (Objects.nonNull(searchDto.getPaging())) {
                 Integer limit = searchDto.getPaging().getLimit();
-                Integer offset = searchDto.getPaging().getOffset();
-                paging = Paging.of(offset / limit + 1, limit);
+                Integer page = searchDto.getPaging().getPage();
+                paging = Paging.of(Math.max(page, 1), limit);
             } else {
                 paging = Paging.of(1, 20);
             }
@@ -230,7 +231,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         }
         if (!StringUtils.isEmpty(searchDto.getDirPrefix())) {
             Term term = new Term("resDir", searchDto.getDirPrefix());
-            TermQuery resDir = new TermQuery(term);
+            Query resDir = new PrefixQuery(term);
             builder.add(resDir, BooleanClause.Occur.MUST);
         }
         if (Objects.nonNull(searchDto.getResSize())) {
@@ -242,7 +243,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             } else {
                 lowerPrice = 0;
             }
-            Query rangeQuery = IntPoint.newRangeQuery("resSize", lowerPrice, upperPrice);
+            Query rangeQuery = LongPoint.newRangeQuery("resSize", lowerPrice, upperPrice);
             builder.add(rangeQuery, BooleanClause.Occur.MUST);
         }
         if (Objects.nonNull(searchDto.getModifiedAt())) {
@@ -254,7 +255,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             } else {
                 lowerPrice = 0;
             }
-            Query rangeQuery = IntPoint.newRangeQuery("modifiedAt", lowerPrice, upperPrice);
+            Query rangeQuery = LongPoint.newRangeQuery("modifiedAt", lowerPrice, upperPrice);
             builder.add(rangeQuery, BooleanClause.Occur.MUST);
         }
         return builder.build();

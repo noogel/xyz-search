@@ -1,8 +1,7 @@
 package noogel.xyz.search.infrastructure.config;
 
-import org.springframework.ai.embedding.AbstractEmbeddingModel;
-import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.embedding.TokenCountBatchingStrategy;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.embedding.*;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -55,5 +54,19 @@ public class AiConfiguration {
 
     public static class SimpleEmbeddingModel extends AbstractEmbeddingModel {
 
+        @Override
+        public EmbeddingResponse call(EmbeddingRequest request) {
+            return null;
+        }
+
+        @Override
+        public float[] embed(String text) {
+            return super.embed(text);
+        }
+
+        @Override
+        public float[] embed(Document document) {
+            return new float[0];
+        }
     }
 }
