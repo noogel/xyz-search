@@ -2,6 +2,7 @@ package noogel.xyz.search.infrastructure.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -14,19 +15,20 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
 @Slf4j
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ConfigProperties {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String CONFIG_PROPERTIES_FILE_NAME = "properties-config.json";
     private static final String DB_FILE_NAME = "search.xyz";
+
+    static {
+        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
     /**
      * 基本配置，不可直接修改
      */
@@ -42,7 +44,6 @@ public class ConfigProperties {
 
 
     @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CollectItem {
         @ConfigNote(desc = "collectDirectories:资源收集来源目录")
         private List<String> fromList;
@@ -55,7 +56,6 @@ public class ConfigProperties {
     }
 
     @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class NotifyEmail {
         @ConfigNote(desc = "senderEmail:邮件发送方")
         private String senderEmail;
@@ -70,7 +70,6 @@ public class ConfigProperties {
     }
 
     @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class PaddleOcr {
         @ConfigNote(desc = "paddleOcr:OCR服务地址")
         private String url;
@@ -79,7 +78,6 @@ public class ConfigProperties {
     }
 
     @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class IndexItem {
         @ConfigNote(desc = "目录")
         private String directory;
@@ -90,7 +88,6 @@ public class ConfigProperties {
     }
 
     @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class LinkItem {
         @ConfigNote(desc = "描述")
         private String desc;
@@ -99,15 +96,39 @@ public class ConfigProperties {
     }
 
     @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Chat {
+        @ConfigNote(desc = "是否开启")
+        private boolean enable;
+        @ConfigNote(desc = "ollama")
+        private Ollama ollama;
+    }
+
+    @Data
+    public static class Ollama {
+/**
+ * #spring.ai.ollama.base-url=http://localhost:11434
+ * #spring.ai.ollama.chat.model=deepseek-r1:1.5b
+ * spring.ai.ollama.chat.options.temperature=0.7
+ * spring.ai.ollama.chat.options.num-predict=10000
+ * spring.ai.ollama.init.embedding.additional-models=jinaai/jina-embeddings-v2-base-zh
+ * spring.ai.ollama.init.pull-model-strategy=never
+ */
+        private String baseUrl;
+        private String chatModel;
+        private String chatOptionTemperature;
+        private String chatOptionNumPredict;
+        private List<String> embeddingAdditionalModels;
+        private String pullModelStrategy;
+    }
+
+
+    @Data
     public static class App {
         //目录配置
         @ConfigNote(desc = "索引目录")
         private List<IndexItem> indexDirectories;
         @ConfigNote(desc = "资源收集目录映射")
         private List<CollectItem> collectDirectories;
-        // @ConfigNote(desc = "扫描文件限速（毫秒）")
-        // private Long scanFileLimitMs;
         @ConfigNote(desc = "OPDS 资源目录，如果存在则开启")
         private String opdsDirectory;
         @ConfigNote(desc = "上传文件所在目录")
@@ -120,6 +141,8 @@ public class ConfigProperties {
         private PaddleOcr paddleOcr;
         @ConfigNote(desc = "外链配置")
         private List<LinkItem> linkItems;
+        @ConfigNote(desc = "Chat 配置")
+        private Chat chat;
 
         public static App init() {
             App app = new App();

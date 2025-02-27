@@ -39,16 +39,14 @@ public class UploadCtrl {
                 throw ExceptionCode.FILE_ACCESS_ERROR.throwExc("文件为空");
             }
             fileProcessService.uploadFile(file, configProperties.getApp().getUploadFileDirectory());
-            return new ResponseEntity<>(JsonHelper.toJson(
-                    UploadRespDto.of("Success!")), HttpStatus.OK);
+            return new ResponseEntity<>(JsonHelper.toJson(UploadRespDto.of("Success!")), HttpStatus.OK);
         } catch (Exception exception) {
             if (exception instanceof BizException) {
                 log.warn("postUploadPage warn.", exception);
             } else {
                 log.error("postUploadPage error.", exception);
             }
-            return new ResponseEntity<>(JsonHelper.toJson(
-                    UploadRespDto.of(exception.getMessage())), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(JsonHelper.toJson(UploadRespDto.of(exception.getMessage())), HttpStatus.BAD_REQUEST);
         }
     }
 

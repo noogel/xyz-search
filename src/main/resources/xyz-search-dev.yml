@@ -23,7 +23,6 @@ app:
       to: /c
       filterRegex: "pdf"
       autoDelete: true
-  scanFileLimitMs: 10
   opdsDirectory:
   uploadFileDirectory: /d
   markDeleteDirectory: /Users/xyz/MyDebug/XyzSearchTestData/skip
@@ -41,3 +40,13 @@ app:
     -
       desc: aaa
       searchUrl: https
+  chat:
+    enable: false
+    ollama:
+      baseUrl: "http://192.168.124.101:11434"
+      chatModel: "deepseek-r1:1.5b"
+      chatOptionTemperature: 0.7
+      chatOptionNumPredict: 10000
+      embeddingAdditionalModels:
+        - "jinaai/jina-embeddings-v2-base-zh"
+      pullModelStrategy: never

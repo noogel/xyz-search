@@ -22,7 +22,6 @@ app:
       to: /data/share/collect
       filterRegex: "pdf"
       autoDelete: false
-  scanFileLimitMs: 10
   opdsDirectory:
   uploadFileDirectory: /data/share/upload
   markDeleteDirectory: /data/share/skip/deleted

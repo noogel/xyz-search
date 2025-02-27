@@ -1,5 +1,6 @@
 package noogel.xyz.search.infrastructure.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import jakarta.annotation.PostConstruct;
@@ -26,7 +27,9 @@ import java.util.Objects;
 @Configuration
 public class ConfigPropertiesConfiguration {
     private static final ObjectMapper YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory());
-
+    static {
+        YAML_OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
     /**
      * 自定义配置文件
      *
@@ -86,8 +89,7 @@ public class ConfigPropertiesConfiguration {
                     outputStream.write(b, 0, n);
                 }
                 String readString = outputStream.toString();
-                ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-                return objectMapper.readValue(readString, ConfigProperties.class);
+                return YAML_OBJECT_MAPPER.readValue(readString, ConfigProperties.class);
             }
         } catch (Exception e) {
             log.error("readConfigByResource error", e);

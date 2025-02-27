@@ -1,4 +1,4 @@
-package noogel.xyz.search.application.controller.ai;
+package noogel.xyz.search.application.controller;
 
 import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
 import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
@@ -14,15 +14,15 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/ai/chat")
-public class ChatController {
+@RequestMapping("/chat")
+public class ChatCtrl {
 
     // @Autowired
     private OllamaChatModel chatModel;
     @Autowired
     private QuestionAnswerService qaService;
 
-    @GetMapping("")
+    @GetMapping("/page")
     public ModelAndView chatPage() {
         return new ModelAndView("chat");
     }
