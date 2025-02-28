@@ -4,322 +4,354 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 聊天</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <script src="/js/marked.min.js"></script>
-    <script src="/js/highlight.js"></script>
     <style>
-        /* 基础样式重置 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            line-height: 1.5;
-            color: #374151;
-            background-color: #f9fafb;
-        }
-
-        /* 聊天容器 */
-        .chat-container {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* 消息列表区域 */
+        .dark-mode {
+            background-color: #333;
+            color: #f1f1f1;
+        }
+
+        .chat-container {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .dark-mode .chat-container {
+            background-color: #333;
+        }
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
             gap: 24px;
-            scrollbar-width: thin;
         }
 
-        /* 滚动条美化 */
-        .chat-messages::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-        }
-
-        /* 消息样式 */
         .message {
             display: flex;
-            margin: 20px 0;
-            max-width: 85%;
-            clear: both;
-            line-height: 1.6;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .message-label {
+            font-size: 0.8em;
+            margin-bottom: 0.2rem;
+            font-weight: bold;
         }
 
         .user-message {
-            float: right;
-            margin-left: auto;
-        }
-
-        .ai-message {
-            float: left;
+            align-items: flex-end;
         }
 
         .message-content {
+            max-width: 80%;
             padding: 12px 16px;
             border-radius: 12px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            font-size: 15px;
+            position: relative;
         }
 
         .user-message .message-content {
-            background-color: #2563eb;
+            background-color: #007bff;
             color: white;
-            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message {
+
         }
 
         .ai-message .message-content {
-            background-color: #f3f4f6;
-            color: #111827;
-            border-bottom-left-radius: 4px;
+            background-color: #f1f3f5;
+            color: black;
         }
 
-        /* Markdown 内容样式 */
-        .message-content p {
-            margin-bottom: 8px;
+        .dark-mode .ai-message .message-content {
+            background-color: #555;
+            color: #f1f1f1;
         }
 
-        .message-content p:last-child {
-            margin-bottom: 0;
+        .copy-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .message-content ul,
-        .message-content ol {
-            margin: 8px 0;
-            padding-left: 20px;
+        .user-message .copy-button {
+            left: -30px;
+            color: #007bff;
         }
 
-        .message-content li {
-            margin: 4px 0;
+        .ai-message .copy-button {
+            right: -30px;
+            color: #6c757d;
+        }
+
+        .message:hover .copy-button {
+            opacity: 1;
+        }
+
+        .input-container {
+            padding: 1rem 0;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .dark-mode .input-container {
+            background-color: #444;
+            border-top-color: #666;
+        }
+
+        textarea {
+            resize: none;
+            height: 60px;
+        }
+
+        .notification-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            z-index: 1050;
+            display: none;
         }
 
         /* 代码块样式 */
-        .message-content pre {
+        pre {
             margin: 12px 0;
             padding: 12px;
-            background-color: #aaaaaa;
+            background-color: #f8f9fa;
             border-radius: 8px;
             overflow-x: auto;
         }
 
-        .message-content code {
+        .dark-mode pre {
+            background-color: #444;
+        }
+
+        code {
             font-family: 'Fira Code', 'Courier New', monospace;
             font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .message-content p code {
-            background-color: rgba(0, 0, 0, 0.05);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        /* 输入区域 */
-        .input-container {
-            display: flex;
-            gap: 12px;
-            padding: 20px 0;
-            border-top: 1px solid #e5e7eb;
-            background-color: #ffffff;
-        }
-
-        textarea {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            resize: none;
-            font-size: 15px;
-            line-height: 1.5;
-            height: 50px;
-            transition: border-color 0.2s;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-
-        button {
-            padding: 0 24px;
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            transition: background-color 0.2s;
-            height: 50px;
-        }
-
-        button:hover {
-            background-color: #1d4ed8;
-        }
-
-        button:disabled {
-            background-color: #e5e7eb;
-            cursor: not-allowed;
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            .chat-container {
-                padding: 12px;
-            }
-
-            .message {
-                max-width: 92%;
-            }
-
-            .input-container {
-                padding: 12px 0;
-            }
         }
     </style>
 </head>
 <body>
-<div class="chat-container">
-    <div class="chat-messages" id="messageContainer"></div>
-    <div class="input-container">
-        <textarea id="userInput" placeholder="输入消息..." rows="3"></textarea>
-        <button id="sendButton">发送</button>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">AI 聊天</a>
+            <div class="ms-auto">
+                <button class="btn btn-outline-light me-2" id="copyChat">复制对话</button>
+                <button class="btn btn-outline-light me-2" id="clearChat">清空对话</button>
+                <button class="btn btn-outline-light" id="darkModeToggle">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="notificationBar" class="notification-bar"></div>
+    <div class="chat-container">
+        <div class="container">
+            <div class="chat-messages" id="messageContainer"></div>
+        </div>
     </div>
-</div>
-<script type="text/javascript">
-    class ChatUI {
-        constructor() {
-            this.messageContainer = document.getElementById('messageContainer');
-            this.userInput = document.getElementById('userInput');
-            this.sendButton = document.getElementById('sendButton');
+    <div class="input-container">
+        <div class="container">
+            <div class="input-group">
+                <textarea id="userInput" class="form-control" placeholder="输入消息..."></textarea>
+                <button class="btn btn-primary" type="button" id="sendButton">发送</button>
+                <button class="btn btn-secondary" type="button" id="clearInput">清理</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        class ChatUI {
+            constructor() {
+                this.messageContainer = document.getElementById('messageContainer');
+                this.userInput = document.getElementById('userInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.darkModeToggle = document.getElementById('darkModeToggle');
+                this.clearInputButton = document.getElementById('clearInput');
+                this.clearChatButton = document.getElementById('clearChat');
+                this.copyChatButton = document.getElementById('copyChat');
+                this.notificationBar = document.getElementById('notificationBar');
 
-            this.initializeEventListeners();
-            this.setupMarkdown();
-        }
+                this.initializeEventListeners();
+                this.setupMarkdown();
+            }
 
-        setupMarkdown() {
-            marked.setOptions({
-                highlight: function(code, lang) {
-                    return hljs.highlightAuto(code).value;
-                },
-                breaks: true
-            });
-        }
-
-        initializeEventListeners() {
-            this.sendButton.addEventListener('click', () => this.sendMessage());
-            this.userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.sendMessage();
-                }
-            });
-        }
-
-        createMessageElement(content, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-
-            if (isUser) {
-                contentDiv.textContent = content;
-            } else {
-                contentDiv.innerHTML = marked.parse(content);
-                // 代码高亮
-                contentDiv.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightBlock(block);
+            setupMarkdown() {
+                marked.setOptions({
+                    highlight: function(code, lang) {
+                        return hljs.highlightAuto(code).value;
+                    },
+                    breaks: true
                 });
             }
 
-            messageDiv.appendChild(contentDiv);
-            return messageDiv;
-        }
+            showNotification(message) {
+                this.notificationBar.textContent = message;
+                this.notificationBar.style.display = 'block';
+                setTimeout(() => {
+                    this.notificationBar.style.display = 'none';
+                }, 3000);
+            }
 
-        appendMessage(content, isUser = false) {
-            const messageElement = this.createMessageElement(content, isUser);
-            this.messageContainer.appendChild(messageElement);
-            this.scrollToBottom();
-        }
-
-        scrollToBottom() {
-            this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
-        }
-
-        async sendMessage() {
-            const message = this.userInput.value.trim();
-            if (!message) return;
-
-            // 禁用输入
-            this.userInput.value = '';
-            this.sendButton.disabled = true;
-            this.userInput.disabled = true;
-
-            // 显示用户消息
-            this.appendMessage(message, true);
-
-            try {
-                const eventSource = new EventSource(`/chat/stream?message=${encodeURIComponent(message)}`);
-                let aiResponse = '';
-
-                eventSource.onmessage = (event) => {
-                    const chunk = event.data;
-                    const data = JSON.parse(chunk);
-                    if (data.content === '') {
-                        eventSource.close();
-                    } else {
-                        aiResponse += data.content;
-                        // 更新最后一条消息的内容
-                        const lastMessage = this.messageContainer.lastElementChild;
-                        if (lastMessage && lastMessage.classList.contains('ai-message')) {
-                            lastMessage.querySelector('.message-content').innerHTML = marked.parse(aiResponse);
-                        } else {
-                            this.appendMessage(aiResponse);
-                        }
+            initializeEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.userInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
                     }
-                    this.scrollToBottom();
-                };
+                });
 
-                eventSource.onerror = (error) => {
-                    console.error('SSE Error:', error);
-                    eventSource.close();
-                    this.appendMessage('连接错误，请重试', false);
+                this.darkModeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    this.darkModeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+                });
+
+                this.clearChatButton.addEventListener('click', () => {
+                    this.messageContainer.innerHTML = '';
+                });
+
+                this.clearInputButton.addEventListener('click', () => {
+                    this.userInput.value = '';
+                });
+
+                this.copyChatButton.addEventListener('click', () => this.copyEntireChat());
+            }
+
+            copyEntireChat() {
+                const chatText = Array.from(this.messageContainer.querySelectorAll('.message'))
+                    .map(message => {
+                        const label = message.classList.contains('user-message') ? '用户' : 'AI';
+                        const content = message.querySelector('.message-content').textContent;
+                        return `${label}: ${content}`;
+                    })
+                    .join('\n\n');
+
+                navigator.clipboard.writeText(chatText).then(() => {
+                    this.showNotification('对话已复制到剪贴板！');
+                });
+            }
+
+            createCopyButton(content) {
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.textContent = '📋';
+                copyButton.onclick = () => {
+                    navigator.clipboard.writeText(content).then(() => {
+                        this.showNotification('消息已复制到剪贴板！');
+                    });
                 };
-            } catch (error) {
-                console.error('Error:', error);
-                this.appendMessage('发送消息失败，请重试', false);
-            } finally {
-                // 恢复输入
-                this.sendButton.disabled = false;
-                this.userInput.disabled = false;
-                this.userInput.focus();
+                return copyButton;
+            }
+
+            createMessageElement(content, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'message-label';
+                labelDiv.textContent = isUser ? '用户' : 'AI';
+                messageDiv.appendChild(labelDiv);
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+
+                const copyButton = this.createCopyButton(content);
+                contentDiv.appendChild(copyButton);
+
+                if (isUser) {
+                    contentDiv.appendChild(document.createTextNode(content));
+                } else {
+                    contentDiv.innerHTML = marked.parse(content);
+                    contentDiv.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightBlock(block);
+                    });
+                }
+
+                messageDiv.appendChild(contentDiv);
+                return messageDiv;
+            }
+
+            appendMessage(content, isUser = false) {
+                const messageElement = this.createMessageElement(content, isUser);
+                this.messageContainer.appendChild(messageElement);
+                this.scrollToBottom();
+            }
+
+            scrollToBottom() {
+                this.messageContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+
+            async sendMessage() {
+                const message = this.userInput.value.trim();
+                if (!message) return;
+
+                this.userInput.value = '';
+                this.sendButton.disabled = true;
+                this.userInput.disabled = true;
+
+                this.appendMessage(message, true);
+
+                try {
+                    const eventSource = new EventSource(`/chat/stream?message=${encodeURIComponent(message)}`);
+                    let aiResponse = '';
+
+                    eventSource.onmessage = (event) => {
+                        const chunk = event.data;
+                        const data = JSON.parse(chunk);
+                        if (data.content === '') {
+                            const lastMessage = this.messageContainer.lastElementChild;
+                            if (lastMessage && lastMessage.classList.contains('ai-message')) {
+                                lastMessage.querySelector('.message-content').appendChild(this.createCopyButton(aiResponse));
+                            }
+                            eventSource.close();
+                        } else {
+                            aiResponse += data.content;
+                            const lastMessage = this.messageContainer.lastElementChild;
+                            if (lastMessage && lastMessage.classList.contains('ai-message')) {
+                                lastMessage.querySelector('.message-content').innerHTML = marked.parse(aiResponse);
+                            } else {
+                                this.appendMessage(aiResponse);
+                            }
+                        }
+                        this.scrollToBottom();
+                    };
+
+                    eventSource.onerror = (error) => {
+                        console.error('SSE Error:', error);
+                        eventSource.close();
+                        this.appendMessage('连接错误，请重试', false);
+                    };
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.appendMessage('发送消息失败，请重试', false);
+                } finally {
+                    this.sendButton.disabled = false;
+                    this.userInput.disabled = false;
+                    this.userInput.focus();
+                }
             }
         }
-    }
 
-    // 初始化聊天界面
-    const chatUI = new ChatUI();
-</script>
+        // 初始化聊天界面
+        const chatUI = new ChatUI();
+    </script>
 </body>
 </html>

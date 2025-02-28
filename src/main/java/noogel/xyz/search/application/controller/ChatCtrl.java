@@ -27,11 +27,6 @@ public class ChatCtrl {
         return new ModelAndView("chat");
     }
 
-    @GetMapping("/page2")
-    public ModelAndView chatPage2() {
-        return new ModelAndView("chat2");
-    }
-
     @PostMapping("/stream")
     public SseEmitter chatStreamPost(@RequestBody ChatRequestDto request) {
         return chatModelStream(request.getMessage());
