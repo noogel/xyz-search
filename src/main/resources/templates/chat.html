@@ -6,7 +6,6 @@
     <title>AI 聊天</title>
     <script src="/js/marked.min.js"></script>
     <script src="/js/highlight.js"></script>
-    <link rel="stylesheet" href="/css/github-dark.css">
     <style>
         /* 基础样式重置 */
         * {
@@ -116,7 +115,7 @@
         .message-content pre {
             margin: 12px 0;
             padding: 12px;
-            background-color: #1e1e1e;
+            background-color: #aaaaaa;
             border-radius: 8px;
             overflow-x: auto;
         }
@@ -281,7 +280,7 @@
             this.appendMessage(message, true);
 
             try {
-                const eventSource = new EventSource(`/ai/chat/stream?message=${encodeURIComponent(message)}`);
+                const eventSource = new EventSource(`/chat/stream?message=${encodeURIComponent(message)}`);
                 let aiResponse = '';
 
                 eventSource.onmessage = (event) => {

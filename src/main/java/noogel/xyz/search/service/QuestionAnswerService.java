@@ -2,6 +2,7 @@ package noogel.xyz.search.service;
 
 //import io.qdrant.client.QdrantClient;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -32,19 +33,12 @@ public class QuestionAnswerService {
     @Value("classpath:/ai/prompts/system-generic.st")
     private Resource chatbotSystemPromptResource;
 
-    // @Autowired
+     @Autowired
     VectorStore vectorStore;
 //    @Autowired
 //    private QdrantClient qdrantClient;
-    // @Autowired
+     @Autowired
     OllamaChatModel chatModel;
-
-
-    // @Autowired
-    // public QuestionAnswerService(OllamaChatModel chatModel, VectorStore vectorStore) {
-    //     this.chatModel = chatModel;
-    //     this.vectorStore = vectorStore;
-    // }
 
     public Flux<ChatResponse> generateStream(String message, boolean stuffit) {
         Prompt prompt = getPrompt(message, stuffit);
@@ -74,11 +68,6 @@ public class QuestionAnswerService {
         return chatResponse.getResult().getOutput().getText();
     }
 
-    public List<Document> test(String query) {
-        return vectorStore.similaritySearch(
-                SearchRequest.builder().query(query).topK(10).similarityThreshold(0.1f).build());
-    }
-
     private Message getSystemMessage(String query, boolean stuffit) {
         if (stuffit) {
             log.info("Retrieving relevant documents");
@@ -89,6 +78,9 @@ public class QuestionAnswerService {
             String context = similarDocuments.stream()
                     .map(Document::getText)
                     .collect(Collectors.joining("\n"));
+            if (StringUtils.isBlank(context)) {
+                return new SystemPromptTemplate(this.chatbotSystemPromptResource).createMessage();
+            }
             SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.qaSystemPromptResource);
             return systemPromptTemplate.createMessage(Map.of("context", context));
         } else {

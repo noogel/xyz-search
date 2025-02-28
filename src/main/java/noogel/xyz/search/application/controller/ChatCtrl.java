@@ -17,7 +17,7 @@ import java.util.UUID;
 @RequestMapping("/chat")
 public class ChatCtrl {
 
-    // @Autowired
+     @Autowired
     private OllamaChatModel chatModel;
     @Autowired
     private QuestionAnswerService qaService;
@@ -25,6 +25,11 @@ public class ChatCtrl {
     @GetMapping("/page")
     public ModelAndView chatPage() {
         return new ModelAndView("chat");
+    }
+
+    @GetMapping("/page2")
+    public ModelAndView chatPage2() {
+        return new ModelAndView("chat2");
     }
 
     @PostMapping("/stream")

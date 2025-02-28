@@ -15,7 +15,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Data
@@ -42,6 +45,25 @@ public class ConfigProperties {
      */
     private App app;
 
+    /**
+     * 保存到文件
+     */
+    public void overrideToFile() {
+        getBase().configFilePath().toFile().mkdirs();
+        getBase().indexerFilePath().toFile().mkdirs();
+        getBase().vectoryFilePath().toFile().mkdirs();
+        getBase().tmpFilePath().toFile().mkdirs();
+
+        String pCfgPath = getBase().propertiesConfigPath().toString();
+        File pCfgFile = new File(pCfgPath);
+        try {
+            ConfigProperties propertyConfig = new ConfigProperties();
+            BeanUtils.copyProperties(this, propertyConfig);
+            OBJECT_MAPPER.writeValue(pCfgFile, propertyConfig);
+        } catch (IOException e) {
+            log.error("writeConfigErr path: {}", pCfgPath, e);
+        }
+    }
 
     @Data
     public static class CollectItem {
@@ -105,14 +127,14 @@ public class ConfigProperties {
 
     @Data
     public static class Ollama {
-/**
- * #spring.ai.ollama.base-url=http://localhost:11434
- * #spring.ai.ollama.chat.model=deepseek-r1:1.5b
- * spring.ai.ollama.chat.options.temperature=0.7
- * spring.ai.ollama.chat.options.num-predict=10000
- * spring.ai.ollama.init.embedding.additional-models=jinaai/jina-embeddings-v2-base-zh
- * spring.ai.ollama.init.pull-model-strategy=never
- */
+        /**
+         * #spring.ai.ollama.base-url=http://localhost:11434
+         * #spring.ai.ollama.chat.model=deepseek-r1:1.5b
+         * spring.ai.ollama.chat.options.temperature=0.7
+         * spring.ai.ollama.chat.options.num-predict=10000
+         * spring.ai.ollama.init.embedding.additional-models=jinaai/jina-embeddings-v2-base-zh
+         * spring.ai.ollama.init.pull-model-strategy=never
+         */
         private String baseUrl;
         private String chatModel;
         private String chatOptionTemperature;
@@ -120,7 +142,6 @@ public class ConfigProperties {
         private List<String> embeddingAdditionalModels;
         private String pullModelStrategy;
     }
-
 
     @Data
     public static class App {
@@ -266,25 +287,5 @@ public class ConfigProperties {
             return Paths.get(dataPath).resolve(DB_FILE_NAME);
         }
 
-    }
-
-    /**
-     * 保存到文件
-     */
-    public void overrideToFile() {
-        getBase().configFilePath().toFile().mkdirs();
-        getBase().indexerFilePath().toFile().mkdirs();
-        getBase().vectoryFilePath().toFile().mkdirs();
-        getBase().tmpFilePath().toFile().mkdirs();
-
-        String pCfgPath = getBase().propertiesConfigPath().toString();
-        File pCfgFile = new File(pCfgPath);
-        try {
-            ConfigProperties propertyConfig = new ConfigProperties();
-            BeanUtils.copyProperties(this, propertyConfig);
-            OBJECT_MAPPER.writeValue(pCfgFile, propertyConfig);
-        } catch (IOException e) {
-            log.error("writeConfigErr path: {}", pCfgPath, e);
-        }
     }
 }

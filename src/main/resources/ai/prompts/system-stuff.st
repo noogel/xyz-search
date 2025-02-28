@@ -2,4 +2,3 @@
 ###
 {context}
 ###
-问题：{query}
