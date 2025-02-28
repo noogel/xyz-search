@@ -35,12 +35,18 @@ public class VectorRepoImpl implements VectorRepo {
         List<Document> apply = tokenTextSplitter.apply(documentList);
         this.vectorStore.accept(apply);
         log.info("Done parsing document, splitting, creating embeddings and storing in vector store");
-
     }
 
     @Override
     public void delete(String resId) {
-        this.vectorStore.delete(List.of(resId));
+        try {
+            this.vectorStore.delete(List.of(resId));
+        } catch (IllegalArgumentException ex) {
+            if (ex.getMessage().contains("Invalid UUID string")) {
+                return;
+            }
+            throw ex;
+        }
     }
 
     private Map<String, Object> buildMetadata(FileResReadDto res, FileResContentDto content) {

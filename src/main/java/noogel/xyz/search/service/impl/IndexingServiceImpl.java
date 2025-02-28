@@ -95,7 +95,7 @@ public class IndexingServiceImpl implements IndexingService {
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                         });
                         // 追加到向量数据库
-                        // vectorRepo.upsert(t, contentDto);
+                         vectorRepo.upsert(t, contentDto);
                     });
         } catch (Exception ex) {
             log.error("indexFileToEs error {}", t.calFilePath(), ex);
@@ -160,6 +160,7 @@ public class IndexingServiceImpl implements IndexingService {
                 // 清理DB
                 fileDbService.deleteFile(t.getFieldId());
             });
+            vectorRepo.delete(t.getResId());
         } catch (Exception ex) {
             log.error("removeEsAndFile error {}", t.calFilePath(), ex);
             Map<String, String> options = t.getOptions();
