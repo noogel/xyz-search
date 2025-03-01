@@ -6,7 +6,6 @@ import org.springframework.ai.embedding.observation.EmbeddingModelObservationCon
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.ollama.api.OllamaApi;
-import org.springframework.ai.ollama.api.OllamaModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.ollama.management.ModelManagementOptions;
 import org.springframework.ai.ollama.management.PullModelStrategy;
@@ -32,54 +31,54 @@ public class OllamaAutoConfiguration {
     }
 
     @Bean
-    public OllamaChatModel ollamaChatModel(OllamaApi ollamaApi,
-                                           ConfigProperties configProperties,
-                                           ObjectProvider<ObservationRegistry> observationRegistry,
-                                           ObjectProvider<ChatModelObservationConvention> observationConvention) {
+    public OllamaOptions ollamaOptions(ConfigProperties configProperties) {
         ConfigProperties.Ollama ollama = configProperties.getApp().getChat().getOllama();
-        var chatModelPullStrategy = PullModelStrategy.valueOf(ollama.getPullModelStrategy().toUpperCase());
-
-        OllamaOptions options = OllamaOptions.builder().model(OllamaModel.MXBAI_EMBED_LARGE.id()).build();
+        OllamaOptions options = OllamaOptions.builder().build();
         options.setModel(ollama.getChatModel());
+        options.setTopK(40);
+        options.setTopP(0.8);
+        options.setNumCtx(4096);
         options.setTemperature(Double.parseDouble(ollama.getChatOptionTemperature()));
         options.setNumPredict(Integer.parseInt(ollama.getChatOptionNumPredict()));
+        return options;
+    }
 
+    @Bean
+    public ModelManagementOptions modelManagementOptions(ConfigProperties configProperties) {
+        ConfigProperties.Ollama ollama = configProperties.getApp().getChat().getOllama();
+        var modelPullStrategy = PullModelStrategy.valueOf(ollama.getPullModelStrategy().toUpperCase());
+        return new ModelManagementOptions(modelPullStrategy, ollama.getEmbeddingAdditionalModels(), Duration.ofMinutes(5), 0);
+    }
+
+    @Bean
+    public OllamaChatModel ollamaChatModel(OllamaApi ollamaApi,
+                                           OllamaOptions ollamaOptions,
+                                           ModelManagementOptions modelManagementOptions,
+                                           ObjectProvider<ObservationRegistry> observationRegistry,
+                                           ObjectProvider<ChatModelObservationConvention> observationConvention) {
         var chatModel = OllamaChatModel.builder()
                 .ollamaApi(ollamaApi)
-                .defaultOptions(options)
+                .defaultOptions(ollamaOptions)
                 .observationRegistry(observationRegistry.getIfUnique(() -> ObservationRegistry.NOOP))
-                .modelManagementOptions(new ModelManagementOptions(chatModelPullStrategy,
-                        ollama.getEmbeddingAdditionalModels(), Duration.ofMinutes(5), 0))
+                .modelManagementOptions(modelManagementOptions)
                 .build();
-
         observationConvention.ifAvailable(chatModel::setObservationConvention);
-
         return chatModel;
     }
 
     @Bean
-    public OllamaEmbeddingModel ollamaEmbeddingModel(OllamaApi ollamaApi, ConfigProperties configProperties,
+    public OllamaEmbeddingModel ollamaEmbeddingModel(OllamaApi ollamaApi,
+                                                     OllamaOptions ollamaOptions,
+                                                     ModelManagementOptions modelManagementOptions,
                                                      ObjectProvider<ObservationRegistry> observationRegistry,
                                                      ObjectProvider<EmbeddingModelObservationConvention> observationConvention) {
-        ConfigProperties.Ollama ollama = configProperties.getApp().getChat().getOllama();
-
-        var embeddingModelPullStrategy = PullModelStrategy.valueOf(ollama.getPullModelStrategy().toUpperCase());
-
-        OllamaOptions options = OllamaOptions.builder().model(OllamaModel.MXBAI_EMBED_LARGE.id()).build();
-        options.setModel(ollama.getChatModel());
-        options.setTemperature(Double.parseDouble(ollama.getChatOptionTemperature()));
-        options.setNumPredict(Integer.parseInt(ollama.getChatOptionNumPredict()));
-
         var embeddingModel = OllamaEmbeddingModel.builder()
                 .ollamaApi(ollamaApi)
-                .defaultOptions(options)
+                .defaultOptions(ollamaOptions)
                 .observationRegistry(observationRegistry.getIfUnique(() -> ObservationRegistry.NOOP))
-                .modelManagementOptions(new ModelManagementOptions(embeddingModelPullStrategy,
-                        ollama.getEmbeddingAdditionalModels(), Duration.ofMinutes(5), 0))
+                .modelManagementOptions(modelManagementOptions)
                 .build();
-
         observationConvention.ifAvailable(embeddingModel::setObservationConvention);
-
         return embeddingModel;
     }
 

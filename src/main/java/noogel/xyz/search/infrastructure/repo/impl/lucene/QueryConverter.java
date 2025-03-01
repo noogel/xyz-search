@@ -1,12 +1,5 @@
 package noogel.xyz.search.infrastructure.repo.impl.lucene;
 
-import noogel.xyz.search.infrastructure.dto.SearchQueryDto;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.*;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.util.BytesRef;
-
 public class QueryConverter {
 //
 //    public static BooleanQuery.Builder genQueryBuilder(SearchQueryDto queryDto) {

@@ -18,27 +18,6 @@ public class QueryCache {
     private final int maxSize;
 
     /**
-     * 缓存条目
-     */
-    private static class CacheEntry<T> {
-        private final T value;
-        private final long timestamp;
-
-        public CacheEntry(T value) {
-            this.value = value;
-            this.timestamp = System.currentTimeMillis();
-        }
-
-        public boolean isExpired(long expireTime) {
-            return System.currentTimeMillis() - timestamp > expireTime;
-        }
-
-        public T getValue() {
-            return value;
-        }
-    }
-
-    /**
      * 创建查询缓存管理器
      *
      * @param expireTime 缓存过期时间（毫秒）
@@ -98,6 +77,27 @@ public class QueryCache {
             cache.entrySet().removeIf(entry -> entry.getValue().isExpired(expireTime));
             int afterSize = cache.size();
             log.debug("清理过期缓存: {} -> {}", beforeSize, afterSize);
+        }
+    }
+
+    /**
+     * 缓存条目
+     */
+    private static class CacheEntry<T> {
+        private final T value;
+        private final long timestamp;
+
+        public CacheEntry(T value) {
+            this.value = value;
+            this.timestamp = System.currentTimeMillis();
+        }
+
+        public boolean isExpired(long expireTime) {
+            return System.currentTimeMillis() - timestamp > expireTime;
+        }
+
+        public T getValue() {
+            return value;
         }
     }
 } 

@@ -3,23 +3,22 @@ package noogel.xyz.search.infrastructure.lucene;
 import jakarta.annotation.Nullable;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.utils.cache.QueryCache;
-
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.search.*;
+import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class LuceneSearcher {
@@ -39,7 +38,7 @@ public class LuceneSearcher {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * 获取或刷新 IndexReader
      */
@@ -55,7 +54,7 @@ public class LuceneSearcher {
                 }
             }
         }
-        
+
         // 检查是否有新的变更，如果有则刷新 reader
         DirectoryReader newReader = DirectoryReader.openIfChanged(reader);
         if (newReader != null && newReader != reader) {
@@ -73,10 +72,10 @@ public class LuceneSearcher {
             }
             return newReader;
         }
-        
+
         return reader;
     }
-    
+
     /**
      * 关闭资源
      */
@@ -95,7 +94,7 @@ public class LuceneSearcher {
     @Nullable
     public LuceneDocument findFirst(Query query) {
         String cacheKey = "findFirst:" + query.toString();
-        
+
         return queryCache.getOrCompute(cacheKey, () -> {
             try {
                 DirectoryReader reader = getReader();
@@ -116,9 +115,9 @@ public class LuceneSearcher {
     }
 
     @Nullable
-    public Pair<LuceneDocument, List<String>> findFirstWithHighlight(Query query) {
-        String cacheKey = "findFirstWithHighlight:" + query.toString();
-        
+    public Pair<LuceneDocument, List<String>> findFirstWithHighlight(Query query, HighlightOptions options) {
+        String cacheKey = "findFirstWithHighlight:" + query.toString() + ":" + options.toString();
+
         return queryCache.getOrCompute(cacheKey, () -> {
             try {
                 DirectoryReader reader = getReader();
@@ -136,12 +135,51 @@ public class LuceneSearcher {
                 Formatter formatter = new SimpleHTMLFormatter("<em>", "</em>");
                 QueryScorer scorer = new QueryScorer(query);
                 Highlighter highlighter = new Highlighter(formatter, scorer);
-                Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, 100);
+                Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, options.getFragmentSize());
                 highlighter.setTextFragmenter(fragmenter);
                 // 高亮文本
-                String[] highlightedText = highlighter.getBestFragments(new SmartChineseAnalyzer(), "content", document.get("content"), 10);
-
+                String[] highlightedText = highlighter.getBestFragments(
+                        new SmartChineseAnalyzer(), "content", document.get("content"), options.getMaxNumFragments());
                 return Pair.of(convert(document), Arrays.asList(highlightedText));
+            } catch (IOException | InvalidTokenOffsetsException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public Pair<List<LuceneDocument>, List<String>> llmSearch(Query query, Paging paging, HighlightOptions options) {
+        String cacheKey = "pagingSearch:" + query.toString() + ":paging" + paging.toString() + ":options" + options.toString();
+        return queryCache.getOrCompute(cacheKey, () -> {
+            try {
+                DirectoryReader reader = getReader();
+                IndexSearcher searcher = new IndexSearcher(reader);
+                // 获取当前页数据
+                TopDocs topDocs = searcher.search(query, paging.calculateNextOffset());
+
+                // 高亮
+                Formatter formatter = new SimpleHTMLFormatter(options.getPreTag(), options.getPostTag());
+                QueryScorer scorer = new QueryScorer(query);
+                Highlighter highlighter = new Highlighter(formatter, scorer);
+                Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, options.getFragmentSize());
+                highlighter.setTextFragmenter(fragmenter);
+                Analyzer analyzer = LuceneAnalyzer.ANALYZER_MAP.get("content");
+
+                List<List<TextFragment>> textFragmentList = new ArrayList<>();
+                List<LuceneDocument> documents = new ArrayList<>();
+                for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(), paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
+                    int docId = scoreDoc.doc;
+                    Document document = searcher.getIndexReader().storedFields().document(docId);
+                    // 高亮文本
+                    TokenStream tokenStream = analyzer.tokenStream("content", document.get("content"));
+                    TextFragment[] highlightedText = highlighter.getBestTextFragments(
+                            tokenStream, document.get("content"), true, options.getMaxNumFragments());
+                    textFragmentList.add(Arrays.stream(highlightedText).toList());
+                }
+                // 排序，切割
+                List<String> fragments = textFragmentList.stream().flatMap(Collection::stream)
+                        .sorted((l, r) -> r.getScore() > l.getScore() ? 1 : -1)
+                        .map(TextFragment::toString).toList().subList(0, options.getMaxNumFragments());
+                return Pair.of(documents, fragments);
             } catch (IOException | InvalidTokenOffsetsException e) {
                 throw new RuntimeException(e);
             }
@@ -151,7 +189,7 @@ public class LuceneSearcher {
     public Pair<Integer, List<LuceneDocument>> pagingSearch(Query query, Paging paging) {
         // 使用查询和分页信息构建缓存键
         String cacheKey = "pagingSearch:" + query.toString() + ":offset" + paging.calculateOffset() + ":limit" + paging.calculateNextOffset();
-        
+
         return queryCache.getOrCompute(cacheKey, () -> {
             try {
                 DirectoryReader reader = getReader();
@@ -166,7 +204,7 @@ public class LuceneSearcher {
                     Document document = searcher.getIndexReader().storedFields().document(docId);
                     documents.add(convert(document));
                 }
-                
+
                 return Pair.of(count, documents);
             } catch (IOException e) {
                 throw new RuntimeException(e);

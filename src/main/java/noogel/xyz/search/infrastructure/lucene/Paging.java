@@ -20,9 +20,11 @@ public class Paging {
     public int calculateOffset() {
         return (currentPage - 1) * perPage;
     }
+
     public int calculateNextOffset() {
         return currentPage * perPage;
     }
+
     public int calculateNextOffset(int max) {
         return Math.min(currentPage * perPage, max);
     }

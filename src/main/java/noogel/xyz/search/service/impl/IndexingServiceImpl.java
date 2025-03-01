@@ -10,7 +10,6 @@ import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
-import noogel.xyz.search.infrastructure.repo.VectorRepo;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.IndexingService;
@@ -34,8 +33,6 @@ public class IndexingServiceImpl implements IndexingService {
     @Resource
     private FullTextSearchRepo fullTextSearchRepo;
     @Resource
-    private VectorRepo vectorRepo;
-    @Resource
     private ConfigProperties configProperties;
 
     @PostConstruct
@@ -57,7 +54,7 @@ public class IndexingServiceImpl implements IndexingService {
                 List<FileResReadDto> waitReadDtoList = fileDbService.scanFileResByState(FileStateEnum.VALID);
                 waitReadDtoList.forEach(this::indexFileToEs);
                 if (waitReadDtoList.isEmpty()) {
-                    Thread.sleep(CommonsConsts.DEFAULT_SLEEP_SEC_MS);
+                    Thread.sleep(configProperties.getRuntime().getDefaultSleepMs());
                 } else {
                     Thread.sleep(CommonsConsts.DEFAULT_SCAN_FILE_LIMIT_MS);
                 }
@@ -66,7 +63,7 @@ public class IndexingServiceImpl implements IndexingService {
                     break;
                 }
                 try {
-                    Thread.sleep(60_000);
+                    Thread.sleep(configProperties.getRuntime().getDefaultSleepMs());
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -91,11 +88,9 @@ public class IndexingServiceImpl implements IndexingService {
                         FullTextSearchModel fullTextSearchModel = buildLuceneModel(t, contentDto);
                         // 更新全文索引
                         fullTextSearchRepo.upsert(fullTextSearchModel, () -> {
-                        // 更新状态
+                            // 更新状态
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                         });
-                        // 追加到向量数据库
-                         vectorRepo.upsert(t, contentDto);
                     });
         } catch (Exception ex) {
             log.error("indexFileToEs error {}", t.calFilePath(), ex);
@@ -107,7 +102,7 @@ public class IndexingServiceImpl implements IndexingService {
 
     private FullTextSearchModel buildLuceneModel(FileResReadDto t, FileResContentDto dto) {
         String content = dto.genContent();
-        String title = Optional.ofNullable(dto.getMetadata()).map(l-> l.get("metaTitle"))
+        String title = Optional.ofNullable(dto.getMetadata()).map(l -> l.get("metaTitle"))
                 .filter(StringUtils::isNotBlank).orElse(t.getName());
         FullTextSearchModel es = new FullTextSearchModel();
         es.setResId(t.getResId());
@@ -134,7 +129,7 @@ public class IndexingServiceImpl implements IndexingService {
                 List<FileResReadDto> waitDtoList = fileDbService.scanFileResByState(FileStateEnum.INVALID);
                 waitDtoList.forEach(this::removeEsAndFile);
                 if (waitDtoList.isEmpty()) {
-                    Thread.sleep(CommonsConsts.DEFAULT_SLEEP_SEC_MS);
+                    Thread.sleep(configProperties.getRuntime().getDefaultSleepMs());
                 } else {
                     Thread.sleep(CommonsConsts.DEFAULT_SCAN_FILE_LIMIT_MS);
                 }
@@ -143,7 +138,7 @@ public class IndexingServiceImpl implements IndexingService {
                     break;
                 }
                 try {
-                    Thread.sleep(60_000);
+                    Thread.sleep(configProperties.getRuntime().getDefaultSleepMs());
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -160,7 +155,6 @@ public class IndexingServiceImpl implements IndexingService {
                 // 清理DB
                 fileDbService.deleteFile(t.getFieldId());
             });
-            vectorRepo.delete(t.getResId());
         } catch (Exception ex) {
             log.error("removeEsAndFile error {}", t.calFilePath(), ex);
             Map<String, String> options = t.getOptions();

@@ -1,8 +1,10 @@
 package noogel.xyz.search.infrastructure.repo;
 
+import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
 import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
+import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 
@@ -15,7 +17,8 @@ public interface FullTextSearchRepo {
 
     /**
      * 删除资源（带回调）
-     * @param resId 资源ID
+     *
+     * @param resId     资源ID
      * @param onSuccess 成功回调
      * @return 是否删除成功
      */
@@ -23,6 +26,7 @@ public interface FullTextSearchRepo {
 
     /**
      * 创建或更新
+     *
      * @param model
      * @param onSuccess
      * @return
@@ -41,6 +45,7 @@ public interface FullTextSearchRepo {
 
     /**
      * 查询
+     *
      * @param resId
      * @return
      */
@@ -48,6 +53,7 @@ public interface FullTextSearchRepo {
 
     /**
      * 按资源搜索
+     *
      * @param resId
      * @param text
      * @return
@@ -56,6 +62,7 @@ public interface FullTextSearchRepo {
 
     /**
      * 通用搜索
+     *
      * @param searchDto
      * @return
      */
@@ -63,9 +70,18 @@ public interface FullTextSearchRepo {
 
     /**
      * 随机搜索
+     *
      * @param searchDto
      * @return
      */
     SearchResultDto randomSearch(RandomSearchDto searchDto);
+
+    /**
+     * 大模型搜索
+     *
+     * @param searchDto
+     * @return
+     */
+    LLMSearchResultDto llmSearch(LLMSearchDto searchDto);
 
 }

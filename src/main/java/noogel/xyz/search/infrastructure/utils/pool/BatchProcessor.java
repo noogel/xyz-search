@@ -24,16 +24,6 @@ public class BatchProcessor<T> {
     private volatile boolean running = true;
 
     /**
-     * 数据项，包含数据对象和回调
-     */
-    @Data
-    @AllArgsConstructor
-    private static class DataItem<T> {
-        private T data;
-        private Runnable callback;
-    }
-
-    /**
      * 创建批量处理器
      *
      * @param batchSize      批处理大小
@@ -50,7 +40,7 @@ public class BatchProcessor<T> {
         this.batchProcessor = batchProcessor;
         this.batchSize = batchSize;
         this.intervalMillis = intervalMillis;
-        
+
         // 启动定时处理任务
         this.scheduler.scheduleAtFixedRate(this::processBatch, intervalMillis, intervalMillis, TimeUnit.MILLISECONDS);
     }
@@ -79,7 +69,7 @@ public class BatchProcessor<T> {
 
         List<DataItem<T>> batch = new ArrayList<>(batchSize);
         queue.drainTo(batch, batchSize);
-        
+
         if (batch.isEmpty()) {
             return;
         }
@@ -87,10 +77,10 @@ public class BatchProcessor<T> {
         try {
             // 提取数据对象列表
             List<T> dataList = batch.stream().map(DataItem::getData).toList();
-            
+
             // 执行批处理
             batchProcessor.accept(dataList);
-            
+
             // 执行回调
             batch.forEach(item -> {
                 try {
@@ -120,5 +110,15 @@ public class BatchProcessor<T> {
             scheduler.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * 数据项，包含数据对象和回调
+     */
+    @Data
+    @AllArgsConstructor
+    private static class DataItem<T> {
+        private T data;
+        private Runnable callback;
     }
 }

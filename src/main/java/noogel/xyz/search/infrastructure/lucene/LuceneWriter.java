@@ -38,6 +38,7 @@ public class LuceneWriter {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * 获取共享的 IndexWriter 实例
      */
@@ -62,7 +63,7 @@ public class LuceneWriter {
         }
         return writer;
     }
-    
+
     /**
      * 关闭 IndexWriter
      */
@@ -74,24 +75,6 @@ public class LuceneWriter {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    public boolean write(LuceneDocument data) {
-        try {
-            IndexWriter writer = getWriter();
-            Document doc = new Document();
-            for (var declaredField : data.getClass().getDeclaredFields()) {
-                String name = declaredField.getName();
-                Class<?> declaringClass = declaredField.getType();
-                PkId pkId = declaredField.getAnnotation(PkId.class);
-                declaredField.setAccessible(true);
-                Object val = declaredField.get(data);
-                doc.add(convert(declaringClass, name, val, pkId));
-            }
-            return writer.addDocument(doc) > 0;
-        } catch (IOException | IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -154,7 +137,7 @@ public class LuceneWriter {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * 提交更改到索引
      */

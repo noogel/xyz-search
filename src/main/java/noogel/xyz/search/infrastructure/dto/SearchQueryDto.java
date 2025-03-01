@@ -1,8 +1,6 @@
 package noogel.xyz.search.infrastructure.dto;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -24,19 +22,6 @@ public class SearchQueryDto {
     private Integer page = 1;
     private Boolean randomScore;
     private QueryOrderDto order;
-
-    @Data
-    public static class QueryOrderDto {
-        private String field;
-        private boolean ascOrder;
-
-        public static QueryOrderDto of(String field, boolean ascOrder) {
-            QueryOrderDto dto = new QueryOrderDto();
-            dto.setField(field);
-            dto.setAscOrder(ascOrder);
-            return dto;
-        }
-    }
 
     public static QueryOrderDto buildRankOrder(boolean ascOrder) {
         return QueryOrderDto.of("rank", ascOrder);
@@ -65,9 +50,22 @@ public class SearchQueryDto {
         if (!CollectionUtils.isEmpty(getResType())) {
             queryText += "&";
             queryText += getResType().stream()
-                    .map(l-> String.format("resType=%s", l)).collect(Collectors.joining("&"));
+                    .map(l -> String.format("resType=%s", l)).collect(Collectors.joining("&"));
         }
         return queryText;
+    }
+
+    @Data
+    public static class QueryOrderDto {
+        private String field;
+        private boolean ascOrder;
+
+        public static QueryOrderDto of(String field, boolean ascOrder) {
+            QueryOrderDto dto = new QueryOrderDto();
+            dto.setField(field);
+            dto.setAscOrder(ascOrder);
+            return dto;
+        }
     }
 
 }

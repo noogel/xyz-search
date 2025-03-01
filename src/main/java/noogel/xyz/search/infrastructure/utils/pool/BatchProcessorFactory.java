@@ -29,8 +29,8 @@ public class BatchProcessorFactory {
      */
     @SuppressWarnings("unchecked")
     public <T> BatchProcessor<T> getOrCreate(String name, int batchSize, long intervalMillis, Consumer<List<T>> batchProcessor) {
-        return (BatchProcessor<T>) processors.computeIfAbsent(name, 
-            k -> new BatchProcessor<>(batchSize, intervalMillis, batchProcessor));
+        return (BatchProcessor<T>) processors.computeIfAbsent(name,
+                k -> new BatchProcessor<>(batchSize, intervalMillis, batchProcessor));
     }
 
     /**

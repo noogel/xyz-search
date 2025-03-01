@@ -9,7 +9,6 @@ import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
 import noogel.xyz.search.infrastructure.utils.IpUtils;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;

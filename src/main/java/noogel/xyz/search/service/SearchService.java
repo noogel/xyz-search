@@ -19,6 +19,7 @@ public interface SearchService {
 
     /**
      * api 搜索
+     *
      * @param query
      * @return
      */
@@ -51,6 +52,7 @@ public interface SearchService {
 
     /**
      * 获取资源内容
+     *
      * @param resId
      * @return
      */

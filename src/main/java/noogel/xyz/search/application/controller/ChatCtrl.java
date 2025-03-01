@@ -1,26 +1,18 @@
 package noogel.xyz.search.application.controller;
 
+import jakarta.annotation.Resource;
 import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
-import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
-import noogel.xyz.search.service.QuestionAnswerService;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.ollama.OllamaChatModel;
-import org.springframework.beans.factory.annotation.Autowired;
+import noogel.xyz.search.service.ChatService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.io.IOException;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/chat")
 public class ChatCtrl {
 
-     @Autowired
-    private OllamaChatModel chatModel;
-    @Autowired
-    private QuestionAnswerService qaService;
+    @Resource
+    private ChatService chatService;
 
     @GetMapping("/page")
     public ModelAndView chatPage() {
@@ -29,31 +21,12 @@ public class ChatCtrl {
 
     @PostMapping("/stream")
     public SseEmitter chatStreamPost(@RequestBody ChatRequestDto request) {
-        return chatModelStream(request.getMessage());
+        return chatService.sseEmitterChatStream(request.getMessage());
     }
 
     @GetMapping("/stream")
     public SseEmitter chatStreamGet(@RequestParam String message) {
-        return chatModelStream(message);
+        return chatService.sseEmitterChatStream(message);
     }
 
-    private SseEmitter chatModelStream(String message) {
-        SseEmitter emitter = new SseEmitter();
-        Prompt prompt = qaService.getPrompt(message, true);
-        chatModel.stream(prompt)
-                .subscribe(
-                        chatResponse -> {
-                            try {
-                                ChatResponseDto chatResponseDto = new ChatResponseDto(
-                                        UUID.randomUUID().toString(), chatResponse.getResult().getOutput().getText());
-                                emitter.send(chatResponseDto);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        emitter::completeWithError,
-                        emitter::complete
-                );
-        return emitter;
-    }
 }

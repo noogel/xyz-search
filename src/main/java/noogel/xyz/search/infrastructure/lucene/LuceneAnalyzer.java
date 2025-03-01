@@ -13,14 +13,14 @@ import java.util.Map;
 public class LuceneAnalyzer {
 
     public static final Analyzer DEFAULT_ANALYZER = new WhitespaceAnalyzer();
-    public static final Map<String, Analyzer> ANALYZER_MAP = generateAnalyzer();
-    public static final PerFieldAnalyzerWrapper ANALYZER_WRAPPER = new PerFieldAnalyzerWrapper(DEFAULT_ANALYZER, ANALYZER_MAP);
     private static final Analyzer ID_ANALYZER = new Analyzer() {
         @Override
         protected TokenStreamComponents createComponents(String fieldName) {
             return new TokenStreamComponents(new KeywordTokenizer());
         }
     };
+    public static final Map<String, Analyzer> ANALYZER_MAP = generateAnalyzer();
+    public static final PerFieldAnalyzerWrapper ANALYZER_WRAPPER = new PerFieldAnalyzerWrapper(DEFAULT_ANALYZER, ANALYZER_MAP);
 
     private static Map<String, Analyzer> generateAnalyzer() {
         Map<String, Analyzer> documentMap = new HashMap<>();

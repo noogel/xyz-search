@@ -31,11 +31,11 @@ public class OpenApiCtrl {
      */
     @RequestMapping(value = "/searxng/search", method = RequestMethod.GET)
     public ModelAndView search(HttpServletRequest request, HttpServletResponse response,
-                                                   @RequestHeader MultiValueMap<String, String> headers,
-                                                   @RequestParam String q,
-                                                   @RequestParam(required = false, defaultValue = "json") String format,
-                                                   @RequestParam(required = false, defaultValue = "1") int pageno,
-                                                   @RequestParam(required = false, defaultValue = "1") int limit) {
+                               @RequestHeader MultiValueMap<String, String> headers,
+                               @RequestParam String q,
+                               @RequestParam(required = false, defaultValue = "json") String format,
+                               @RequestParam(required = false, defaultValue = "1") int pageno,
+                               @RequestParam(required = false, defaultValue = "1") int limit) {
         ModelAndView mv = new ModelAndView("searxng");
         SearchQueryDto queryDto = new SearchQueryDto();
         queryDto.setSearch(q);

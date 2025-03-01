@@ -7,6 +7,8 @@ base:
   ftsIndexName: xyz_search
   username: xyz
   password: search
+runtime:
+  defaultSleepMs: 60000
 app:
   indexDirectories:
     -

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.utils.ConfigNote;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -210,10 +211,12 @@ public class ConfigProperties {
         /**
          * 是否已经初始化索引
          */
-        private boolean initIndex;
+        private Long defaultSleepMs;
 
         public static Runtime init() {
-            return new Runtime();
+            Runtime rt = new Runtime();
+            rt.setDefaultSleepMs(CommonsConsts.DEFAULT_SLEEP_MS);
+            return rt;
         }
     }
 
