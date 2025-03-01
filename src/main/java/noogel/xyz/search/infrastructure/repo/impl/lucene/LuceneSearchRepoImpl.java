@@ -19,6 +19,7 @@ import noogel.xyz.search.infrastructure.utils.pool.BatchProcessor;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessorFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
 
 @Service
 @Slf4j
@@ -53,7 +56,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             // 创建查询解析器，并指定要搜索的字段列表
             String[] fields = {"resName", "content"};
             Map<String, Float> boosts = Map.of("resName", 500.F, "content", 100.F);
-            MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, LuceneAnalyzer.ANALYZER_MAP.get("content"), boosts);
+            MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new SmartChineseAnalyzer(STOPWORDS), boosts);
             String searchQuery = searchDto.getSearchQuery()
                     .replace("+", "\\+")
                     .replace("-", "\\-")

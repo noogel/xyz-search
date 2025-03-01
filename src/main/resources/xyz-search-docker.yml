@@ -41,3 +41,12 @@ app:
     -
       desc: aaa
       searchUrl: https
+  chat:
+    enable: false
+    ollama:
+      baseUrl: "http://localhost:11434"
+      chatModel: "deepseek-r1:1.5b"
+      chatOptionTemperature: 0.7
+      chatOptionNumCtx: 4096
+      chatOptionNumPredict: 10000
+      pullModelStrategy: when_missing

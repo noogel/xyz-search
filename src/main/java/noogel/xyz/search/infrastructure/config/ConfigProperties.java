@@ -138,9 +138,9 @@ public class ConfigProperties {
          */
         private String baseUrl;
         private String chatModel;
+        private String chatOptionNumCtx;
         private String chatOptionTemperature;
         private String chatOptionNumPredict;
-        private List<String> embeddingAdditionalModels;
         private String pullModelStrategy;
     }
 

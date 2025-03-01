@@ -48,7 +48,6 @@ app:
       baseUrl: "http://192.168.124.101:11434"
       chatModel: "deepseek-r1:1.5b"
       chatOptionTemperature: 0.7
+      chatOptionNumCtx: 4096
       chatOptionNumPredict: 10000
-      embeddingAdditionalModels:
-        - "jinaai/jina-embeddings-v2-base-zh"
-      pullModelStrategy: never
+      pullModelStrategy: when_missing

@@ -323,7 +323,11 @@
                             }
                             eventSource.close();
                         } else {
-                            aiResponse += data.content;
+                            let ct = data.content;
+                            if (ct === '</think>') {
+                                ct += '\n\n-------------\n\n'
+                            }
+                            aiResponse += ct;
                             const lastMessage = this.messageContainer.lastElementChild;
                             if (lastMessage && lastMessage.classList.contains('ai-message')) {
                                 lastMessage.querySelector('.message-content').innerHTML = marked.parse(aiResponse);

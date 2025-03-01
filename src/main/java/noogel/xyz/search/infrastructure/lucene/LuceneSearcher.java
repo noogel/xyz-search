@@ -21,6 +21,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
+
 public class LuceneSearcher {
 
     private final FSDirectory directory;
@@ -138,9 +140,11 @@ public class LuceneSearcher {
                 Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, options.getFragmentSize());
                 highlighter.setTextFragmenter(fragmenter);
                 // 高亮文本
-                String[] highlightedText = highlighter.getBestFragments(
-                        new SmartChineseAnalyzer(), "content", document.get("content"), options.getMaxNumFragments());
-                return Pair.of(convert(document), Arrays.asList(highlightedText));
+                try (Analyzer analyzer = new SmartChineseAnalyzer(STOPWORDS)) {
+                    String[] highlightedText = highlighter.getBestFragments(
+                            analyzer, "content", document.get("content"), options.getMaxNumFragments());
+                    return Pair.of(convert(document), Arrays.asList(highlightedText));
+                }
             } catch (IOException | InvalidTokenOffsetsException e) {
                 throw new RuntimeException(e);
             }
@@ -162,24 +166,26 @@ public class LuceneSearcher {
                 Highlighter highlighter = new Highlighter(formatter, scorer);
                 Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, options.getFragmentSize());
                 highlighter.setTextFragmenter(fragmenter);
-                Analyzer analyzer = LuceneAnalyzer.ANALYZER_MAP.get("content");
 
                 List<List<TextFragment>> textFragmentList = new ArrayList<>();
                 List<LuceneDocument> documents = new ArrayList<>();
                 for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(), paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
                     int docId = scoreDoc.doc;
                     Document document = searcher.getIndexReader().storedFields().document(docId);
-                    // 高亮文本
-                    TokenStream tokenStream = analyzer.tokenStream("content", document.get("content"));
-                    TextFragment[] highlightedText = highlighter.getBestTextFragments(
-                            tokenStream, document.get("content"), true, options.getMaxNumFragments());
-                    textFragmentList.add(Arrays.stream(highlightedText).toList());
+                    try (Analyzer analyzer = new SmartChineseAnalyzer(STOPWORDS)) {
+                        // 高亮文本
+                        TokenStream tokenStream = analyzer.tokenStream("content", document.get("content"));
+                        TextFragment[] highlightedText = highlighter.getBestTextFragments(
+                                tokenStream, document.get("content"), true, options.getMaxNumFragments());
+                        textFragmentList.add(Arrays.stream(highlightedText).toList());
+                    }
                 }
                 // 排序，切割
                 List<String> fragments = textFragmentList.stream().flatMap(Collection::stream)
-                        .sorted((l, r) -> r.getScore() > l.getScore() ? 1 : -1)
+                        .sorted((l, r) -> (r.getScore() + r.getFragNum()) > (l.getScore() + r.getFragNum()) ? 1 : -1)
                         .map(TextFragment::toString).toList().subList(0, options.getMaxNumFragments());
                 return Pair.of(documents, fragments);
+
             } catch (IOException | InvalidTokenOffsetsException e) {
                 throw new RuntimeException(e);
             }
