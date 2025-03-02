@@ -16,7 +16,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
-import java.util.Collections;
 
 @Configuration
 public class OllamaAutoConfiguration {
@@ -48,7 +47,7 @@ public class OllamaAutoConfiguration {
     public ModelManagementOptions modelManagementOptions(ConfigProperties configProperties) {
         ConfigProperties.Ollama ollama = configProperties.getApp().getChat().getOllama();
         var modelPullStrategy = PullModelStrategy.valueOf(ollama.getPullModelStrategy().toUpperCase());
-        return new ModelManagementOptions(modelPullStrategy, Collections.emptyList(), Duration.ofMinutes(5), 0);
+        return new ModelManagementOptions(modelPullStrategy, ollama.getEmbeddingAdditionalModels(), Duration.ofMinutes(5), 0);
     }
 
     @Bean
@@ -67,5 +66,20 @@ public class OllamaAutoConfiguration {
         return chatModel;
     }
 
-    // OllamaEmbeddingModel
+    @Bean
+    public OllamaEmbeddingModel ollamaEmbeddingModel(OllamaApi ollamaApi,
+                                                     OllamaOptions ollamaOptions,
+                                                     ModelManagementOptions modelManagementOptions,
+                                                     ObjectProvider<ObservationRegistry> observationRegistry,
+                                                     ObjectProvider<EmbeddingModelObservationConvention> observationConvention) {
+        var embeddingModel = OllamaEmbeddingModel.builder()
+                .ollamaApi(ollamaApi)
+                .defaultOptions(ollamaOptions)
+                .observationRegistry(observationRegistry.getIfUnique(() -> ObservationRegistry.NOOP))
+                .modelManagementOptions(modelManagementOptions)
+                .build();
+        observationConvention.ifAvailable(embeddingModel::setObservationConvention);
+        return embeddingModel;
+    }
+
 }

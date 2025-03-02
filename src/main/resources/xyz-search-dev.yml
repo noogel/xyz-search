@@ -51,3 +51,5 @@ app:
       chatOptionNumCtx: 4096
       chatOptionNumPredict: 10000
       pullModelStrategy: when_missing
+      embeddingAdditionalModels:
+        - "jinaai/jina-embeddings-v2-base-zh"
