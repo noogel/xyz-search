@@ -3,6 +3,7 @@ package noogel.xyz.search.service.impl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
+import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
 import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
 import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
@@ -44,7 +45,8 @@ public class ChatServiceImpl implements ChatService {
     private FullTextSearchRepo fullTextSearchRepo;
 
     @Override
-    public SseEmitter sseEmitterChatStream(String message) {
+    public SseEmitter sseEmitterChatStream(ChatRequestDto dto) {
+        String message = dto.getMessage();
         SseEmitter emitter = new SseEmitter();
         Prompt prompt = this.getPrompt(message);
         chatModel.stream(prompt)
@@ -65,7 +67,8 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Flux<ChatResponse> fluxChatStream(String message) {
+    public Flux<ChatResponse> fluxChatStream(ChatRequestDto dto) {
+        String message = dto.getMessage();
         Prompt prompt = getPrompt(message);
         return chatModel.stream(prompt);
     }

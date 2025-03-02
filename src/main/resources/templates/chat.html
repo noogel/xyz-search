@@ -188,6 +188,8 @@
                 this.clearChatButton = document.getElementById('clearChat');
                 this.copyChatButton = document.getElementById('copyChat');
                 this.notificationBar = document.getElementById('notificationBar');
+                const params = new URLSearchParams(window.location.search);
+                this.resId = params.get('resId'); // 获取 resId 参数值
 
                 this.initializeEventListeners();
                 this.setupMarkdown();
@@ -310,7 +312,7 @@
                 this.appendMessage(message, true);
 
                 try {
-                    const eventSource = new EventSource(`/chat/stream?message=${encodeURIComponent(message)}`);
+                    const eventSource = new EventSource(`/chat/stream?message=${encodeURIComponent(message)}&resId=${this.resId}`);
                     let aiResponse = '';
 
                     eventSource.onmessage = (event) => {
@@ -321,6 +323,7 @@
                             if (lastMessage && lastMessage.classList.contains('ai-message')) {
                                 lastMessage.querySelector('.message-content').appendChild(this.createCopyButton(aiResponse));
                             }
+                            // this.resId = '';
                             eventSource.close();
                         } else {
                             let ct = data.content;

@@ -15,18 +15,24 @@ public class ChatCtrl {
     private ChatService chatService;
 
     @GetMapping("/page")
-    public ModelAndView chatPage() {
-        return new ModelAndView("chat");
+    public ModelAndView chatPage(@RequestParam(name = "resId", value = "", required = false) String resId) {
+        ModelAndView page = new ModelAndView("chat");
+        page.addObject("resId", resId);
+        return page;
     }
 
     @PostMapping("/stream")
     public SseEmitter chatStreamPost(@RequestBody ChatRequestDto request) {
-        return chatService.sseEmitterChatStream(request.getMessage());
+        return chatService.sseEmitterChatStream(request);
     }
 
     @GetMapping("/stream")
-    public SseEmitter chatStreamGet(@RequestParam String message) {
-        return chatService.sseEmitterChatStream(message);
+    public SseEmitter chatStreamGet(@RequestParam String message,
+                                    @RequestParam(name = "resId", required = false) String resId) {
+        ChatRequestDto dto = new ChatRequestDto();
+        dto.setMessage(message);
+        dto.setResId(resId);
+        return chatService.sseEmitterChatStream(dto);
     }
 
 }
