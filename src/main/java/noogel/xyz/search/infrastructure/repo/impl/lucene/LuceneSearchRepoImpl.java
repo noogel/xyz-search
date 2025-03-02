@@ -16,11 +16,13 @@ import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.lucene.*;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
+import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessor;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessorFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -29,12 +31,13 @@ import org.apache.lucene.search.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.*;
 
 @Service
 @Slf4j
@@ -57,25 +60,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             String[] fields = {"resName", "content"};
             Map<String, Float> boosts = Map.of("resName", 500.F, "content", 100.F);
             MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new SmartChineseAnalyzer(STOPWORDS), boosts);
-            String searchQuery = searchDto.getSearchQuery()
-                    .replace("+", "\\+")
-                    .replace("-", "\\-")
-                    .replace("&", "\\&")
-                    .replace("|", "\\|")
-                    .replace("!", "\\!")
-                    .replace("(", "\\(")
-                    .replace(")", "\\)")
-                    .replace("{", "\\{")
-                    .replace("}", "\\}")
-                    .replace("[", "\\[")
-                    .replace("]", "\\]")
-                    .replace("^", "\\^")
-                    .replace("\"", "\\\"")
-                    .replace("~", "\\~")
-                    .replace("*", "\\*")
-                    .replace("?", "\\?")
-                    .replace(":", "\\:")
-                    .replace("\\", "\\\\");
+            String searchQuery = replace(searchDto.getSearchQuery());
             Query query = parser.parse(searchQuery);
             builder.add(query, BooleanClause.Occur.MUST);
         }
@@ -87,14 +72,14 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         if (!CollectionUtils.isEmpty(searchDto.getResTypeList())) {
             BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
             for (String resType : searchDto.getResTypeList()) {
-                Term term = new Term("resType", resType);
+                Term term = new Term("resType", replace(resType));
                 TermQuery termQuery = new TermQuery(term);
                 booleanQueryBuilder.add(termQuery, BooleanClause.Occur.SHOULD);
             }
             builder.add(booleanQueryBuilder.build(), BooleanClause.Occur.MUST);
         }
         if (!StringUtils.isEmpty(searchDto.getDirPrefix())) {
-            Term term = new Term("resDir", searchDto.getDirPrefix());
+            Term term = new Term("resDir", replace(searchDto.getDirPrefix()));
             Query resDir = new PrefixQuery(term);
             builder.add(resDir, BooleanClause.Occur.MUST);
         }
@@ -125,10 +110,33 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         return builder.build();
     }
 
+    private static String replace(String sq) {
+        return sq.replace("+", "\\+")
+                .replace("-", "\\-")
+                .replace("&", "\\&")
+                .replace("|", "\\|")
+                .replace("!", "\\!")
+                .replace("(", "\\(")
+                .replace(")", "\\)")
+                .replace("{", "\\{")
+                .replace("}", "\\}")
+                .replace("[", "\\[")
+                .replace("]", "\\]")
+                .replace("^", "\\^")
+                .replace("\"", "\\\"")
+                .replace("~", "\\~")
+                .replace("*", "\\*")
+                .replace("?", "\\?")
+                .replace(":", "\\:")
+                .replace("\\", "\\\\");
+    }
+
     @PostConstruct
     public void init() {
-        luceneWriter = new LuceneWriter(configProperties.getBase().indexerFilePath(), LuceneAnalyzer.ANALYZER_WRAPPER);
-        luceneSearcher = new LuceneSearcher(configProperties.getBase().indexerFilePath(), LuceneAnalyzer.ANALYZER_WRAPPER);
+        luceneWriter = new LuceneWriter(configProperties.getBase().indexerFilePath(),
+                new PerFieldAnalyzerWrapper(DEFAULT_ANALYZER, generateAnalyzer()));
+        luceneSearcher = new LuceneSearcher(configProperties.getBase().indexerFilePath(),
+                new PerFieldAnalyzerWrapper(DEFAULT_ANALYZER, generateAnalyzer()));
 
         // 初始化批处理器，每100条数据或每5秒处理一次
         batchUpsertProcessor = batchProcessorFactory.getOrCreate(
@@ -159,6 +167,8 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
      * 批量处理数据
      */
     private void batchUpsert(List<FullTextSearchModel> models) {
+        log.info("批量添加 {} 条数据：\n{}", models.size(), models.stream()
+                .map(FullTextSearchModel::calculateAbsolutePath).collect(Collectors.joining("\n")));
         for (FullTextSearchModel model : models) {
             luceneWriter.update(model);
         }
@@ -243,6 +253,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
                 query = new WildcardQuery(new Term("content", "*"));
             }
 
+            // 分页
             Paging paging;
             if (Objects.nonNull(searchDto.getPaging())) {
                 Integer limit = searchDto.getPaging().getLimit();
@@ -252,12 +263,37 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
                 paging = Paging.of(1, 20);
             }
 
-            Pair<Integer, List<LuceneDocument>> totalHitsListPair = luceneSearcher.pagingSearch(query, paging);
+            // 排序
+            OrderBy order = null;
+            if (Objects.nonNull(searchDto.getOrder())) {
+                order = OrderBy.of(searchDto.getOrder().getField(),
+                        convertSortType(searchDto.getOrder().getField()), searchDto.getOrder().isAsc());
+            }
+
+            Pair<Integer, List<LuceneDocument>> totalHitsListPair = luceneSearcher.pagingSearch(query, paging, order);
             SearchResultDto resultDto = new SearchResultDto();
             resultDto.setData(totalHitsListPair.getValue().stream().map(t -> (FullTextSearchModel) t).toList());
             resultDto.setSize(totalHitsListPair.getKey());
             return resultDto;
         } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static SortField.Type convertSortType(String field) {
+        try {
+            Field declaredField = FullTextSearchModel.class.getDeclaredField(field);
+            Class<?> declaringClass = declaredField.getType();
+            if (String.class.equals(declaringClass)) {
+                return SortField.Type.STRING;
+            } else if (Integer.class.equals(declaringClass)) {
+                return SortField.Type.INT;
+            } else if (Long.class.equals(declaringClass)) {
+                return SortField.Type.LONG;
+            } else {
+                throw new RuntimeException("未知的类型");
+            }
+        } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }

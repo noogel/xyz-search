@@ -117,6 +117,7 @@ public class IndexingServiceImpl implements IndexingService {
         es.setContent(content);
         es.setContentHash(MD5Helper.getMD5(content));
         es.setContentSize(content.length());
+        es.setModifiedAt(t.getModifiedAt());
         return es;
     }
 

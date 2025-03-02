@@ -3,22 +3,16 @@ package noogel.xyz.search.infrastructure.lucene;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WordlistLoader;
 import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.KeywordTokenizer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
-import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.util.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -31,8 +25,6 @@ public class LuceneAnalyzer {
             return new TokenStreamComponents(new KeywordTokenizer());
         }
     };
-    public static final Map<String, Analyzer> ANALYZER_MAP = generateAnalyzer();
-    public static final PerFieldAnalyzerWrapper ANALYZER_WRAPPER = new PerFieldAnalyzerWrapper(DEFAULT_ANALYZER, ANALYZER_MAP);
     public static CharArraySet STOPWORDS;
 
     static {
@@ -52,7 +44,7 @@ public class LuceneAnalyzer {
         }
     }
 
-    private static Map<String, Analyzer> generateAnalyzer() {
+    public static Map<String, Analyzer> generateAnalyzer() {
         Map<String, Analyzer> documentMap = new HashMap<>();
         documentMap.put("resId", ID_ANALYZER);
         // path_tokenizer

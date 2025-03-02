@@ -186,8 +186,10 @@ public class LuceneSearcher {
                 }
                 // 排序，切割
                 List<String> fragments = textFragmentList.stream().flatMap(Collection::stream)
+                        .filter(l -> l.getScore() > 100.0)
                         .sorted((l, r) -> (r.getScore() + r.getFragNum()) > (l.getScore() + r.getFragNum()) ? 1 : -1)
-                        .map(TextFragment::toString).toList().subList(0, options.getMaxNumFragments());
+                        .map(TextFragment::toString).toList();
+                fragments = fragments.subList(0, Math.min(options.getMaxNumFragments(), fragments.size()));
                 return Pair.of(documents, fragments);
 
             } catch (IOException | InvalidTokenOffsetsException e) {
@@ -196,7 +198,7 @@ public class LuceneSearcher {
         });
     }
 
-    public Pair<Integer, List<LuceneDocument>> pagingSearch(Query query, Paging paging) {
+    public Pair<Integer, List<LuceneDocument>> pagingSearch(Query query, Paging paging, @Nullable OrderBy order) {
         // 使用查询和分页信息构建缓存键
         String cacheKey = "pagingSearch:" + query.toString() + ":offset" + paging.calculateOffset() + ":limit" + paging.calculateNextOffset();
 
@@ -206,8 +208,16 @@ public class LuceneSearcher {
                 IndexSearcher searcher = new IndexSearcher(reader);
                 // 获取最大匹配条数
                 int count = searcher.count(query);
+                // 排序
+                Sort sort = null;
+                if (Objects.nonNull(order)) {
+                    String sortedName = String.format("%s_sorted", order.getField());
+                    sort = new Sort(new SortField(sortedName, order.getType(), !order.isAsc()));
+                }
                 // 获取当前页数据
-                TopDocs topDocs = searcher.search(query, paging.calculateNextOffset());
+                TopDocs topDocs = Objects.nonNull(sort) ?
+                        searcher.search(query, paging.calculateNextOffset(), sort)
+                        : searcher.search(query, paging.calculateNextOffset());
                 List<LuceneDocument> documents = new ArrayList<>();
                 for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(), paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
                     int docId = scoreDoc.doc;

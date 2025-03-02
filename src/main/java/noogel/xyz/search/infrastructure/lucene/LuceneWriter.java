@@ -1,6 +1,7 @@
 package noogel.xyz.search.infrastructure.lucene;
 
 import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
+import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -8,9 +9,13 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -105,9 +110,10 @@ public class LuceneWriter {
                 String name = declaredField.getName();
                 Class<?> declaringClass = declaredField.getType();
                 PkId pkId = declaredField.getAnnotation(PkId.class);
+                SortedId sortedId = declaredField.getAnnotation(SortedId.class);
                 declaredField.setAccessible(true);
                 Object val = declaredField.get(data);
-                doc.add(convert(declaringClass, name, val, pkId));
+                convert(declaringClass, name, val, pkId, sortedId).forEach(doc::add);
                 if (Objects.nonNull(pkId)) {
                     term = new Term(name, Objects.isNull(val) ? "" : ((String) val));
                 }
@@ -152,17 +158,38 @@ public class LuceneWriter {
         }
     }
 
-    public Field convert(Class<?> clazz, String name, Object value, PkId pkId) {
+    public List<Field> convert(Class<?> clazz, String name, Object value, PkId pkId, SortedId sortedId) {
+        List<Field> result = new ArrayList<>();
         if (Objects.nonNull(pkId)) {
-            return new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
+            TextField fd = new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
+            result.add(fd);
         } else if (String.class.equals(clazz)) {
-            return new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
+            if (Objects.nonNull(sortedId)) {
+                String sortedName = String.format("%s_sorted", name);
+                SortedDocValuesField sfd = new SortedDocValuesField(sortedName, new BytesRef((Objects.isNull(value) ? "" : ((String) value)).getBytes()));
+                result.add(sfd);
+            }
+            TextField fd = new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
+            result.add(fd);
         } else if (Long.class.equals(clazz)) {
-            return new LongField(name, Objects.isNull(value) ? 0L : ((Long) value), Field.Store.YES);
+            if (Objects.nonNull(sortedId)) {
+                String sortedName = String.format("%s_sorted", name);
+                NumericDocValuesField nfd = new NumericDocValuesField(sortedName, Objects.isNull(value) ? 0L : ((Long) value));
+                result.add(nfd);
+            }
+            LongField fd = new LongField(name, Objects.isNull(value) ? 0L : ((Long) value), Field.Store.YES);
+            result.add(fd);
         } else if (Integer.class.equals(clazz)) {
-            return new IntField(name, Objects.isNull(value) ? 0 : ((Integer) value), Field.Store.YES);
+            if (Objects.nonNull(sortedId)) {
+                String sortedName = String.format("%s_sorted", name);
+                NumericDocValuesField nfd = new NumericDocValuesField(sortedName, Objects.isNull(value) ? 0 : ((Long) value));
+                result.add(nfd);
+            }
+            IntField fd = new IntField(name, Objects.isNull(value) ? 0 : ((Integer) value), Field.Store.YES);
+            result.add(fd);
         } else {
             throw new IllegalArgumentException();
         }
+        return result;
     }
 }

@@ -3,6 +3,7 @@ package noogel.xyz.search.infrastructure.model.lucene;
 import lombok.Data;
 import noogel.xyz.search.infrastructure.lucene.LuceneDocument;
 import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
+import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,7 @@ public class FullTextSearchModel implements LuceneDocument {
     /**
      * 资源最近更新时间 秒
      */
+    @SortedId
     private Long modifiedAt;
     /**
      * 根据资源名称计算的分数
