@@ -1,19 +1,23 @@
 package noogel.xyz.search.infrastructure.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.util.Timeout;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class HttpClient {
@@ -34,9 +38,8 @@ public class HttpClient {
         RequestConfig requestConfig = REQUEST_CONFIG_MAP.computeIfAbsent(
                 socketTimeout,
                 t -> RequestConfig.custom()
-                        .setConnectTimeout(CONNECT_TIMEOUT)
-                        .setConnectionRequestTimeout(CONNECT_REQ_TIMEOUT)
-                        .setSocketTimeout(t)
+                        .setConnectionRequestTimeout(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
+                        .setResponseTimeout(Timeout.of(t, TimeUnit.MILLISECONDS))
                         .build());
         // 通过址默认配置创建一个httpClient实例
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -51,8 +54,8 @@ public class HttpClient {
                 // 通过EntityUtils中的toString方法将结果转换为字符串
                 return EntityUtils.toString(entity);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | ParseException e) {
+            log.error("doGet error url: {}", url);
         }
         return "";
     }
@@ -65,9 +68,8 @@ public class HttpClient {
         RequestConfig requestConfig = REQUEST_CONFIG_MAP.computeIfAbsent(
                 socketTimeout,
                 t -> RequestConfig.custom()
-                        .setConnectTimeout(CONNECT_TIMEOUT)
-                        .setConnectionRequestTimeout(CONNECT_REQ_TIMEOUT)
-                        .setSocketTimeout(t)
+                        .setConnectionRequestTimeout(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
+                        .setResponseTimeout(Timeout.of(t, TimeUnit.MILLISECONDS))
                         .build());
         // 创建httpClient实例
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -79,15 +81,15 @@ public class HttpClient {
             httpPost.addHeader("Content-Type", "application/json; charset=utf-8");
             httpPost.addHeader("Accept", "application/json");
             // 封装post请求参数
-            httpPost.setEntity(new StringEntity(jsonString, "UTF-8"));
+            httpPost.setEntity(new StringEntity(jsonString, Charset.defaultCharset()));
             // httpClient对象执行post请求,并返回响应参数对象
             try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost)) {
                 // 从响应对象中获取响应内容
                 HttpEntity entity = httpResponse.getEntity();
                 return EntityUtils.toString(entity);
             }
-        } catch (IOException e) {
-            log.error("doPost error {} | {}", url, jsonString.length());
+        } catch (IOException | ParseException e) {
+            log.error("doPost error url: {}", url);
         }
         return "";
     }

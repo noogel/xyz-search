@@ -1,5 +1,6 @@
 package noogel.xyz.search.infrastructure.repo;
 
+import jakarta.annotation.Nullable;
 import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
 import noogel.xyz.search.infrastructure.dto.ResourceHighlightHitsDto;
 import noogel.xyz.search.infrastructure.dto.SearchResultDto;
@@ -7,8 +8,6 @@ import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
-
-import javax.annotation.Nullable;
 
 /**
  * 全文搜索资源库

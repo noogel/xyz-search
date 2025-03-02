@@ -18,7 +18,7 @@ import noogel.xyz.search.infrastructure.utils.HttpClient;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;

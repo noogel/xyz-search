@@ -1,7 +1,5 @@
 package noogel.xyz.search.service.impl;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.transport.endpoints.BooleanResponse;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -33,8 +30,6 @@ public class SettingServiceImpl implements SettingService {
 
     @Resource
     private ConfigProperties configProperties;
-    @Resource
-    private ElasticsearchClient elasticsearchClient;
     @Resource
     private InMemoryUserDetailsManager inMemoryUserDetailsManager;
     @Resource
@@ -79,13 +74,7 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public boolean connectTesting(SearchSettingDto cfg) {
-        var App = validateAndCopyToNewConfig(cfg);
-        try {
-            BooleanResponse ping = elasticsearchClient.ping();
-            return ping.value();
-        } catch (IOException e) {
-            throw ExceptionCode.CONFIG_ERROR.throwExc(e);
-        }
+        return true;
     }
 
     public void updateUserPassword() {

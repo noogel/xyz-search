@@ -1,9 +1,9 @@
 package noogel.xyz.search.infrastructure.utils;
 
+import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.HashMap;
 import java.util.UUID;

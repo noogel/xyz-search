@@ -1,9 +1,9 @@
 package noogel.xyz.search.infrastructure.consts;
 
+import jakarta.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 
 @AllArgsConstructor

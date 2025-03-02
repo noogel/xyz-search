@@ -1,5 +1,6 @@
 package noogel.xyz.search.infrastructure.repo.impl.lucene;
 
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
@@ -28,7 +29,6 @@ import org.apache.lucene.search.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -195,11 +195,13 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
     @Override
     public void forceMerge() {
         luceneWriter.forceMerge();
+        luceneWriter.commit();
     }
 
     @Override
     public void reset() {
         luceneWriter.reset();
+        luceneWriter.commit();
     }
 
     @Override

@@ -11,7 +11,7 @@ import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;

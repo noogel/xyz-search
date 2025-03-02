@@ -9,7 +9,7 @@ import noogel.xyz.search.infrastructure.dto.OPDSResMetaDataDto;
 import noogel.xyz.search.infrastructure.dto.UrlDto;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;

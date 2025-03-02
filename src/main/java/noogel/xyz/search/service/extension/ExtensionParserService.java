@@ -3,7 +3,7 @@ package noogel.xyz.search.service.extension;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 public interface ExtensionParserService {
 

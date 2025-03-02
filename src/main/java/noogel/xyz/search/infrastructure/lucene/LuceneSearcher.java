@@ -14,6 +14,7 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.store.FSDirectory;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -179,6 +180,9 @@ public class LuceneSearcher {
                                 tokenStream, document.get("content"), true, options.getMaxNumFragments());
                         textFragmentList.add(Arrays.stream(highlightedText).toList());
                     }
+                }
+                if (CollectionUtils.isEmpty(textFragmentList)) {
+                    return Pair.of(documents, Collections.emptyList());
                 }
                 // 排序，切割
                 List<String> fragments = textFragmentList.stream().flatMap(Collection::stream)

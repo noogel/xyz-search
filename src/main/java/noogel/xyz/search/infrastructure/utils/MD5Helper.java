@@ -1,7 +1,5 @@
 package noogel.xyz.search.infrastructure.utils;
 
-import org.apache.commons.codec.binary.Hex;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -53,7 +51,7 @@ public class MD5Helper {
             while ((length = fileInputStream.read(buffer)) != -1) {
                 MD5.update(buffer, 0, length);
             }
-            return new String(Hex.encodeHex(MD5.digest()));
+            return new BigInteger(1, MD5.digest()).toString(16);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
