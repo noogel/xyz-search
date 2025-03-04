@@ -46,7 +46,7 @@ app:
     enable: false
     ollama:
       baseUrl: "http://192.168.124.101:11434"
-      chatModel: "deepseek-r1:1.5b"
+      chatModel: "deepseek-r1:14b"
       chatOptionTemperature: 0.7
       chatOptionNumCtx: 4096
       chatOptionNumPredict: 10000
