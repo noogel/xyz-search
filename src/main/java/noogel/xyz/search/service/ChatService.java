@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 public interface ChatService {
 
     SseEmitter sseEmitterChatStream(ChatRequestDto dto);
-
+    SseEmitter sseEmitterChat(ChatRequestDto dto);
     Flux<ChatResponse> fluxChatStream(ChatRequestDto dto);
 
 }

@@ -10,12 +10,13 @@ import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.service.ChatService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
-import org.springframework.ai.ollama.OllamaChatModel;
-import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -36,11 +37,13 @@ public class ChatServiceImpl implements ChatService {
     private org.springframework.core.io.Resource qaSystemPromptResource;
     @Value("classpath:/ai/prompts/system-generic.st")
     private org.springframework.core.io.Resource chatbotSystemPromptResource;
+    @Value("classpath:/ai/prompts/system-stuff-editor.st")
+    private org.springframework.core.io.Resource chatbotEditorSystemPromptResource;
 
     @Resource
-    private OllamaChatModel chatModel;
+    private ChatModel chatModel;
     @Resource
-    private OllamaOptions ollamaOptions;
+    private ChatOptions chatOptions;
     @Resource
     private FullTextSearchRepo fullTextSearchRepo;
 
@@ -48,7 +51,7 @@ public class ChatServiceImpl implements ChatService {
     public SseEmitter sseEmitterChatStream(ChatRequestDto dto) {
         String message = dto.getMessage();
         SseEmitter emitter = new SseEmitter();
-        Prompt prompt = this.getPrompt(message);
+        Prompt prompt = this.getRawPrompt(message);
         chatModel.stream(prompt)
                 .subscribe(
                         chatResponse -> {
@@ -67,6 +70,23 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public SseEmitter sseEmitterChat(ChatRequestDto dto) {
+        String message = dto.getMessage();
+        SseEmitter emitter = new SseEmitter();
+        Prompt prompt = this.getRawPromptAndEditor(message);
+        ChatResponse call = chatModel.call(prompt);
+        try {
+            ChatResponseDto chatResponseDto = new ChatResponseDto(
+                    UUID.randomUUID().toString(), call.getResult().getOutput().getText());
+            emitter.send(chatResponseDto);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return emitter;
+    }
+
+
+    @Override
     public Flux<ChatResponse> fluxChatStream(ChatRequestDto dto) {
         String message = dto.getMessage();
         Prompt prompt = getPrompt(message);
@@ -74,18 +94,20 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private Prompt getRawPrompt(String message) {
-        // ollama 参数含义
-        //使用大模型优化搜索词。
-        //基于 lucene 全文搜索
-        //把结果输出给大模型总结。
         UserMessage userMessage = new UserMessage(message);
-        return new Prompt(List.of(userMessage), ollamaOptions);
+        return new Prompt(List.of(userMessage), chatOptions);
+    }
+
+    private Prompt getRawPromptAndEditor(String message) {
+        UserMessage userMessage = new UserMessage(message);
+        SystemMessage systemMessage = new SystemMessage(this.chatbotEditorSystemPromptResource);
+        return new Prompt(List.of(systemMessage, userMessage), chatOptions);
     }
 
     private Prompt getPrompt(String message) {
         Message systemMessage = getSystemMessage(message);
         log.info("getPrompt system:\n{}", systemMessage.getText());
-        return new Prompt(List.of(systemMessage), ollamaOptions);
+        return new Prompt(List.of(systemMessage), chatOptions);
     }
 
     private Message getSystemMessage(String query) {

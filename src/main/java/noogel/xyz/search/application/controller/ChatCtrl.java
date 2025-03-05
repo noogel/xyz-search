@@ -23,7 +23,7 @@ public class ChatCtrl {
 
     @PostMapping("/stream")
     public SseEmitter chatStreamPost(@RequestBody ChatRequestDto request) {
-        return chatService.sseEmitterChatStream(request);
+        return chatService.sseEmitterChat(request);
     }
 
     @GetMapping("/stream")
@@ -32,7 +32,7 @@ public class ChatCtrl {
         ChatRequestDto dto = new ChatRequestDto();
         dto.setMessage(message);
         dto.setResId(resId);
-        return chatService.sseEmitterChatStream(dto);
+        return chatService.sseEmitterChat(dto);
     }
 
 }

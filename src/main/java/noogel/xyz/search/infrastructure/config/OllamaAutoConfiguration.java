@@ -17,7 +17,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
 
-@Configuration
+//@Configuration
 public class OllamaAutoConfiguration {
 
     @Bean
