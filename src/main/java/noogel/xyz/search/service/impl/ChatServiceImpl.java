@@ -14,6 +14,7 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
@@ -74,10 +75,13 @@ public class ChatServiceImpl implements ChatService {
         String message = dto.getMessage();
         SseEmitter emitter = new SseEmitter();
         Prompt prompt = this.getRawPromptAndEditor(message);
+        log.info("fluxChat:\n{}", message);
         ChatResponse call = chatModel.call(prompt);
         try {
+            Generation result = call.getResult();
+            log.info("fluxChat result:\n{}", result.getOutput().getText());
             ChatResponseDto chatResponseDto = new ChatResponseDto(
-                    UUID.randomUUID().toString(), call.getResult().getOutput().getText());
+                    UUID.randomUUID().toString(), result.getOutput().getText());
             emitter.send(chatResponseDto);
         } catch (IOException e) {
             throw new RuntimeException(e);
