@@ -113,6 +113,23 @@ public class SearchServiceImpl implements SearchService {
     public OPDSResultShowDto opdsSearch(SearchQueryDto query) {
         CommonSearchDto searchDto = new CommonSearchDto();
         searchDto.setSearchQuery(query.getSearch());
+        searchDto.setResId(query.getResId());
+        searchDto.setDirPrefix(query.getResDirPrefix());
+        Optional.ofNullable(query.getResDirPrefix()).filter(StringUtils::isNotBlank)
+                .ifPresent(l -> {
+                    searchDto.setDirPrefix(l);
+                    searchDto.setResId(null);
+                });
+        Optional.ofNullable(query.getResSize()).filter(StringUtils::isNotBlank)
+                .map(CommonSearchDto.Field::of).ifPresent(searchDto::setResSize);
+        Optional.ofNullable(query.getResType()).filter(l -> !CollectionUtils.isEmpty(l))
+                .ifPresent(searchDto::setResTypeList);
+        Optional.ofNullable(query.getModifiedAt()).filter(StringUtils::isNotBlank)
+                .map(CommonSearchDto.Field::of).ifPresent(searchDto::setModifiedAt);
+        Optional.of(CommonSearchDto.Paging.of(query.getLimit(), query.getPage()))
+                .ifPresent(searchDto::setPaging);
+        Optional.ofNullable(query.getOrder()).map(l -> CommonSearchDto.OrderBy.of(l.getField(), l.isAscOrder()))
+                .ifPresent(searchDto::setOrder);
         SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
         OPDSResultShowDto showDto = new OPDSResultShowDto();
         showDto.setSize(Math.toIntExact(result.getSize()));

@@ -3,13 +3,13 @@ package noogel.xyz.search.infrastructure.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.rometools.rome.feed.synd.*;
+import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.consts.BaseConsts;
 import noogel.xyz.search.infrastructure.dto.OPDSResMetaDataDto;
 import noogel.xyz.search.infrastructure.dto.UrlDto;
 import org.apache.commons.lang3.StringUtils;
 
-import jakarta.annotation.Nullable;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -66,33 +66,39 @@ public class OPDSHelper {
         return objects;
     }
 
-    public static List<SyndLink> ofPageSyndLink(UrlDto url, int nextOffset, int total) {
+    public static List<SyndLink> ofPageSyndLink(UrlDto url, int curPage, int total) {
+        ArrayList<SyndLink> objects = new ArrayList<>();
+
+        int maxPage = total % BaseConsts.DEFAULT_LIMIT == 0
+                ? (total / BaseConsts.DEFAULT_LIMIT)
+                : (total / BaseConsts.DEFAULT_LIMIT + 1);
 
         SyndLink firstLink = new SyndLinkImpl();
         firstLink.setRel("first");
         firstLink.setType(BaseConsts.APPLICATION_ATOM_XML_FEED_CATALOG);
         Map<String, String> firstParams = url.getParameters();
-        firstParams.put("offset", "0");
+        firstParams.put("page", "1");
         firstLink.setHref(UrlDto.buildRequestUrl(url.getRequestUrl(), firstParams));
-
-        SyndLink lastLink = new SyndLinkImpl();
-        lastLink.setRel("last");
-        lastLink.setType(BaseConsts.APPLICATION_ATOM_XML_FEED_CATALOG);
-        Map<String, String> lastParams = url.getParameters();
-        lastParams.put("offset", Math.max(total - BaseConsts.DEFAULT_LIMIT, 0) + "");
-        lastLink.setHref(UrlDto.buildRequestUrl(url.getRequestUrl(), lastParams));
-
-        SyndLink nextLink = new SyndLinkImpl();
-        nextLink.setRel("next");
-        nextLink.setType(BaseConsts.APPLICATION_ATOM_XML_FEED_CATALOG);
-        Map<String, String> nextParams = url.getParameters();
-        nextParams.put("offset", Math.min(total, nextOffset) + "");
-        nextLink.setHref(UrlDto.buildRequestUrl(url.getRequestUrl(), nextParams));
-
-        ArrayList<SyndLink> objects = new ArrayList<>();
         objects.add(firstLink);
-        objects.add(lastLink);
-        objects.add(nextLink);
+
+        if (curPage < maxPage) {
+            SyndLink lastLink = new SyndLinkImpl();
+            lastLink.setRel("last");
+            lastLink.setType(BaseConsts.APPLICATION_ATOM_XML_FEED_CATALOG);
+            Map<String, String> lastParams = url.getParameters();
+            lastParams.put("offset", Math.max(maxPage, 1) + "");
+            lastLink.setHref(UrlDto.buildRequestUrl(url.getRequestUrl(), lastParams));
+            objects.add(lastLink);
+
+            SyndLink nextLink = new SyndLinkImpl();
+            nextLink.setRel("next");
+            nextLink.setType(BaseConsts.APPLICATION_ATOM_XML_FEED_CATALOG);
+            Map<String, String> nextParams = url.getParameters();
+            nextParams.put("offset", Math.min(maxPage, curPage + 1) + "");
+            nextLink.setHref(UrlDto.buildRequestUrl(url.getRequestUrl(), nextParams));
+            objects.add(nextLink);
+        }
+
         return objects;
     }
 
