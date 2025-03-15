@@ -61,6 +61,9 @@
             gap: 1rem;
             width: 100%;
         }
+        .search-bar.hidden {
+            display: none;
+        }
 
         .menu-bar {
             display: flex;
@@ -148,7 +151,6 @@
                 margin-top: 0;
                 flex-direction: column;
             }
-
             .menu-bar {
                 gap: 1rem;
                 padding: 0.5rem;
@@ -685,6 +687,39 @@
 
     // 初始化
     loadItems();
+
+    // 添加滚动行为控制
+    let lastScroll = 0;
+
+    function handleScroll() {
+
+        const currentScroll = window.pageYOffset;
+        const searchBar = document.querySelector('.search-bar');
+
+        if (currentScroll > lastScroll && currentScroll > 300) {
+            searchBar.classList.add('hidden');
+        } else {
+            searchBar.classList.remove('hidden');
+        }
+        lastScroll = currentScroll;
+    }
+
+    // 优化滚动监听
+    const throttledScroll = throttle(handleScroll, 500);
+    window.addEventListener('scroll', throttledScroll);
+
+    // 现有节流函数复用
+    function throttle(fn, delay) {
+        let lastCall = 0;
+        return function(...args) {
+            const now = Date.now();
+            if (now - lastCall >= delay) {
+                lastCall = now;
+                fn.apply(this, args);
+            }
+        }
+    }
+
 </script>
 </body>
 </html>
