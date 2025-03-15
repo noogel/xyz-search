@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>畅文阅读 - EPUB阅读器</title>
+    <!-- 使用最新版epub.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.93/epub.min.js"></script>
+    <style>
+        :root {
+            --brand-color: #FF3366;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --bg-color: #f9f9f9;
+            --card-radius: 12px;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 1rem 10%;
+            background: white;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reader-container {
+            flex: 1;
+            position: relative;
+            margin: 2rem 10%;
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        #viewer {
+            width: 100%;
+            height: 100%;
+            padding: 2rem;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* 新增错误提示样式 */
+        .error-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .retry-btn {
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 24px;
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .retry-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* 其他样式保持不变... */
+    </style>
+</head>
+<body>
+<header class="header">
+    <h1>畅文阅读</h1>
+    <div class="header-controls">
+        <button class="control-btn" id="toggleSidebar">📖 目录</button>
+    </div>
+</header>
+
+<div class="reader-container">
+    <div id="viewer"></div>
+    <div class="loader" id="loader"></div>
+    <div class="error-container" id="errorPanel" style="display: none;">
+        <h3>⚠️ 书籍加载失败</h3>
+        <p>请检查网络连接后重试</p>
+        <button class="retry-btn" id="retryButton">重新加载</button>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="prevPage">上一页</button>
+        <button class="control-btn" id="nextPage">下一页</button>
+    </div>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <h3>目录</h3>
+    <div id="toc"></div>
+</div>
+
+<script>
+    let book = null;
+    let rendition = null;
+
+    // 增强版加载函数
+    async function loadBook() {
+        try {
+            showLoader();
+            hideError();
+
+            // 使用随机示例书籍防止缓存问题
+            const timestamp = new Date().getTime();
+            const res = await fetch(`http://localhost:8081/file/view/6ea70a267d21475885bf5d5e7cd8a650?t=${timestamp}`);
+
+            if (!res.ok) throw new Error(`HTTP错误 ${res.status}`);
+            if (!res.headers.get('content-type')?.includes('application/epub+zip')) {
+                throw new Error('无效的EPUB文件格式');
+            }
+
+            const arrayBuffer = await res.arrayBuffer();
+            await initEpub(arrayBuffer);
+
+        } catch (error) {
+            console.error('加载失败:', error);
+            showError(error.message);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    // 初始化EPUB实例
+    async function initEpub(arrayBuffer) {
+        try {
+            book = new Epub(arrayBuffer);
+            await book.ready;
+
+            rendition = book.renderTo('viewer', {
+                width: '100%',
+                height: '100%',
+                spread: 'none',
+                manager: 'continuous'
+            });
+
+            await rendition.display();
+            initNavigation();
+            renderToc();
+
+        } catch (error) {
+            throw new Error('EPUB解析失败: ' + error.message);
+        }
+    }
+
+    // 错误处理
+    function showError(message) {
+        const errorPanel = document.getElementById('errorPanel');
+        errorPanel.querySelector('p').textContent = message;
+        errorPanel.style.display = 'block';
+    }
+
+    function hideError() {
+        document.getElementById('errorPanel').style.display = 'none';
+    }
+
+    // 其他功能保持不变...
+
+    // 初始化事件监听
+    document.getElementById('retryButton').addEventListener('click', loadBook);
+    window.addEventListener('DOMContentLoaded', loadBook);
+    window.addEventListener('online', () => {
+        if (!book) loadBook();
+    });
+
+    // 增加网络状态检测
+    function checkNetwork() {
+        if (!navigator.onLine) {
+            showError('网络连接已断开');
+        }
+    }
+    setInterval(checkNetwork, 5000);
+</script>
+</body>
+</html>

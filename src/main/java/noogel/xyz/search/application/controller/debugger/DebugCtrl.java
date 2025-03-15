@@ -43,7 +43,13 @@ public class DebugCtrl {
 
     @RequestMapping(value = "/demo", method = RequestMethod.GET)
     public ModelAndView demo() {
-        ModelAndView mv = new ModelAndView("demo");
+        ModelAndView mv = new ModelAndView("debug/demo");
+        return mv;
+    }
+
+    @RequestMapping(value = "/epub", method = RequestMethod.GET)
+    public ModelAndView epub() {
+        ModelAndView mv = new ModelAndView("debug/epub");
         return mv;
     }
 
