@@ -63,10 +63,25 @@
     }
 
     #fileType {
-        padding: 0.8rem;
-        border-radius: 24px;
+        -webkit-appearance: none;  /* Safari 关键修复 */
+        -moz-appearance: none;
+        appearance: none;
+        padding: 0.8rem 2.5rem 0.8rem 1.2rem; /* 右侧留出箭头空间 */
         border: 2px solid #eee;
-        background: white;
+        border-radius: 24px;
+        background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666666'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") no-repeat;
+        background-position: right 1rem center;
+        background-size: 12px;
+    }
+
+    /* 针对Safari的额外优化 */
+    @media not all and (min-resolution:.001dpcm) {
+        @supports (-webkit-appearance:none) {
+            #fileType {
+                padding-right: 3rem;
+                background-position: right 0.8rem center;
+            }
+        }
     }
 
     /* 网格内容区 */
