@@ -8,7 +8,9 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,6 +39,12 @@ public class DebugCtrl {
         } catch (Exception e) {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
+    }
+
+    @RequestMapping(value = "/demo", method = RequestMethod.GET)
+    public ModelAndView demo() {
+        ModelAndView mv = new ModelAndView("demo");
+        return mv;
     }
 
 }

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>畅文全索 - 搜索结果</title>
+  <style>
+    :root {
+        --brand-color: #FF3366;
+        --text-primary: #333;
+        --text-secondary: #666;
+        --bg-color: #f9f9f9;
+        --card-radius: 12px;
+        --shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    }
+
+    body {
+        background: var(--bg-color);
+        min-height: 100vh;
+    }
+
+    /* 页眉样式 */
+    .header {
+        padding: 1rem 10%;
+        background: white;
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .header h1 {
+        color: var(--brand-color);
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    /* 搜索栏 */
+    .search-bar {
+        display: flex;
+        gap: 1rem;
+    }
+
+    #searchInput {
+        flex: 1;
+        padding: 0.8rem 1.2rem;
+        border: 2px solid #eee;
+        border-radius: 24px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    #searchInput:focus {
+        border-color: var(--brand-color);
+        outline: none;
+    }
+
+    #fileType {
+        padding: 0.8rem;
+        border-radius: 24px;
+        border: 2px solid #eee;
+        background: white;
+    }
+
+    /* 网格内容区 */
+    .grid-container {
+        padding: 2rem 10%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        grid-auto-rows: minmax(100px, auto);
+    }
+
+    .card {
+        background: white;
+        border-radius: var(--card-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .card-content {
+        padding: 1rem;
+    }
+
+    .card-title {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .card-desc {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* 页脚 */
+    .footer {
+        padding: 2rem 10%;
+        text-align: center;
+        color: var(--text-secondary);
+        margin-top: 3rem;
+    }
+
+    /* 响应式处理 */
+    @media (max-width: 1200px) {
+        .grid-container {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .grid-container {
+            grid-template-columns: repeat(2, 1fr);
+            padding: 1rem;
+        }
+
+        .header {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .grid-container {
+            grid-template-columns: 1fr;
+        }
+
+        .search-bar {
+            flex-direction: column;
+        }
+    }
+  </style>
+</head>
+<body>
+<header class="header">
+  <h1>畅文全索</h1>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="输入搜索关键词...">
+    <select id="fileType">
+      <option value="all">全部类型</option>
+      <option value="text">纯文本</option>
+      <option value="image">图文</option>
+    </select>
+  </div>
+</header>
+
+<main class="grid-container" id="gridContainer"></main>
+
+<footer class="footer">
+  <p>© 2024 畅文全索 · 探索优质内容</p>
+</footer>
+
+<script>
+  // 模拟数据
+  const sampleData = Array.from({length: 12}, (_, i) => ({
+      id: i,
+      type: Math.random() > 0.5 ? 'text' : 'image',
+      title: `搜索结果 ${i + 1}`,
+      content: '这是一段示例内容，展示搜索结果卡片的文字描述部分，保持简洁美观的排版风格。',
+      image: `https://picsum.photos/300/200?random=${i}`
+  }));
+
+  // 生成卡片
+  function createCard(data) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+          ${data.type === 'image' ?
+              `<img src="${data.image}" class="card-img" alt="${data.title}">` : ''}
+          <div class="card-content">
+              <h3 class="card-title">${data.title}</h3>
+              <p class="card-desc">${data.content}</p>
+          </div>
+      `;
+      return card;
+  }
+
+  // 初始加载
+  function loadItems() {
+      sampleData.forEach(data => {
+          gridContainer.appendChild(createCard(data));
+      });
+  }
+
+  // 搜索功能
+  document.getElementById('searchInput').addEventListener('keyup', (e) => {
+      if(e.key === 'Enter') {
+          // 实际应调用搜索API
+          console.log('执行搜索:', e.target.value);
+      }
+  });
+
+  // 滚动加载
+  let loading = false;
+  window.addEventListener('scroll', () => {
+      const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
+      if (scrollTop + clientHeight >= scrollHeight - 100 && !loading) {
+          loading = true;
+          // 模拟加载更多数据
+          setTimeout(() => {
+              loadItems();
+              loading = false;
+          }, 1000);
+      }
+  });
+
+  // 初始化
+  loadItems();
+</script>
+</body>
+</html>
