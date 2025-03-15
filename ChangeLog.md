@@ -1,6 +1,23 @@
 CHANGELOG
 ----
 
+# 1.2.1
+
+新增功能：
+
+* 全文搜索从 elasticSearch 切换为本地 lucene
+* 新增 AI 对话，支持基于本地数据进行对话，支持 ollama 接口对接
+
+问题修复：
+
+* 修复 opds 在 koReader 无法下载文件
+
+依赖变化：
+
+* 升级到 spring boot 3.4.2
+* 升级到 twelvemonkeys 3.12.0
+* 增加依赖 spring-ai 1.0.0-M6
+
 # 1.1.1
 
 * 增加图片 paddleocr 服务支持 
