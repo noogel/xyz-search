@@ -425,7 +425,7 @@
           <div class="btn-group">
               <button class="btn">下载</button>
               <button class="btn">查看</button>
-              <button class="btn">删除</button>
+              <button class="btn btn-delete">删除</button>
               <button class="btn">目录</button>
           </div>
           <div class="paragraph-list">
@@ -436,6 +436,35 @@
       `;
 
       overlay.style.display = 'flex';
+
+      // 添加删除确认逻辑
+        const deleteBtn = modalContent.querySelector('.btn-delete');
+        deleteBtn.addEventListener('click', async () => {
+            const confirmDelete = confirm('确定要删除该内容吗？此操作不可撤销！');
+            if (confirmDelete) {
+                try {
+                    // 显示加载状态
+                    deleteBtn.innerHTML = '删除中...';
+                    deleteBtn.disabled = true;
+
+                    // 模拟接口请求
+                    await new Promise(resolve => setTimeout(resolve, 800));
+
+                    // 从DOM移除对应卡片
+                    const card = document.querySelector(`[data-id="${data.id}"]`);
+                    if (card) card.remove();
+
+                    // 关闭浮层
+                    closeModal();
+                    alert('删除成功！');
+                } catch (error) {
+                    alert('删除失败，请重试');
+                    deleteBtn.innerHTML = '删除';
+                    deleteBtn.disabled = false;
+                }
+            }
+        });
+
   }
 
   // 模拟接口请求
