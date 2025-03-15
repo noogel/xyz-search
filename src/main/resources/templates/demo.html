@@ -1,527 +1,527 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>畅文全索</title>
-  <style>
-    :root {
-        --brand-color: #FF3366;
-        --text-primary: #333;
-        --text-secondary: #666;
-        --bg-color: #f9f9f9;
-        --card-radius: 12px;
-        --shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>畅文全索</title>
+    <style>
+        :root {
+            --brand-color: #FF3366;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --bg-color: #f9f9f9;
+            --card-radius: 12px;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
 
-    body {
-        background: var(--bg-color);
-        min-height: 100vh;
-    }
+        body {
+            background: var(--bg-color);
+            min-height: 100vh;
+        }
 
-    /* 页眉样式 */
-    .header {
-        padding: 1rem 10%;
-        background: white;
-        box-shadow: var(--shadow);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-    }
+        /* 页眉样式 */
+        .header {
+            padding: 1rem 10%;
+            background: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-    .header h1 {
-<!--        color: var(&#45;&#45;brand-color);-->
-        font-size: 1.8rem;
-        margin-bottom: 1rem;
-    }
+        .header h1 {
+    <!--        color: var(&#45;&#45;brand-color);-->
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
 
-    /* 搜索栏 */
-    .search-bar {
-        display: flex;
-        gap: 1rem;
-    }
+        /* 搜索栏 */
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+        }
 
-    #searchInput {
-        flex: 1;
-        padding: 0.8rem 1.2rem;
-        border: 2px solid #eee;
-        border-radius: 24px;
-        font-size: 1rem;
-        transition: all 0.3s;
-    }
+        #searchInput {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #eee;
+            border-radius: 24px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
 
-    #searchInput:focus {
-        border-color: var(--brand-color);
-        outline: none;
-    }
+        #searchInput:focus {
+            border-color: var(--brand-color);
+            outline: none;
+        }
 
-    #fileType {
-        -webkit-appearance: none;  /* Safari 关键修复 */
-        -moz-appearance: none;
-        appearance: none;
-        padding: 0.8rem 2.5rem 0.8rem 1.2rem; /* 右侧留出箭头空间 */
-        border: 2px solid #eee;
-        border-radius: 24px;
-        background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666666'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") no-repeat;
-        background-position: right 1rem center;
-        background-size: 12px;
-    }
+        #fileType {
+            -webkit-appearance: none;  /* Safari 关键修复 */
+            -moz-appearance: none;
+            appearance: none;
+            padding: 0.8rem 2.5rem 0.8rem 1.2rem; /* 右侧留出箭头空间 */
+            border: 2px solid #eee;
+            border-radius: 24px;
+            background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666666'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+        }
 
-    /* 针对Safari的额外优化 */
-    @media not all and (min-resolution:.001dpcm) {
-        @supports (-webkit-appearance:none) {
-            #fileType {
-                padding-right: 3rem;
-                background-position: right 0.8rem center;
+        /* 针对Safari的额外优化 */
+        @media not all and (min-resolution:.001dpcm) {
+            @supports (-webkit-appearance:none) {
+                #fileType {
+                    padding-right: 3rem;
+                    background-position: right 0.8rem center;
+                }
             }
         }
-    }
 
-    /* 网格内容区 */
-    .grid-container {
-        padding: 2rem 10%;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
-        grid-auto-rows: minmax(100px, auto);
-    }
-
-    .card {
-        background: white;
-        border-radius: var(--card-radius);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        transition: transform 0.3s;
-        cursor: pointer;
-    }
-
-    .card:hover {
-        transform: translateY(-5px);
-    }
-
-    .card-img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
-
-    .card-content {
-        padding: 1rem;
-    }
-
-    .card-title {
-        color: var(--text-primary);
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-    }
-
-    .card-desc {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        line-height: 1.4;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    /* 浮层样式 */
-    .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        background: rgba(0,0,0,0.6); /* 加深背景色 */
-        backdrop-filter: blur(5px);
-    }
-
-    .modal {
-        background: white;
-        display: flex;
-        flex-direction: column;
-        max-width: none;
-        max-height: none;
-        border-radius: 18px !important; /* 强制覆盖可能冲突的样式 */
-        overflow: hidden; /* 确保内容不破坏圆角 */
-        box-shadow: 0 12px 24px rgba(0,0,0,0.2); /* 增强立体感 */
-        width: 90vw;
-        height: 90vh;
-        animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-<!--    /* 确保所有子元素遵守圆角 */-->
-<!--    .modal > *:first-child,-->
-<!--    .modal > *:last-child {-->
-<!--        border-radius: 18px 18px 0 0; /* 头部圆角 */-->
-<!--    }-->
-
-    @keyframes modalIn {
-        0% {
-            transform: scale(0.9) translateY(30px);
-            border-radius: 50px; /* 动画过程中的动态圆角 */
-            opacity: 0;
-        }
-        50% {
-            border-radius: 36px;
-        }
-        100% {
-            transform: scale(1) translateY(0);
-            border-radius: 18px; /* 最终圆角值 */
-            opacity: 1;
-        }
-    }
-
-    /* 添加关闭动画 */
-    .modal-out {
-        animation: modalOut 0.2s ease-in forwards;
-    }
-
-    @keyframes modalOut {
-        from {
-            transform: scale(1);
-            opacity: 1;
-        }
-        to {
-            transform: scale(0.95);
-            opacity: 0;
-        }
-    }
-
-    .modal-header,
-    .modal-footer {
-        padding: 0.5rem 1rem;
-        background: var(--bg-color);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-<!--        border-radius: 0 0 18px 18px; /* 底部圆角 */-->
-    }
-
-    .modal-body {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1.5rem;
-    }
-
-    .close-btn {
-        cursor: pointer;
-        color: var(--text-secondary);
-        padding: 0.5rem;
-    }
-
-    .close-btn:hover {
-        color: var(--brand-color);
-    }
-
-    /* 详情内容 */
-    .detail-img {
-        width: 100%;
-        height: 300px;
-        object-fit: cover;
-        border-radius: var(--card-radius);
-        margin-bottom: 1rem;
-    }
-
-    .attributes-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-
-    .attribute-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #eee;
-    }
-
-    .btn-group {
-        display: flex;
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-
-    .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        background: white;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn:hover {
-        border-color: var(--brand-color);
-        color: var(--brand-color);
-    }
-
-    .paragraph-list {
-        margin-top: 1rem;
-    }
-
-    .paragraph-item {
-        padding: 0.8rem;
-        margin: 0.5rem 0;
-        background: var(--bg-color);
-        border-radius: 8px;
-    }
-
-    .highlight {
-        background: #fff3b7;
-        padding: 0 2px;
-    }
-
-    /* 响应式处理 */
-    @media (max-width: 1200px) {
+        /* 网格内容区 */
         .grid-container {
-            grid-template-columns: repeat(3, 1fr);
+            padding: 2rem 10%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            grid-auto-rows: minmax(100px, auto);
         }
-    }
 
-    @media (max-width: 768px) {
-        .grid-container {
-            grid-template-columns: repeat(2, 1fr);
+        .card {
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-content {
             padding: 1rem;
         }
 
+        .card-title {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 浮层样式 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(0,0,0,0.6); /* 加深背景色 */
+            backdrop-filter: blur(5px);
+        }
+
         .modal {
-            width: 95%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            max-width: none;
+            max-height: none;
+            border-radius: 18px !important; /* 强制覆盖可能冲突的样式 */
+            overflow: hidden; /* 确保内容不破坏圆角 */
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2); /* 增强立体感 */
+            width: 90vw;
+            height: 90vh;
+            animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+    <!--    /* 确保所有子元素遵守圆角 */-->
+    <!--    .modal > *:first-child,-->
+    <!--    .modal > *:last-child {-->
+    <!--        border-radius: 18px 18px 0 0; /* 头部圆角 */-->
+    <!--    }-->
+
+        @keyframes modalIn {
+            0% {
+                transform: scale(0.9) translateY(30px);
+                border-radius: 50px; /* 动画过程中的动态圆角 */
+                opacity: 0;
+            }
+            50% {
+                border-radius: 36px;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                border-radius: 18px; /* 最终圆角值 */
+                opacity: 1;
+            }
+        }
+
+        /* 添加关闭动画 */
+        .modal-out {
+            animation: modalOut 0.2s ease-in forwards;
+        }
+
+        @keyframes modalOut {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+        }
+
+        .modal-header,
+        .modal-footer {
+            padding: 0.5rem 1rem;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+    <!--        border-radius: 0 0 18px 18px; /* 底部圆角 */-->
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+        }
+
+        .close-btn:hover {
+            color: var(--brand-color);
+        }
+
+        /* 详情内容 */
+        .detail-img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: var(--card-radius);
+            margin-bottom: 1rem;
         }
 
         .attributes-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .grid-container {
-            grid-template-columns: 1fr;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
         }
 
-        .search-bar {
-            flex-direction: column;
+        .attribute-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
         }
 
-        .detail-img {
-            height: 200px;
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
         }
-    }
 
-    /* 页脚 */
-    .footer {
-        padding: 2rem 10%;
-        text-align: center;
-        color: var(--text-secondary);
-        margin-top: 3rem;
-    }
-  </style>
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            border-color: var(--brand-color);
+            color: var(--brand-color);
+        }
+
+        .paragraph-list {
+            margin-top: 1rem;
+        }
+
+        .paragraph-item {
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            background: var(--bg-color);
+            border-radius: 8px;
+        }
+
+        .highlight {
+            background: #fff3b7;
+            padding: 0 2px;
+        }
+
+        /* 响应式处理 */
+        @media (max-width: 1200px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 1rem;
+            }
+
+            .modal {
+                width: 95%;
+            }
+
+            .attributes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .detail-img {
+                height: 200px;
+            }
+        }
+
+        /* 页脚 */
+        .footer {
+            padding: 2rem 10%;
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 3rem;
+        }
+    </style>
 </head>
 <body>
 <header class="header">
-  <h1>畅文全索</h1>
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="输入搜索关键词...">
-    <select id="fileType">
-      <option value="all">全部类型</option>
-      <option value="text">纯文本</option>
-      <option value="image">图文</option>
-    </select>
-  </div>
+    <h1>畅文全索</h1>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="输入搜索关键词...">
+        <select id="fileType">
+            <option value="all">全部类型</option>
+            <option value="text">纯文本</option>
+            <option value="image">图文</option>
+        </select>
+    </div>
 </header>
 
 <main class="grid-container" id="gridContainer"></main>
 
 <footer class="footer">
-  <p>© 2024 畅文全索 · 探索优质内容</p>
+    <p>© 2024 畅文全索 · 探索优质内容</p>
 </footer>
 
 <!-- 浮层结构 -->
 <div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <span>资源详情</span>
-      <span class="close-btn" onclick="closeModal()">×</span>
+    <div class="modal">
+        <div class="modal-header">
+            <span>资源详情</span>
+            <span class="close-btn" onclick="closeModal()">×</span>
+        </div>
+        <div class="modal-body" id="modalContent"></div>
+        <div class="modal-footer">
+            <span class="close-btn" onclick="closeModal()">关闭详情</span>
+        </div>
     </div>
-    <div class="modal-body" id="modalContent"></div>
-    <div class="modal-footer">
-      <span class="close-btn" onclick="closeModal()">关闭详情</span>
-    </div>
-  </div>
 </div>
 
 <script>
-  // 增强模拟数据
-  const sampleData = Array.from({length: 12}, (_, i) => ({
-      id: i,
-      type: Math.random() > 0.5 ? 'text' : 'image',
-      title: `搜索结果 ${i + 1}`,
-      content: '这是一段示例内容，展示搜索结果卡片的文字描述部分。',
-      image: `https://picsum.photos/300/200?random=${i}`,
-      attributes: {
-          format: Math.random() > 0.5 ? 'PDF' : 'DOCX',
-          size: `${Math.floor(Math.random() * 5000)} KB`,
-          author: `用户${String.fromCharCode(65 + i)}`,
-          created: `2024-0${Math.ceil(Math.random() * 9)}-0${Math.ceil(Math.random() * 9)}`
-      },
-      paragraphs: Array.from({length: 5}, (_, p) =>
-          `这是第${p + 1}段文本内容，包含示例文字用于演示高亮效果。关键内容可能出现在任意位置。`
-      )
-  }));
+    // 增强模拟数据
+    const sampleData = Array.from({length: 12}, (_, i) => ({
+        id: i,
+        type: Math.random() > 0.5 ? 'text' : 'image',
+        title: `搜索结果 ${i + 1}`,
+        content: '这是一段示例内容，展示搜索结果卡片的文字描述部分。',
+        image: `https://picsum.photos/300/200?random=${i}`,
+        attributes: {
+            format: Math.random() > 0.5 ? 'PDF' : 'DOCX',
+            size: `${Math.floor(Math.random() * 5000)} KB`,
+            author: `用户${String.fromCharCode(65 + i)}`,
+            created: `2024-0${Math.ceil(Math.random() * 9)}-0${Math.ceil(Math.random() * 9)}`
+        },
+        paragraphs: Array.from({length: 5}, (_, p) =>
+            `这是第${p + 1}段文本内容，包含示例文字用于演示高亮效果。关键内容可能出现在任意位置。`
+        )
+    }));
 
-  // 生成卡片
-  function createCard(data) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-          ${data.type === 'image' ?
-              `<img src="${data.image}" class="card-img" alt="${data.title}">` : ''}
-          <div class="card-content">
-              <h3 class="card-title">${data.title}</h3>
-              <p class="card-desc">${data.content}</p>
-          </div>
-      `;
-      card.addEventListener('click', () => showDetail(data.id));
-      return card;
-  }
+    // 生成卡片
+    function createCard(data) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            ${data.type === 'image' ?
+                `<img src="${data.image}" class="card-img" alt="${data.title}">` : ''}
+            <div class="card-content">
+                <h3 class="card-title">${data.title}</h3>
+                <p class="card-desc">${data.content}</p>
+            </div>
+        `;
+        card.addEventListener('click', () => showDetail(data.id));
+        return card;
+    }
 
-  // 显示详情浮层
-  async function showDetail(id) {
-      const overlay = document.getElementById('overlay');
-      overlay.style.display = 'flex';
-      const modalContent = document.getElementById('modalContent');
+    // 显示详情浮层
+    async function showDetail(id) {
+        const overlay = document.getElementById('overlay');
+        overlay.style.display = 'flex';
+        const modalContent = document.getElementById('modalContent');
 
-      // 模拟API请求
-      const data = await fetchDetail(id);
+        // 模拟API请求
+        const data = await fetchDetail(id);
 
-      // 生成高亮文本（示例高亮"示例"关键词）
-      const highlighted = data.paragraphs.map(p =>
-          p.replace(/示例/g, '<span class="highlight">示例</span>')
-      );
+        // 生成高亮文本（示例高亮"示例"关键词）
+        const highlighted = data.paragraphs.map(p =>
+            p.replace(/示例/g, '<span class="highlight">示例</span>')
+        );
 
-      modalContent.innerHTML = `
-          ${data.type === 'image' ?
-              `<img src="${data.image}" class="detail-img" alt="详情图片">` : ''}
-          <div class="attributes-grid">
-              ${Object.entries(data.attributes).map(([key, value]) => `
-                  <div class="attribute-item">
-                      <span>${key}</span>
-                      <span>${value}</span>
-                  </div>
-              `).join('')}
-          </div>
-          <div class="btn-group">
-              <button class="btn">下载</button>
-              <button class="btn">查看</button>
-              <button class="btn btn-delete">删除</button>
-              <button class="btn">目录</button>
-          </div>
-          <div class="paragraph-list">
-              ${highlighted.map(p => `
-                  <div class="paragraph-item">${p}</div>
-              `).join('')}
-          </div>
-      `;
+        modalContent.innerHTML = `
+            ${data.type === 'image' ?
+                `<img src="${data.image}" class="detail-img" alt="详情图片">` : ''}
+            <div class="attributes-grid">
+                ${Object.entries(data.attributes).map(([key, value]) => `
+                    <div class="attribute-item">
+                        <span>${key}</span>
+                        <span>${value}</span>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="btn-group">
+                <button class="btn">下载</button>
+                <button class="btn">查看</button>
+                <button class="btn btn-delete">删除</button>
+                <button class="btn">目录</button>
+            </div>
+            <div class="paragraph-list">
+                ${highlighted.map(p => `
+                    <div class="paragraph-item">${p}</div>
+                `).join('')}
+            </div>
+        `;
 
-      overlay.style.display = 'flex';
+        overlay.style.display = 'flex';
 
-      // 添加删除确认逻辑
-        const deleteBtn = modalContent.querySelector('.btn-delete');
-        deleteBtn.addEventListener('click', async () => {
-            const confirmDelete = confirm('确定要删除该内容吗？此操作不可撤销！');
-            if (confirmDelete) {
-                try {
-                    // 显示加载状态
-                    deleteBtn.innerHTML = '删除中...';
-                    deleteBtn.disabled = true;
+        // 添加删除确认逻辑
+          const deleteBtn = modalContent.querySelector('.btn-delete');
+          deleteBtn.addEventListener('click', async () => {
+              const confirmDelete = confirm('确定要删除该内容吗？此操作不可撤销！');
+              if (confirmDelete) {
+                  try {
+                      // 显示加载状态
+                      deleteBtn.innerHTML = '删除中...';
+                      deleteBtn.disabled = true;
 
-                    // 模拟接口请求
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                      // 模拟接口请求
+                      await new Promise(resolve => setTimeout(resolve, 800));
 
-                    // 从DOM移除对应卡片
-                    const card = document.querySelector(`[data-id="${data.id}"]`);
-                    if (card) card.remove();
+                      // 从DOM移除对应卡片
+                      const card = document.querySelector(`[data-id="${data.id}"]`);
+                      if (card) card.remove();
 
-                    // 关闭浮层
-                    closeModal();
-                    alert('删除成功！');
-                } catch (error) {
-                    alert('删除失败，请重试');
-                    deleteBtn.innerHTML = '删除';
-                    deleteBtn.disabled = false;
-                }
-            }
+                      // 关闭浮层
+                      closeModal();
+                      alert('删除成功！');
+                  } catch (error) {
+                      alert('删除失败，请重试');
+                      deleteBtn.innerHTML = '删除';
+                      deleteBtn.disabled = false;
+                  }
+              }
+          });
+
+    }
+
+    // 模拟接口请求
+    function fetchDetail(id) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(sampleData.find(item => item.id === id));
+            }, 300);
         });
+    }
 
-  }
+    // 修改浮层关闭逻辑
+    function closeModal() {
+        const modal = document.querySelector('.modal');
+        modal.classList.add('modal-out');
+        setTimeout(() => {
+            document.getElementById('overlay').style.display = 'none';
+            modal.classList.remove('modal-out');
+        }, 200);
+    }
 
-  // 模拟接口请求
-  function fetchDetail(id) {
-      return new Promise(resolve => {
-          setTimeout(() => {
-              resolve(sampleData.find(item => item.id === id));
-          }, 300);
-      });
-  }
+    // 点击外部关闭
+    document.getElementById('overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('overlay')) {
+            closeModal();
+        }
+    });
 
-  // 修改浮层关闭逻辑
-  function closeModal() {
-      const modal = document.querySelector('.modal');
-      modal.classList.add('modal-out');
-      setTimeout(() => {
-          document.getElementById('overlay').style.display = 'none';
-          modal.classList.remove('modal-out');
-      }, 200);
-  }
+    // 初始加载
+    function loadItems() {
+        sampleData.forEach(data => {
+            gridContainer.appendChild(createCard(data));
+        });
+    }
 
-  // 点击外部关闭
-  document.getElementById('overlay').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('overlay')) {
-          closeModal();
-      }
-  });
+    // 搜索功能
+    document.getElementById('searchInput').addEventListener('keyup', (e) => {
+        if(e.key === 'Enter') {
+            console.log('执行搜索:', e.target.value);
+        }
+    });
 
-  // 初始加载
-  function loadItems() {
-      sampleData.forEach(data => {
-          gridContainer.appendChild(createCard(data));
-      });
-  }
+    // 滚动加载
+    let loading = false;
+    window.addEventListener('scroll', () => {
+        const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
+        if (scrollTop + clientHeight >= scrollHeight - 100 && !loading) {
+            loading = true;
+            setTimeout(() => {
+                loadItems();
+                loading = false;
+            }, 1000);
+        }
+    });
 
-  // 搜索功能
-  document.getElementById('searchInput').addEventListener('keyup', (e) => {
-      if(e.key === 'Enter') {
-          console.log('执行搜索:', e.target.value);
-      }
-  });
-
-  // 滚动加载
-  let loading = false;
-  window.addEventListener('scroll', () => {
-      const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
-      if (scrollTop + clientHeight >= scrollHeight - 100 && !loading) {
-          loading = true;
-          setTimeout(() => {
-              loadItems();
-              loading = false;
-          }, 1000);
-      }
-  });
-
-  // 初始化
-  loadItems();
+    // 初始化
+    loadItems();
 </script>
 </body>
 </html>
