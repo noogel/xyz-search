@@ -84,6 +84,7 @@
         box-shadow: var(--shadow);
         overflow: hidden;
         transition: transform 0.3s;
+        cursor: pointer;
     }
 
     .card:hover {
@@ -116,12 +117,112 @@
         overflow: hidden;
     }
 
-    /* 页脚 */
-    .footer {
-        padding: 2rem 10%;
-        text-align: center;
+    /* 浮层样式 */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal {
+        background: white;
+        border-radius: var(--card-radius);
+        width: 80%;
+        max-width: 800px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 1rem;
+        background: var(--bg-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+    }
+
+    .close-btn {
+        cursor: pointer;
         color: var(--text-secondary);
-        margin-top: 3rem;
+        padding: 0.5rem;
+    }
+
+    .close-btn:hover {
+        color: var(--brand-color);
+    }
+
+    /* 详情内容 */
+    .detail-img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: var(--card-radius);
+        margin-bottom: 1rem;
+    }
+
+    .attributes-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .attribute-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn:hover {
+        border-color: var(--brand-color);
+        color: var(--brand-color);
+    }
+
+    .paragraph-list {
+        margin-top: 1rem;
+    }
+
+    .paragraph-item {
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        background: var(--bg-color);
+        border-radius: 8px;
+    }
+
+    .highlight {
+        background: #fff3b7;
+        padding: 0 2px;
     }
 
     /* 响应式处理 */
@@ -137,8 +238,12 @@
             padding: 1rem;
         }
 
-        .header {
-            padding: 1rem;
+        .modal {
+            width: 95%;
+        }
+
+        .attributes-grid {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -150,6 +255,18 @@
         .search-bar {
             flex-direction: column;
         }
+
+        .detail-img {
+            height: 200px;
+        }
+    }
+
+    /* 页脚 */
+    .footer {
+        padding: 2rem 10%;
+        text-align: center;
+        color: var(--text-secondary);
+        margin-top: 3rem;
     }
   </style>
 </head>
@@ -172,14 +289,37 @@
   <p>© 2024 畅文全索 · 探索优质内容</p>
 </footer>
 
+<!-- 浮层结构 -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span>资源详情</span>
+      <span class="close-btn" onclick="closeModal()">×</span>
+    </div>
+    <div class="modal-body" id="modalContent"></div>
+    <div class="modal-footer">
+      <span class="close-btn" onclick="closeModal()">关闭详情</span>
+    </div>
+  </div>
+</div>
+
 <script>
-  // 模拟数据
+  // 增强模拟数据
   const sampleData = Array.from({length: 12}, (_, i) => ({
       id: i,
       type: Math.random() > 0.5 ? 'text' : 'image',
       title: `搜索结果 ${i + 1}`,
-      content: '这是一段示例内容，展示搜索结果卡片的文字描述部分，保持简洁美观的排版风格。',
-      image: `https://picsum.photos/300/200?random=${i}`
+      content: '这是一段示例内容，展示搜索结果卡片的文字描述部分。',
+      image: `https://picsum.photos/300/200?random=${i}`,
+      attributes: {
+          format: Math.random() > 0.5 ? 'PDF' : 'DOCX',
+          size: `${Math.floor(Math.random() * 5000)} KB`,
+          author: `用户${String.fromCharCode(65 + i)}`,
+          created: `2024-0${Math.ceil(Math.random() * 9)}-0${Math.ceil(Math.random() * 9)}`
+      },
+      paragraphs: Array.from({length: 5}, (_, p) =>
+          `这是第${p + 1}段文本内容，包含示例文字用于演示高亮效果。关键内容可能出现在任意位置。`
+      )
   }));
 
   // 生成卡片
@@ -194,8 +334,70 @@
               <p class="card-desc">${data.content}</p>
           </div>
       `;
+      card.addEventListener('click', () => showDetail(data.id));
       return card;
   }
+
+  // 显示详情浮层
+  async function showDetail(id) {
+      const overlay = document.getElementById('overlay');
+      const modalContent = document.getElementById('modalContent');
+
+      // 模拟API请求
+      const data = await fetchDetail(id);
+
+      // 生成高亮文本（示例高亮"示例"关键词）
+      const highlighted = data.paragraphs.map(p =>
+          p.replace(/示例/g, '<span class="highlight">示例</span>')
+      );
+
+      modalContent.innerHTML = `
+          ${data.type === 'image' ?
+              `<img src="${data.image}" class="detail-img" alt="详情图片">` : ''}
+          <div class="attributes-grid">
+              ${Object.entries(data.attributes).map(([key, value]) => `
+                  <div class="attribute-item">
+                      <span>${key}</span>
+                      <span>${value}</span>
+                  </div>
+              `).join('')}
+          </div>
+          <div class="btn-group">
+              <button class="btn">下载</button>
+              <button class="btn">查看</button>
+              <button class="btn">删除</button>
+              <button class="btn">目录</button>
+          </div>
+          <div class="paragraph-list">
+              ${highlighted.map(p => `
+                  <div class="paragraph-item">${p}</div>
+              `).join('')}
+          </div>
+      `;
+
+      overlay.style.display = 'flex';
+  }
+
+  // 模拟接口请求
+  function fetchDetail(id) {
+      return new Promise(resolve => {
+          setTimeout(() => {
+              resolve(sampleData.find(item => item.id === id));
+          }, 300);
+      });
+  }
+
+  // 关闭浮层
+  function closeModal() {
+      document.getElementById('overlay').style.display = 'none';
+  }
+
+  // 点击外部关闭
+  document.getElementById('overlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('overlay')) {
+          closeModal();
+      }
+  });
 
   // 初始加载
   function loadItems() {
@@ -207,7 +409,6 @@
   // 搜索功能
   document.getElementById('searchInput').addEventListener('keyup', (e) => {
       if(e.key === 'Enter') {
-          // 实际应调用搜索API
           console.log('执行搜索:', e.target.value);
       }
   });
@@ -218,7 +419,6 @@
       const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
       if (scrollTop + clientHeight >= scrollHeight - 100 && !loading) {
           loading = true;
-          // 模拟加载更多数据
           setTimeout(() => {
               loadItems();
               loading = false;
