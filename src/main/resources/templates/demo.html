@@ -28,22 +28,148 @@
 
         /* 页眉样式 */
         .header {
-            padding: 1rem 10%;
             background: white;
             box-shadow: var(--shadow);
             position: sticky;
             top: 0;
             z-index: 100;
+            justify-content: space-between;
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1rem 10%;
         }
 
-        .header h1 {
-    <!--        color: var(&#45;&#45;brand-color);-->
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
+        /* 标题行容器 */
+        .header > h1,
+        .header > .header-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        /* 搜索栏单独行 */
+        .header > .search-bar {
+            flex: 0 0 100%; /* 强制占满整行 */
+            order: 2; /* 控制显示顺序 */
+            margin-top: 0.5rem;
+        }
+
+        /* 调整原有搜索栏样式 */
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .menu-bar {
+            display: flex;
+            gap: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 24px;
+        }
+
+        .menu-item {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .menu-item span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .menu-item:hover {
+            color: var(--brand-color);
+            transform: translateY(-1px);
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.9);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-info:hover {
+            background: white;
+        }
+
+        .username {
+            font-weight: 500;
+            color: var(--brand-color);
+        }
+
+        .logout-panel {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 0.5rem;
+            display: none;
+            min-width: 120px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .logout-btn:hover {
+            background: var(--bg-color);
+            color: var(--brand-color);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+
+            .search-bar {
+                order: 3; /* 移动端保持在最下方 */
+                margin-top: 0;
+                flex-direction: column;
+            }
+
+            .menu-bar {
+                gap: 1rem;
+                padding: 0.5rem;
+                display: none;
+            }
+
+            .menu-item span {
+                font-size: 0;
+            }
+
+            .menu-item span::before {
+                font-size: 1rem;
+            }
+
+            .username {
+                display: none;
+            }
         }
 
         /* 搜索栏 */
-        .search-bar {
+        .header > div > .search-bar {
             display: flex;
             gap: 1rem;
         }
@@ -161,12 +287,6 @@
             animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-    <!--    /* 确保所有子元素遵守圆角 */-->
-    <!--    .modal > *:first-child,-->
-    <!--    .modal > *:last-child {-->
-    <!--        border-radius: 18px 18px 0 0; /* 头部圆角 */-->
-    <!--    }-->
-
         @keyframes modalIn {
             0% {
                 transform: scale(0.9) translateY(30px);
@@ -206,7 +326,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-    <!--        border-radius: 0 0 18px 18px; /* 底部圆角 */-->
         }
 
         .modal-body {
@@ -311,7 +430,7 @@
                 grid-template-columns: 1fr;
             }
 
-            .search-bar {
+            .header > div > .search-bar {
                 flex-direction: column;
             }
 
@@ -332,6 +451,30 @@
 <body>
 <header class="header">
     <h1>畅文全索</h1>
+    <div class="header-controls">
+        <!-- 功能菜单 -->
+        <div class="menu-bar">
+            <button class="menu-item" onclick="openAIChat()">
+                <span>🗨️ AI对话</span>
+            </button>
+            <button class="menu-item" onclick="openUpload()">
+                <span>📤 上传文件</span>
+            </button>
+            <button class="menu-item" onclick="openSettings()">
+                <span>⚙️ 设置</span>
+            </button>
+        </div>
+        <!-- 登录状态 -->
+        <div class="user-menu" onmouseleave="hideLogout()">
+            <div class="user-info" onmouseenter="showLogout()">
+                <span class="username">admin</span>
+                <span class="user-icon">👤</span>
+            </div>
+            <div class="logout-panel">
+                <button class="logout-btn" onclick="logout()">登出系统</button>
+            </div>
+        </div>
+    </div>
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="输入搜索关键词...">
         <select id="fileType">
@@ -380,6 +523,26 @@
             `这是第${p + 1}段文本内容，包含示例文字用于演示高亮效果。关键内容可能出现在任意位置。`
         )
     }));
+
+    // 新增交互逻辑
+    function showLogout() {
+        document.querySelector('.logout-panel').style.display = 'block';
+    }
+
+    function hideLogout() {
+        document.querySelector('.logout-panel').style.display = 'none';
+    }
+
+    function logout() {
+        if(confirm('确定要退出登录吗？')) {
+            // 执行登出逻辑
+            window.location.reload();
+        }
+    }
+    // 菜单功能占位
+    function openAIChat() { console.log('打开AI对话') }
+    function openUpload() { console.log('打开文件上传') }
+    function openSettings() { console.log('打开系统设置') }
 
     // 生成卡片
     function createCard(data) {
