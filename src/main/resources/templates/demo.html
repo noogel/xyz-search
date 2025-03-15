@@ -124,30 +124,74 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0,0,0,0.5);
         display: none;
         justify-content: center;
         align-items: center;
         z-index: 1000;
+        background: rgba(0,0,0,0.6); /* 加深背景色 */
+        backdrop-filter: blur(5px);
     }
 
     .modal {
         background: white;
-        border-radius: var(--card-radius);
-        width: 80%;
-        max-width: 800px;
-        max-height: 90vh;
         display: flex;
         flex-direction: column;
+        max-width: none;
+        max-height: none;
+        border-radius: 18px !important; /* 强制覆盖可能冲突的样式 */
+        overflow: hidden; /* 确保内容不破坏圆角 */
+        box-shadow: 0 12px 24px rgba(0,0,0,0.2); /* 增强立体感 */
+        width: 90vw;
+        height: 90vh;
+        animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+<!--    /* 确保所有子元素遵守圆角 */-->
+<!--    .modal > *:first-child,-->
+<!--    .modal > *:last-child {-->
+<!--        border-radius: 18px 18px 0 0; /* 头部圆角 */-->
+<!--    }-->
+
+    @keyframes modalIn {
+        0% {
+            transform: scale(0.9) translateY(30px);
+            border-radius: 50px; /* 动画过程中的动态圆角 */
+            opacity: 0;
+        }
+        50% {
+            border-radius: 36px;
+        }
+        100% {
+            transform: scale(1) translateY(0);
+            border-radius: 18px; /* 最终圆角值 */
+            opacity: 1;
+        }
+    }
+
+    /* 添加关闭动画 */
+    .modal-out {
+        animation: modalOut 0.2s ease-in forwards;
+    }
+
+    @keyframes modalOut {
+        from {
+            transform: scale(1);
+            opacity: 1;
+        }
+        to {
+            transform: scale(0.95);
+            opacity: 0;
+        }
     }
 
     .modal-header,
     .modal-footer {
-        padding: 1rem;
+        padding: 0.5rem 1rem;
         background: var(--bg-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
+<!--        border-radius: 0 0 18px 18px; /* 底部圆角 */-->
     }
 
     .modal-body {
@@ -341,6 +385,7 @@
   // 显示详情浮层
   async function showDetail(id) {
       const overlay = document.getElementById('overlay');
+      overlay.style.display = 'flex';
       const modalContent = document.getElementById('modalContent');
 
       // 模拟API请求
@@ -387,9 +432,14 @@
       });
   }
 
-  // 关闭浮层
+  // 修改浮层关闭逻辑
   function closeModal() {
-      document.getElementById('overlay').style.display = 'none';
+      const modal = document.querySelector('.modal');
+      modal.classList.add('modal-out');
+      setTimeout(() => {
+          document.getElementById('overlay').style.display = 'none';
+          modal.classList.remove('modal-out');
+      }, 200);
   }
 
   // 点击外部关闭
