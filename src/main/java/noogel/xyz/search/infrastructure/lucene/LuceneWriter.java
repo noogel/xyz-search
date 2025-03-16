@@ -1,5 +1,6 @@
 package noogel.xyz.search.infrastructure.lucene;
 
+import noogel.xyz.search.infrastructure.lucene.annotation.KeyWordId;
 import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
 import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
@@ -110,9 +111,10 @@ public class LuceneWriter {
                 Class<?> declaringClass = declaredField.getType();
                 PkId pkId = declaredField.getAnnotation(PkId.class);
                 SortedId sortedId = declaredField.getAnnotation(SortedId.class);
+                KeyWordId keyWordId = declaredField.getAnnotation(KeyWordId.class);
                 declaredField.setAccessible(true);
                 Object val = declaredField.get(data);
-                convert(declaringClass, name, val, pkId, sortedId).forEach(doc::add);
+                convert(declaringClass, name, val, pkId, sortedId, keyWordId).forEach(doc::add);
                 if (Objects.nonNull(pkId)) {
                     term = new Term(name, Objects.isNull(val) ? "" : ((String) val));
                 }
@@ -157,10 +159,11 @@ public class LuceneWriter {
         }
     }
 
-    public List<Field> convert(Class<?> clazz, String name, Object value, PkId pkId, SortedId sortedId) {
+    public List<Field> convert(Class<?> clazz, String name, Object value,
+                               PkId pkId, SortedId sortedId, KeyWordId keyWordId) {
         List<Field> result = new ArrayList<>();
         if (Objects.nonNull(pkId)) {
-            TextField fd = new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
+            StringField fd = new StringField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
             result.add(fd);
         } else if (String.class.equals(clazz)) {
             if (Objects.nonNull(sortedId)) {
@@ -168,8 +171,17 @@ public class LuceneWriter {
                 SortedDocValuesField sfd = new SortedDocValuesField(sortedName, new BytesRef((Objects.isNull(value) ? "" : ((String) value)).getBytes()));
                 result.add(sfd);
             }
-            TextField fd = new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
-            result.add(fd);
+            // Lucene 字段类型决定是否支持搜索
+            // TextField：会分词并索引，适用于全文搜索。
+            // StringField：不分词，作为整体索引，适合精确匹配（如 ID、状态码）。
+            // StoredField：仅存储，不索引，无法用于搜索。
+            if (Objects.isNull(keyWordId)) {
+                TextField fd = new TextField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
+                result.add(fd);
+            } else {
+                StringField fd = new StringField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
+                result.add(fd);
+            }
         } else if (Long.class.equals(clazz)) {
             if (Objects.nonNull(sortedId)) {
                 String sortedName = String.format("%s_sorted", name);

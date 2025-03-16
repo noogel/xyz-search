@@ -26,6 +26,7 @@ import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -59,7 +60,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             String[] fields = {"resName", "content"};
             Map<String, Float> boosts = Map.of("resName", 500.F, "content", 100.F);
             MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new SmartChineseAnalyzer(STOPWORDS), boosts);
-            String searchQuery = replace(searchDto.getSearchQuery());
+            String searchQuery = QueryParser.escape(searchDto.getSearchQuery());
             Query query = parser.parse(searchQuery);
             builder.add(query, BooleanClause.Occur.MUST);
         }
@@ -71,14 +72,17 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         if (!CollectionUtils.isEmpty(searchDto.getResTypeList())) {
             BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
             for (String resType : searchDto.getResTypeList()) {
-                Term term = new Term("resType", replace(resType));
+                // Lucene 的 TermQuery 直接匹配词项，无需转义特殊字符。但需确保索引和查询的值完全一致
+                // TermQuery 默认区分大小写。如需不区分大小写，需在索引和查询阶段统一转成小写
+                // 若字段有多个值需同时匹配，使用 BooleanQuery 组合多个 TermQuery
+                Term term = new Term("resType", resType);
                 TermQuery termQuery = new TermQuery(term);
                 booleanQueryBuilder.add(termQuery, BooleanClause.Occur.SHOULD);
             }
             builder.add(booleanQueryBuilder.build(), BooleanClause.Occur.MUST);
         }
         if (!StringUtils.isEmpty(searchDto.getDirPrefix())) {
-            Term term = new Term("resDir", replace(searchDto.getDirPrefix()));
+            Term term = new Term("resDir", searchDto.getDirPrefix());
             Query resDir = new PrefixQuery(term);
             builder.add(resDir, BooleanClause.Occur.MUST);
         }
@@ -106,28 +110,19 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             Query rangeQuery = LongPoint.newRangeQuery("modifiedAt", lowerPrice, upperPrice);
             builder.add(rangeQuery, BooleanClause.Occur.MUST);
         }
+        // 若需动态控制字段是否精确匹配，可通过自定义 FieldType 实现
+        // 自定义字段类型（不分词、不存储词频）
+        // FieldType exactMatchType = new FieldType();
+        // exactMatchType.setTokenized(false);       // 不分词
+        // exactMatchType.setOmitNorms(true);        // 不存储词频
+        // exactMatchType.setIndexOptions(IndexOptions.DOCS);
+        // exactMatchType.setStored(true);           // 存储原始值
+        // exactMatchType.freeze();                  // 锁定配置
+        //
+        // // 使用自定义类型添加字段
+        // doc.add(new Field("user_id", "user_123", exactMatchType));
+        // 使用 Luke 工具 检查索引中的词项是否符合预期
         return builder.build();
-    }
-
-    private static String replace(String sq) {
-        return sq.replace("+", "\\+")
-                .replace("-", "\\-")
-                .replace("&", "\\&")
-                .replace("|", "\\|")
-                .replace("!", "\\!")
-                .replace("(", "\\(")
-                .replace(")", "\\)")
-                .replace("{", "\\{")
-                .replace("}", "\\}")
-                .replace("[", "\\[")
-                .replace("]", "\\]")
-                .replace("^", "\\^")
-                .replace("\"", "\\\"")
-                .replace("~", "\\~")
-                .replace("*", "\\*")
-                .replace("?", "\\?")
-                .replace(":", "\\:")
-                .replace("\\", "\\\\");
     }
 
     private static SortField.Type convertSortType(String field) {

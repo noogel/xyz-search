@@ -24,7 +24,7 @@ public class SearchQueryDto {
     private QueryOrderDto order;
 
     public static QueryOrderDto buildRankOrder(boolean ascOrder) {
-        return QueryOrderDto.of("rank", ascOrder);
+        return QueryOrderDto.of("resRank", ascOrder);
     }
 
     public static QueryOrderDto buildLatestOrder(boolean ascOrder) {

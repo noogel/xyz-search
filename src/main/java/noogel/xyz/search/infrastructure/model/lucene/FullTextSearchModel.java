@@ -2,6 +2,7 @@ package noogel.xyz.search.infrastructure.model.lucene;
 
 import lombok.Data;
 import noogel.xyz.search.infrastructure.lucene.LuceneDocument;
+import noogel.xyz.search.infrastructure.lucene.annotation.KeyWordId;
 import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
 import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;
 
@@ -32,12 +33,14 @@ public class FullTextSearchModel implements LuceneDocument {
     /**
      * 文件 HASH
      */
+    @KeyWordId
     private String resHash;
     /**
      * 类型
      * FILE:EPUB
      * FILE:TXT
      */
+    @KeyWordId
     private String resType;
     /**
      * 资源大小
@@ -51,6 +54,7 @@ public class FullTextSearchModel implements LuceneDocument {
     /**
      * 根据资源名称计算的分数
      */
+    @SortedId
     private Long resRank;
     /**
      * 搜索内容
@@ -59,6 +63,7 @@ public class FullTextSearchModel implements LuceneDocument {
     /**
      * 内容 HASH
      */
+    @KeyWordId
     private String contentHash;
     /**
      * 内容大小
