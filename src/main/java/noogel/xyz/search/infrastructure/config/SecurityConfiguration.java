@@ -21,12 +21,16 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         String authEnv = EnvHelper.FuncEnv.AUTH.getEnv();
         if (Objects.equals("true", authEnv)) {
-            http.authorizeHttpRequests((auth) -> auth.anyRequest().authenticated())
-                    .httpBasic(Customizer.withDefaults());
+            auth(http);
         } else {
             http.authorizeHttpRequests((auth) -> auth.anyRequest().permitAll());
         }
         return http.build();
+    }
+
+    private void auth(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests((auth) -> auth.anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults());
     }
 
     @Bean

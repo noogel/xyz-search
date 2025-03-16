@@ -14,7 +14,7 @@ public class OpenAiConfiguration {
     public OpenAiApi openAiApi() {
         return OpenAiApi.builder()
                 .baseUrl("https://api.deepseek.com")
-                .apiKey("sk-5c70854e29ee45a1b8661bc968a602a3")
+                .apiKey("sk-xxx")
                 .build();
     }
 
