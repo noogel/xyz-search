@@ -17,7 +17,7 @@ public class EsForceMergeScheduler {
      */
     @Scheduled(cron = "0 0 5 * * *")
     public void init() {
-        log.info("auto forceMerge runDelay.");
+        log.info("定时任务:自动合并索引版本");
         fullTextSearchRepo.forceMerge();
     }
 }

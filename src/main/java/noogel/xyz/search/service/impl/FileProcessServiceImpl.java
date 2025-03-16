@@ -152,7 +152,7 @@ public class FileProcessServiceImpl implements FileProcessService {
                         || StringUtils.isEmpty(toDirectory)
                         || Objects.isNull(pattern)
                         || !((new File(toDirectory)).exists())) {
-                    log.info("transferFileIfNotExist config empty or notExist.");
+                    log.info("文件收集:来源目录为空 或 目标目录为空 或 目录不存在");
                     return;
                 }
                 // 获取或创建子目录
@@ -161,14 +161,14 @@ public class FileProcessServiceImpl implements FileProcessService {
                 Optional.of(fromDirectories).orElse(Collections.emptyList()).forEach(from -> {
                     File fromDir;
                     if (!(fromDir = new File(from)).exists()) {
-                        log.info("transferFileIfNotExist fromDir notExist.");
+                        log.info("文件收集:原始目录不存在: {}", from);
                     }
                     // 拷贝文件
                     List<File> files = copyFilesFromSource(fromDir, toDir, pattern, autoDelete);
                     // 追加到数据库
                     synchronizeService.appendFiles(files);
                 });
-                log.info("transferFileIfNotExist run complete.");
+                log.info("文件收集:执行完成");
             }
         } finally {
             TRANSFER_RUNNING_COUNT.decrementAndGet();
@@ -229,9 +229,9 @@ public class FileProcessServiceImpl implements FileProcessService {
         collectToDirectory += subDir;
         if (!(toDir = new File(collectToDirectory)).exists()) {
             if (toDir.mkdir()) {
-                log.info("transferFileIfNotExist mkdir success {}.", collectToDirectory);
+                log.info("文件收集:创建目标目录成功 {}.", collectToDirectory);
             } else {
-                log.info("transferFileIfNotExist mkdir fail {}.", collectToDirectory);
+                log.error("文件收集:创建目标目录失败 {}.", collectToDirectory);
             }
         }
         return toDir;
@@ -258,7 +258,7 @@ public class FileProcessServiceImpl implements FileProcessService {
             }
         }
         // add logs
-        log.info("collectNeedFiles sourceFiles:\n{}\ncollectNeedFiles excludeFiles:\n{}",
+        log.info("计划添加文件记录:\n{}\n计划移除文件记录:\n{}",
                 sourceFiles.stream().map(String::valueOf).collect(Collectors.joining("\n")),
                 excludeFiles.stream().map(String::valueOf).collect(Collectors.joining("\n"))
         );
@@ -290,19 +290,19 @@ public class FileProcessServiceImpl implements FileProcessService {
                 String fromMD5 = MD5Helper.getMD5(sourceFile);
                 Optional<FileViewDto> fileDbDto = fileDbService.findFirstByHash(fromMD5);
                 if (fileDbDto.isPresent()) {
-                    log.info("transferFiles file exist {} md5:{}", sourceFile.getAbsolutePath(), fromMD5);
+                    log.warn("文件收集:待转移文件已存在: {} md5:{}", sourceFile.getAbsolutePath(), fromMD5);
                     continue;
                 }
                 // 拷贝文件
                 try {
                     Files.copy(sourceFile.toPath(), targetFile.toPath());
-                    log.info("transferFile ok {}", sourceFile);
+                    log.info("文件收集:完成 {}", sourceFile);
                     // 添加到回填对象
                     realTargetFiles.add(targetFile);
                     // 资源收集后自动删除
                     if (autoDelete) {
                         if (sourceFile.delete()) {
-                            log.info("delete collected file: {}", sourceFile.getAbsolutePath());
+                            log.info("文件收集:原始文件已删除: {}", sourceFile.getAbsolutePath());
                         }
                     }
                 } catch (IOException e) {

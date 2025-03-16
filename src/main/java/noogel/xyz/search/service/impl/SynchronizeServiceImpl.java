@@ -107,7 +107,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         fullTextSearchRepo.reset();
         configProperties.getApp().getIndexDirectories().forEach(t -> {
             int updateCount = fileDbService.updateDirectoryState(t.getDirectory(), FileStateEnum.VALID);
-            log.info("resetIndex dir {} count {}", t, updateCount);
+            log.info("重新索引 目录: {} 数量 {}", t, updateCount);
         });
     }
 
@@ -140,7 +140,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         List<File> appendFiles = calculateAppendFiles(fsFiles, dbFiles);
         List<FileViewDto> removeFiles = calculateRemoveFiles(fsFiles, dbFiles);
         if (!(CollectionUtils.isEmpty(appendFiles) && CollectionUtils.isEmpty(removeFiles))) {
-            log.info("processDirectory will {}\nappend:\n  {} \nremove:\n  {}",
+            log.info("计划处理目录: {}\n添加文件或目录:\n{}\n移除我呢见或目录:\n{}",
                     rootDir.getAbsolutePath(),
                     String.join("\n  ", appendFiles.stream().map(File::getAbsolutePath).toList()),
                     String.join("\n  ", removeFiles.stream().map(FileViewDto::getPath).toList()));
@@ -181,7 +181,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     }
 
     private void processFile(File subFile) {
-        log.info("processFile to db {}", subFile.getAbsolutePath());
+        log.info("追加文件到 db: {}", subFile.getAbsolutePath());
         // 检查文件夹
         if (!subFile.isFile()) {
             return;
@@ -193,12 +193,12 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     }
 
     private void removeFile(FileViewDto subFile) {
-        log.info("processTask will remove {}", subFile.getPath());
+        log.info("即将从 db 移除文件: {}", subFile.getPath());
         fileDbService.updateFileState(subFile.getFileId(), FileStateEnum.INVALID);
     }
 
     private void removeDirectory(FileViewDto subDir) {
-        log.info("processTask will remove {}", subDir.getPath());
+        log.info("即将从 db 移除目录: {}", subDir.getPath());
         fileDbService.updateDirectoryState(subDir.getPath(), FileStateEnum.INVALID);
     }
 

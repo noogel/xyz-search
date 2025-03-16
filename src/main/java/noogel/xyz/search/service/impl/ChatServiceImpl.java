@@ -75,11 +75,11 @@ public class ChatServiceImpl implements ChatService {
         String message = dto.getMessage();
         SseEmitter emitter = new SseEmitter();
         Prompt prompt = this.getRawPromptAndEditor(message);
-        log.info("fluxChat:\n{}", message);
+//        log.info("fluxChat:\n{}", message);
         ChatResponse call = chatModel.call(prompt);
         try {
             Generation result = call.getResult();
-            log.info("fluxChat result:\n{}", result.getOutput().getText());
+//            log.info("fluxChat result:\n{}", result.getOutput().getText());
             ChatResponseDto chatResponseDto = new ChatResponseDto(
                     UUID.randomUUID().toString(), result.getOutput().getText());
             emitter.send(chatResponseDto);
@@ -110,7 +110,7 @@ public class ChatServiceImpl implements ChatService {
 
     private Prompt getPrompt(String message) {
         Message systemMessage = getSystemMessage(message);
-        log.info("getPrompt system:\n{}", systemMessage.getText());
+//        log.info("getPrompt system:\n{}", systemMessage.getText());
         return new Prompt(List.of(systemMessage), chatOptions);
     }
 

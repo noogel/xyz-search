@@ -52,7 +52,7 @@ public class IndexingServiceImpl implements IndexingService {
         while (true) {
             try {
                 List<FileResReadDto> waitReadDtoList = fileDbService.scanFileResByState(FileStateEnum.VALID);
-                waitReadDtoList.forEach(this::indexFileToEs);
+                waitReadDtoList.forEach(this::indexFile);
                 if (waitReadDtoList.isEmpty()) {
                     Thread.sleep(configProperties.getRuntime().getDefaultSleepMs());
                 } else {
@@ -72,7 +72,7 @@ public class IndexingServiceImpl implements IndexingService {
         }
     }
 
-    private void indexFileToEs(FileResReadDto t) {
+    private void indexFile(FileResReadDto t) {
         try {
             // 解析子文件
             extensionService.findParser(t.calFilePath())
@@ -128,7 +128,7 @@ public class IndexingServiceImpl implements IndexingService {
         while (true) {
             try {
                 List<FileResReadDto> waitDtoList = fileDbService.scanFileResByState(FileStateEnum.INVALID);
-                waitDtoList.forEach(this::removeEsAndFile);
+                waitDtoList.forEach(this::removeIndexAndFile);
                 if (waitDtoList.isEmpty()) {
                     Thread.sleep(configProperties.getRuntime().getDefaultSleepMs());
                 } else {
@@ -148,8 +148,8 @@ public class IndexingServiceImpl implements IndexingService {
         }
     }
 
-    private void removeEsAndFile(FileResReadDto t) {
-        log.info("removeEsAndFile {}", t.calFilePath());
+    private void removeIndexAndFile(FileResReadDto t) {
+        log.info("移除全文索引和 db 记录 {}", t.calFilePath());
         try {
             // 清理ES
             fullTextSearchRepo.delete(t.getResId(), () -> {

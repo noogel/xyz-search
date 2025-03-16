@@ -77,7 +77,7 @@ public class ImageExtensionPointServiceImpl extends AbstractExtensionPointServic
                 resp.append(" ");
                 resp.append(text);
             }
-            log.info("process image {}", resReadDto.calFilePath());
+//            log.info("process image {}", resReadDto.calFilePath());
             return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", resp.toString())));
         } catch (Exception ex) {
             log.error("ImageExtensionPointServiceImpl error {}", path, ex);

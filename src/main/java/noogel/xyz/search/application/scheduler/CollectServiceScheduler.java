@@ -43,7 +43,7 @@ public class CollectServiceScheduler {
             if (errorRecords.isEmpty()) {
                 break;
             }
-            log.info("asyncCleanDbErrorFiles {}", errorRecords.size());
+            log.info("定时任务处理异常 db 记录: {}", errorRecords.size());
             // 恢复记录状态
             errorRecords.forEach(t -> fileDbService.updateFileState(t.getFieldId(), FileStateEnum.VALID));
         }

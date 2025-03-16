@@ -184,13 +184,15 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
      * 批量处理数据
      */
     private void batchUpsert(List<FullTextSearchModel> models) {
-        log.info("批量添加 {} 条数据：\n{}", models.size(), models.stream()
-                .map(FullTextSearchModel::calculateAbsolutePath).collect(Collectors.joining("\n")));
+        log.info("start 批量添加 {} 条数据到 lucene", models.size());
+//        log.info("批量添加 {} 条数据：\n{}", models.size(), models.stream()
+//                .map(FullTextSearchModel::calculateAbsolutePath).collect(Collectors.joining("\n")));
         for (FullTextSearchModel model : models) {
             luceneWriter.update(model);
         }
         // 批量处理完成后提交更改
         luceneWriter.commit();
+        log.info("end 批量添加 {} 条数据到 lucene", models.size());
     }
 
     /**
