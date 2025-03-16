@@ -3,8 +3,9 @@ package noogel.xyz.search.infrastructure.config;
 import noogel.xyz.search.infrastructure.utils.EnvHelper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -29,8 +30,13 @@ public class SecurityConfiguration {
     }
 
     private void auth(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((auth) -> auth.anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults());
+        http
+                // 配置表单登录
+                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
+                // 配置登出
+                .logout(LogoutConfigurer::permitAll)
+                // 配置请求授权
+                .authorizeHttpRequests((auth) -> auth.anyRequest().authenticated());
     }
 
     @Bean
