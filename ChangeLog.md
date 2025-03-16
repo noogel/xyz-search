@@ -7,6 +7,7 @@ CHANGELOG
 
 * 全文搜索从 elasticSearch 切换为本地 lucene
 * 新增 AI 对话，支持基于本地数据进行对话，支持 ollama 接口对接
+* 增加 spring security 登陆登出页面
 
 问题修复：
 
