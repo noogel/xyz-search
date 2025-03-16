@@ -16,7 +16,6 @@ import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.lucene.*;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
-import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessor;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessorFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -129,6 +128,24 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
                 .replace("?", "\\?")
                 .replace(":", "\\:")
                 .replace("\\", "\\\\");
+    }
+
+    private static SortField.Type convertSortType(String field) {
+        try {
+            Field declaredField = FullTextSearchModel.class.getDeclaredField(field);
+            Class<?> declaringClass = declaredField.getType();
+            if (String.class.equals(declaringClass)) {
+                return SortField.Type.STRING;
+            } else if (Integer.class.equals(declaringClass)) {
+                return SortField.Type.INT;
+            } else if (Long.class.equals(declaringClass)) {
+                return SortField.Type.LONG;
+            } else {
+                throw new RuntimeException("未知的类型");
+            }
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @PostConstruct
@@ -276,24 +293,6 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             resultDto.setSize(totalHitsListPair.getKey());
             return resultDto;
         } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static SortField.Type convertSortType(String field) {
-        try {
-            Field declaredField = FullTextSearchModel.class.getDeclaredField(field);
-            Class<?> declaringClass = declaredField.getType();
-            if (String.class.equals(declaringClass)) {
-                return SortField.Type.STRING;
-            } else if (Integer.class.equals(declaringClass)) {
-                return SortField.Type.INT;
-            } else if (Long.class.equals(declaringClass)) {
-                return SortField.Type.LONG;
-            } else {
-                throw new RuntimeException("未知的类型");
-            }
-        } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }

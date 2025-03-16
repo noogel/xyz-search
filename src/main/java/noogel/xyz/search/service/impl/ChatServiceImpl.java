@@ -131,7 +131,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private List<String> fixedHighlights(List<String> highlights) {
-        return highlights.stream().map(t-> {
+        return highlights.stream().map(t -> {
             List<String> temps = Arrays.stream(t.split("。")).toList();
             return String.join("。", temps.subList(1, temps.size() - 1)) + "。";
         }).collect(Collectors.toList());

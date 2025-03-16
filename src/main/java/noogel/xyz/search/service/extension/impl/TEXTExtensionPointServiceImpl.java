@@ -1,5 +1,6 @@
 package noogel.xyz.search.service.extension.impl;
 
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
@@ -11,7 +12,6 @@ import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Nullable;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;

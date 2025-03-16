@@ -3,6 +3,7 @@ package noogel.xyz.search.service.extension.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.Resource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,6 @@ import noogel.xyz.search.infrastructure.utils.HttpClient;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
