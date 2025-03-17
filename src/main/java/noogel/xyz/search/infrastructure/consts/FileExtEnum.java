@@ -16,6 +16,8 @@ public enum FileExtEnum {
     TXT,
     PDF,
     MP4,
+    DOCX,
+    DOC,
     AVI,
     MKV,
     JPEG,

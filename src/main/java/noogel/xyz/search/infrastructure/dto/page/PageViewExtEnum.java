@@ -36,6 +36,8 @@ public enum PageViewExtEnum {
     TIFF(true, "/file/view/%s"),
     HTM(false, "/file/view/%s"),
     HEIF(false, null),
+    DOCX(false, null),
+    DOC(false, null),
     HEIC(false, null),
     MOBI(false, null),
     AZW3(false, null),

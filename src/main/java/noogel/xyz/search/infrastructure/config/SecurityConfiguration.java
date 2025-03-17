@@ -14,15 +14,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-//import java.net.URLEncoder;
-//import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Configuration
 public class SecurityConfiguration {
     // 配置 Basic 认证（API 接口）
+    // 高优先级：处理 /opds/** 和 /opds
     @Bean
-    @Order(Integer.MAX_VALUE - 1)
+    @Order(1) // 数值越小，优先级越高
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         String authEnv = EnvHelper.FuncEnv.AUTH.getEnv();
         if (Objects.equals("true", authEnv)) {
@@ -30,21 +29,24 @@ public class SecurityConfiguration {
                     .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                     .httpBasic(httpBasic -> { });
         } else {
-            http.authorizeHttpRequests((auth) -> auth.anyRequest().permitAll());
-
+            http.securityMatcher("/opds/**", "/opds")
+                    .authorizeHttpRequests((auth) -> auth.anyRequest().permitAll());
         }
         return http.build();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Order(2) // 数值越大，优先级越低
+    public SecurityFilterChain pageFilterChain(HttpSecurity http) throws Exception {
         String authEnv = EnvHelper.FuncEnv.AUTH.getEnv();
         if (Objects.equals("true", authEnv)) {
-            http.formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
+            http.securityMatcher("/**")
+                    .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
                     .logout(LogoutConfigurer::permitAll)
                     .authorizeHttpRequests((auth) -> auth.anyRequest().authenticated());
         } else {
-            http.authorizeHttpRequests((auth) -> auth.anyRequest().permitAll());
+            http.securityMatcher("/**")
+                    .authorizeHttpRequests((auth) -> auth.anyRequest().permitAll());
         }
         return http.build();
     }
