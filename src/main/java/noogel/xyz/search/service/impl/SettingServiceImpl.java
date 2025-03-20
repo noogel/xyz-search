@@ -60,9 +60,6 @@ public class SettingServiceImpl implements SettingService {
         configProperties.getBase().setPassword(cfg.getPassword());
         configProperties.overrideToFile();
 
-        // 更新 es client bean
-        // elasticsearchConfiguration.reloadClient();
-
         // 更新 密码
         if (updateUserPass) {
             updateUserPassword();

@@ -140,10 +140,12 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         List<File> appendFiles = calculateAppendFiles(fsFiles, dbFiles);
         List<FileViewDto> removeFiles = calculateRemoveFiles(fsFiles, dbFiles);
         if (!(CollectionUtils.isEmpty(appendFiles) && CollectionUtils.isEmpty(removeFiles))) {
-            log.info("计划处理目录: {}\n添加文件或目录:\n{}\n移除我呢见或目录:\n{}",
+            log.info("计划处理目录: {}\n添加目录:\n{}\n移除目录:\n{}",
                     rootDir.getAbsolutePath(),
-                    String.join("\n  ", appendFiles.stream().map(File::getAbsolutePath).toList()),
-                    String.join("\n  ", removeFiles.stream().map(FileViewDto::getPath).toList()));
+                    String.join("\n  ", appendFiles.stream().filter(File::isDirectory)
+                            .map(File::getAbsolutePath).toList()),
+                    String.join("\n  ", removeFiles.stream().filter(FileViewDto::isDirectory)
+                            .map(FileViewDto::getPath).toList()));
         }
         // 按照文件和目录分别删除
         for (FileViewDto t : removeFiles) {
