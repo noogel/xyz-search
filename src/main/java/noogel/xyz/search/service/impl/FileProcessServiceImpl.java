@@ -152,7 +152,7 @@ public class FileProcessServiceImpl implements FileProcessService {
                         || StringUtils.isEmpty(toDirectory)
                         || Objects.isNull(pattern)
                         || !((new File(toDirectory)).exists())) {
-                    log.info("文件收集:来源目录为空 或 目标目录为空 或 目录不存在");
+                    log.info("文件收集:来源目录为空 或 目标目录为空 或 目录不存在: \n{}", JsonHelper.toJson(itemList.get(i)));
                     return;
                 }
                 // 获取或创建子目录

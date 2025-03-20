@@ -50,6 +50,7 @@ public class DirectoryUpdateListener {
         List<String> willCheckDirectories = new ArrayList<>(newApp.excludesDirectories());
         Optional.ofNullable(newApp.getUploadFileDirectory()).ifPresent(willCheckDirectories::add);
         Optional.ofNullable(newApp.getMarkDeleteDirectory()).ifPresent(willCheckDirectories::add);
+        newApp.getCollectDirectories().forEach(l -> willCheckDirectories.add(l.getTo()));
         // 创建目录
         for (String willCheckDirectory : willCheckDirectories) {
             if (StringUtils.isNotEmpty(willCheckDirectory)) {
