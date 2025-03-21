@@ -110,9 +110,15 @@ mvn spring-boot:run
 # 或使用JAR包启动
 java -jar xyz-search-1.2.1.jar
 
+# 默认账号
+xyz
+# 默认密码
+search
+
 # 访问Web界面
 http://localhost:8081
 ```
+
 
 ### 使用示例
 
