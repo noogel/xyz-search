@@ -1,6 +1,6 @@
-# xyz-search
-
 <div align="center">
+
+<h1>xyz-search👋</h1>
 
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Docker Pulls](https://img.shields.io/docker/pulls/noogel/xyz-search.svg?style=flat-square)](https://hub.docker.com/r/noogel/xyz-search)
@@ -28,19 +28,14 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统，支持多�
 
 系统专为个人知识管理、企业文档搜索和数字图书馆而设计，可以轻松处理从几千到数十万的文档集合。无论是管理个人电子书库，还是构建企业级文档检索平台，xyz-search都能满足您的需求。
 
-### 🎮 在线演示
-
-*即将上线*
-
 ## ✨ 主要特性
 
 ### 📄 多格式文档支持
 * 支持PDF、Office文档等多种格式
-* 支持电子书（epub）识别和索引
+* 支持电子书内容识别和索引
 * 支持图片内容识别
 * 支持HTML和纯文本文件
-* 支持视频索引（仅文件名，内容暂未支持），和预览
-* 支持多级目录结构
+* 支持视频 metadata 索引和预览
 
 ### 🔎 高性能搜索引擎
 * 基于Lucene的高效索引和检索
@@ -106,18 +101,6 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统，支持多�
 
 ## 🚀 快速开始
 
-### Maven依赖
-
-在您的项目中添加以下依赖：
-
-```xml
-<dependency>
-    <groupId>noogel.xyz</groupId>
-    <artifactId>xyz-search</artifactId>
-    <version>1.2.1</version>
-</dependency>
-```
-
 ### 启动服务
 
 ```bash
@@ -160,7 +143,7 @@ curl "http://localhost:8081/api/search?q=关键词&limit=50"
 **3. 智能聊天**
 ```bash
 # 基于文档的对话
-curl "http://localhost:8081/chat/stream?message=请找出关于spring的文档&resId=123456"
+curl "http://localhost:8081/chat/stream?message=请找出关于spring的文档"
 
 # 基于搜索结果的问答
 curl -X POST -H "Content-Type: application/json" \
@@ -170,72 +153,85 @@ curl -X POST -H "Content-Type: application/json" \
 
 ## 🔧 配置说明
 
-主要配置项在`application.yml`中:
+启动服务后，在页面修改配置：
 
-```yaml
-server:
-  port: 8081
-
-spring:
-  # 数据源配置
-  datasource:
-    url: jdbc:sqlite:${xyz.search.data-path}/db/xyz-search.db
-    driver-class-name: org.sqlite.JDBC
-  
-  # JPA配置
-  jpa:
-    hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.community.dialect.SQLiteDialect
-  
-  # 大模型配置
-  ai:
-    ollama:
-      base-url: http://localhost:11434
-      model: llama3
-    openai:
-      api-key: your-api-key
-      model: gpt-4o
-
-xyz:
-  search:
-    # 索引路径
-    index-path: /path/to/index
-    # 数据路径
-    data-path: /path/to/data
-    # 文件路径
-    file-path: /path/to/files
-    # OPDS配置
-    opds-directory: /path/to/opds
-    # 索引线程数
-    thread-pool-size: 4
-    # 定时任务配置
-    scheduler:
-      enabled: true
-      cron: "0 0 2 * * ?"  # 每天凌晨2点
-```
-
-### 进阶配置
-
-**自定义分词配置**
-
-```yaml
-xyz:
-  search:
-    analyzer:
-      type: smart_cn  # 使用中文分词
-      custom-dict: /path/to/dict.txt  # 自定义词典
-```
-
-**搜索结果优化**
-
-```yaml
-xyz:
-  search:
-    result:
-      highlight: true  # 启用高亮
-      snippet-length: 200  # 摘要长度
-      max-results: 100  # 最大结果数
+```json5
+{
+  "indexDirectories": [
+    {
+      // 索引主目录，支持多个
+      "directory": "/homes/xxx/XyzSearchTestData",
+      "excludesDirectories": [
+        // 支持排除特定目录，需要在主目录下
+        "/homes/xxx/XyzSearchTestData/exclude"
+      ],
+      // 排除索引的文件类型
+      "excludeFileProcessClass": []
+    }
+  ],
+  // 自动收集文件
+  "collectDirectories": [
+    {
+      "fromList": [
+        // 源目录，支持多个
+        "/Users/xyz/Downloads/collect"
+      ],
+      // 目标目录
+      "to": "/homes/xxx/XyzSearchTestData/collect",
+      // 源文件格式筛选正则
+      "filterRegex": "\\.(pdf|PDF|epub|EPUB|docx|DOCX)",
+      // 收集文件后是否删除源文件
+      "autoDelete": true
+    }
+  ],
+  // opds 根目录，建议设置为 calibre 主目录
+  "opdsDirectory": "/homes/xxx/XyzSearchTestData",
+  // 主动上传文件目录
+  "uploadFileDirectory": "/homes/xxx/XyzSearchTestData/upload",
+  // 标记删除文件暂存目录
+  "markDeleteDirectory": "/homes/xxx/XyzSearchTestData/exclude/deleted",
+  // 服务访问邮件通知配置
+  "notifyEmail": {
+    "senderEmail": null,
+    "emailHost": null,
+    "emailPort": null,
+    "emailPass": null,
+    "receivers": []
+  },
+  // 文件 OCR 服务配置
+  "paddleOcr": {
+    "url": null,
+    "timeout": 10000
+  },
+  // 文件详情页外部搜索链接配置
+  "linkItems": [
+    {
+      "desc": "豆瓣",
+      "searchUrl": "https://m.douban.com/search/?query={query}"
+    },
+    {
+      "desc": "京东",
+      "searchUrl": "https://so.m.jd.com/ware/search.action?keyword={query}"
+    },
+    {
+      "desc": "谷歌",
+      "searchUrl": "https://www.google.com/search?q={query}"
+    }
+  ],
+  // AI 对话搜索配置，支持对接 Ollama
+  "chat": {
+    "enable": false,
+    "ollama": {
+      "baseUrl": "http://192.168.124.101:11434",
+      "chatModel": "deepseek-r1:1.5b",
+      "chatOptionNumCtx": "4096",
+      "chatOptionTemperature": "1.0",
+      "chatOptionNumPredict": "10000",
+      "embeddingAdditionalModels": [],
+      "pullModelStrategy": "when_missing"
+    }
+  }
+}
 ```
 
 ## 🐳 Docker部署
