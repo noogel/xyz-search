@@ -3,11 +3,11 @@
 <div align="center">
 <img src="https://via.placeholder.com/150" alt="xyz-search logo" width="150px">
 
-[![Maven Central](https://img.shields.io/maven-central/v/noogel.xyz/xyz-search.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/noogel.xyz/xyz-search/)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Docker Pulls](https://img.shields.io/docker/pulls/noogel/xyz-search.svg?style=flat-square)](https://hub.docker.com/r/noogel/xyz-search)
+[![Version](https://img.shields.io/badge/version-1.2.1-blue.svg?style=flat-square)](https://github.com/noogel/xyz-search/releases)
 
-**一个强大的全文搜索与智能检索系统**
+**一个强大的全文搜索与智能检索系统 | 让数据检索更智能、更简单**
 </div>
 
 ## 📚 目录
@@ -19,12 +19,15 @@
 * [🔧 配置说明](#-配置说明)
 * [🐳 Docker部署](#-docker部署)
 * [📊 开发计划](#-开发计划)
+* [💬 常见问题](#-常见问题)
 * [👥 贡献指南](#-贡献指南)
 * [📄 许可证](#-许可证)
 
 ## 💡 项目介绍
 
-xyz-search是一个基于Spring Boot和Lucene的全文搜索系统,支持多种文件格式的索引和搜索。它提供了简单易用的API和Web界面,可以帮助用户快速构建全文搜索应用。通过集成Spring AI功能,支持智能搜索和内容分析,为用户提供更精准的搜索体验。
+xyz-search是一个基于Spring Boot和Lucene的全文搜索系统，支持多种文件格式的索引和搜索。它提供了简单易用的API和Web界面，可以帮助用户快速构建全文搜索应用。通过集成Spring AI功能，支持智能搜索和内容分析，为用户提供更精准的搜索体验。
+
+系统专为个人知识管理、企业文档搜索和数字图书馆而设计，可以轻松处理从几千到数十万的文档集合。无论是管理个人电子书库，还是构建企业级文档检索平台，xyz-search都能满足您的需求。
 
 ### 🎮 在线演示
 
@@ -33,29 +36,42 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统,支持多种�
 ## ✨ 主要特性
 
 ### 📄 多格式文档支持
-* 支持PDF、Office文档(Word、Excel、PowerPoint)等多种格式
-* 支持图片内容识别和索引
+* 支持PDF、Office文档等多种格式
+* 支持电子书（epub）识别和索引
+* 支持图片内容识别
 * 支持HTML和纯文本文件
+* 支持视频索引（仅文件名，内容暂未支持），和预览
+* 支持多级目录结构
 
 ### 🔎 高性能搜索引擎
 * 基于Lucene的高效索引和检索
 * 支持中文分词和智能检索
 * 实时索引更新和搜索结果优化
+* 支持标签和元数据搜索
+* 支持文件类型和大小过滤
+* 支持搜索结果高亮显示
 
 ### 🤖 AI增强能力
-* 集成Spring AI,支持智能搜索
+* 集成Spring AI，支持智能搜索
 * 内容理解和语义分析
 * 支持对话式搜索体验
+* 集成OpenAI和本地Ollama模型
+* 文档内容智能总结
+* 搜索结果智能排序
 
 ### 📚 电子书管理
-* 支持OPDS协议,方便电子书管理
+* 支持OPDS协议，方便电子书管理
 * 提供格式转换和阅读功能
 * 支持电子书元数据提取和管理
+* 兼容主流电子书阅读器
+* 支持封面和目录索引
 
 ### 💻 易用的界面与API
 * 简洁现代的Web界面
 * 完整的RESTful API
 * 支持自定义主题和布局
+* 移动端自适应设计
+* 丰富的文件预览功能
 
 ## 🔍 系统架构
 
@@ -91,11 +107,26 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统,支持多种�
 
 ## 🚀 快速开始
 
+### Maven依赖
+
+在您的项目中添加以下依赖：
+
+```xml
+<dependency>
+    <groupId>noogel.xyz</groupId>
+    <artifactId>xyz-search</artifactId>
+    <version>1.2.1</version>
+</dependency>
+```
+
 ### 启动服务
 
 ```bash
 # 使用Maven启动
 mvn spring-boot:run
+
+# 或使用JAR包启动
+java -jar xyz-search-1.2.1.jar
 
 # 访问Web界面
 http://localhost:8081
@@ -105,18 +136,37 @@ http://localhost:8081
 
 **1. 索引文件**
 ```bash
+# 重置索引
 curl http://localhost:8081/admin/es/index/reset
+
+# 同步数据
 curl http://localhost:8081/admin/es/data/sync
+
+# 指定目录索引
+curl "http://localhost:8081/admin/es/data/sync?dir=/path/to/documents"
 ```
 
 **2. 搜索文件**
 ```bash
+# 基本搜索
 curl "http://localhost:8081/api/search?q=关键词"
+
+# 按类型搜索
+curl "http://localhost:8081/api/search?q=关键词&resType=pdf,doc"
+
+# 限制结果数量
+curl "http://localhost:8081/api/search?q=关键词&limit=50"
 ```
 
 **3. 智能聊天**
 ```bash
+# 基于文档的对话
 curl "http://localhost:8081/chat/stream?message=请找出关于spring的文档&resId=123456"
+
+# 基于搜索结果的问答
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"message":"这个项目的主要功能是什么?", "resId":"all"}' \
+  http://localhost:8081/chat/stream
 ```
 
 ## 🔧 配置说明
@@ -128,16 +178,65 @@ server:
   port: 8081
 
 spring:
+  # 数据源配置
+  datasource:
+    url: jdbc:sqlite:${xyz.search.data-path}/db/xyz-search.db
+    driver-class-name: org.sqlite.JDBC
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+  
+  # 大模型配置
   ai:
     ollama:
       base-url: http://localhost:11434
+      model: llama3
     openai:
       api-key: your-api-key
+      model: gpt-4o
 
 xyz:
   search:
+    # 索引路径
     index-path: /path/to/index
+    # 数据路径
     data-path: /path/to/data
+    # 文件路径
+    file-path: /path/to/files
+    # OPDS配置
+    opds-directory: /path/to/opds
+    # 索引线程数
+    thread-pool-size: 4
+    # 定时任务配置
+    scheduler:
+      enabled: true
+      cron: "0 0 2 * * ?"  # 每天凌晨2点
+```
+
+### 进阶配置
+
+**自定义分词配置**
+
+```yaml
+xyz:
+  search:
+    analyzer:
+      type: smart_cn  # 使用中文分词
+      custom-dict: /path/to/dict.txt  # 自定义词典
+```
+
+**搜索结果优化**
+
+```yaml
+xyz:
+  search:
+    result:
+      highlight: true  # 启用高亮
+      snippet-length: 200  # 摘要长度
+      max-results: 100  # 最大结果数
 ```
 
 ## 🐳 Docker部署
@@ -185,6 +284,39 @@ docker run -d --restart=always --name xyzSearch --network xyz-bridge-net -p 8081
 用户名/xyz-search:1.2.1
 ```
 
+### Docker Compose部署
+
+创建`docker-compose.yml`文件：
+
+```yaml
+version: '3'
+services:
+  xyz-search:
+    image: noogel/xyz-search:1.2.1
+    container_name: xyzSearch
+    restart: always
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./searchData:/usr/share/xyz-search/data
+      - ./share:/data/share
+    environment:
+      - DEPLOY_ENV=docker
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    networks:
+      - xyz-net
+
+networks:
+  xyz-net:
+    driver: bridge
+```
+
+启动服务：
+
+```bash
+docker-compose up -d
+```
+
 ### 环境变量
 
 ```bash
@@ -193,17 +325,39 @@ docker run -d --restart=always --name xyzSearch --network xyz-bridge-net -p 8081
 
 # 部署环境
 DEPLOY_ENV=docker
+
+# JVM参数
+JAVA_OPTS=-Xms256m -Xmx512m
+
+# 日志级别
+LOG_LEVEL=INFO
 ```
+
+## 💬 常见问题
+
+**Q: 如何修改默认端口?**
+A: 在application.yml中修改server.port属性，或在启动命令中添加`--server.port=新端口`参数。
+
+**Q: 如何更新索引?**
+A: 使用`curl http://localhost:8081/admin/es/data/sync`命令，或在Web界面中点击"更新索引"按钮。
+
+**Q: 支持哪些文件格式?**
+A: 支持PDF、Word、Excel、PowerPoint、TXT、HTML、EPUB以及常见图片格式等。
+
+**Q: 如何集成到现有系统?**
+A: 可以通过RESTful API或将xyz-search作为依赖添加到项目中进行集成。
 
 ## 📊 开发计划
 
-- [ ] 支持更多文件格式
+- [ ] 支持音频内容识别与索引
 - [ ] 优化搜索性能
-- [ ] 添加更多AI功能
-- [ ] 改进Web界面
-- [ ] 添加用户认证
+- [ ] 添加更多AI模型支持
+- [ ] 改进Web界面，提供更丰富的主题
+- [ ] 添加用户认证和权限管理
 - [ ] 开发移动端应用
 - [ ] 优化中文分词效果
+- [ ] 支持多语言搜索
+- [ ] 添加搜索结果聚合功能
 
 ## 👥 贡献指南
 
@@ -211,6 +365,12 @@ DEPLOY_ENV=docker
 2. 新建特性分支
 3. 提交代码
 4. 新建 Pull Request
+
+我们欢迎各种形式的贡献，包括但不限于：
+- 新功能开发
+- Bug修复
+- 文档改进
+- 测试用例编写
 
 ## 📄 许可证
 
