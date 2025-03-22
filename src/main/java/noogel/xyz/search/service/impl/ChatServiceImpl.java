@@ -1,34 +1,35 @@
 package noogel.xyz.search.service.impl;
 
-import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
-import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
-import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
-import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
-import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
-import noogel.xyz.search.service.ChatService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.Generation;
-import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.prompt.SystemPromptTemplate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import reactor.core.publisher.Flux;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.config.OllamaClient;
+import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
+import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
+import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
+import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
+import noogel.xyz.search.service.ChatService;
+import reactor.core.publisher.Flux;
 
 @Service
 @Slf4j
@@ -38,22 +39,34 @@ public class ChatServiceImpl implements ChatService {
     private org.springframework.core.io.Resource qaSystemPromptResource;
     @Value("classpath:/ai/prompts/system-generic.st")
     private org.springframework.core.io.Resource chatbotSystemPromptResource;
-    @Value("classpath:/ai/prompts/system-stuff-editor.st")
-    private org.springframework.core.io.Resource chatbotEditorSystemPromptResource;
 
     @Resource
-    private ChatModel chatModel;
-    @Resource
-    private ChatOptions chatOptions;
+    private OllamaClient ollamaClient;
     @Resource
     private FullTextSearchRepo fullTextSearchRepo;
+    @Resource
+    private ConfigProperties configProperties;
 
     @Override
     public SseEmitter sseEmitterChatStream(ChatRequestDto dto) {
-        String message = dto.getMessage();
         SseEmitter emitter = new SseEmitter();
+
+        // 检查 Ollama 服务是否开启
+        if (!configProperties.getApp().getChat().isEnable()) {
+            try {
+                emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), "ollama 未开启"));
+                emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), ""));
+                emitter.complete();
+                return emitter;
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+                return emitter;
+            }
+        }
+
+        String message = dto.getMessage();
         Prompt prompt = this.getRawPrompt(message);
-        chatModel.stream(prompt)
+        ollamaClient.getChatModel().stream(prompt)
                 .subscribe(
                         chatResponse -> {
                             try {
@@ -65,21 +78,34 @@ public class ChatServiceImpl implements ChatService {
                             }
                         },
                         emitter::completeWithError,
-                        emitter::complete
-                );
+                        emitter::complete);
         return emitter;
     }
 
     @Override
     public SseEmitter sseEmitterChat(ChatRequestDto dto) {
-        String message = dto.getMessage();
         SseEmitter emitter = new SseEmitter();
+
+        // 检查 Ollama 服务是否开启
+        if (!configProperties.getApp().getChat().isEnable()) {
+            try {
+                emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), "ollama 未开启"));
+                emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), ""));
+                emitter.complete();
+                return emitter;
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+                return emitter;
+            }
+        }
+
+        String message = dto.getMessage();
         Prompt prompt = this.getRawPromptAndEditor(message);
-//        log.info("fluxChat:\n{}", message);
-        ChatResponse call = chatModel.call(prompt);
+        // log.info("fluxChat:\n{}", message);
+        ChatResponse call = ollamaClient.getChatModel().call(prompt);
         try {
             Generation result = call.getResult();
-//            log.info("fluxChat result:\n{}", result.getOutput().getText());
+            // log.info("fluxChat result:\n{}", result.getOutput().getText());
             ChatResponseDto chatResponseDto = new ChatResponseDto(
                     UUID.randomUUID().toString(), result.getOutput().getText());
             emitter.send(chatResponseDto);
@@ -89,29 +115,33 @@ public class ChatServiceImpl implements ChatService {
         return emitter;
     }
 
-
     @Override
     public Flux<ChatResponse> fluxChatStream(ChatRequestDto dto) {
+        // 检查 Ollama 服务是否开启
+        if (!configProperties.getApp().getChat().isEnable()) {
+            return Flux.error(new RuntimeException("ollama 未开启"));
+        }
+
         String message = dto.getMessage();
         Prompt prompt = getPrompt(message);
-        return chatModel.stream(prompt);
+        return ollamaClient.getChatModel().stream(prompt);
     }
 
     private Prompt getRawPrompt(String message) {
         UserMessage userMessage = new UserMessage(message);
-        return new Prompt(List.of(userMessage), chatOptions);
+        return new Prompt(List.of(userMessage), ollamaClient.getOllamaOptions());
     }
 
     private Prompt getRawPromptAndEditor(String message) {
         UserMessage userMessage = new UserMessage(message);
-        SystemMessage systemMessage = new SystemMessage(this.chatbotEditorSystemPromptResource);
-        return new Prompt(List.of(systemMessage, userMessage), chatOptions);
+        SystemMessage systemMessage = new SystemMessage(this.qaSystemPromptResource);
+        return new Prompt(List.of(systemMessage, userMessage), ollamaClient.getOllamaOptions());
     }
 
     private Prompt getPrompt(String message) {
         Message systemMessage = getSystemMessage(message);
-//        log.info("getPrompt system:\n{}", systemMessage.getText());
-        return new Prompt(List.of(systemMessage), chatOptions);
+        // log.info("getPrompt system:\n{}", systemMessage.getText());
+        return new Prompt(List.of(systemMessage), ollamaClient.getOllamaOptions());
     }
 
     private Message getSystemMessage(String query) {

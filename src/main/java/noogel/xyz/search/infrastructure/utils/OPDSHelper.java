@@ -1,22 +1,39 @@
 package noogel.xyz.search.infrastructure.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.rometools.rome.feed.synd.*;
-import jakarta.annotation.Nullable;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.consts.BaseConsts;
-import noogel.xyz.search.infrastructure.dto.OPDSResMetaDataDto;
-import noogel.xyz.search.infrastructure.dto.UrlDto;
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.rometools.rome.feed.synd.SyndContent;
+import com.rometools.rome.feed.synd.SyndContentImpl;
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndEntryImpl;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndFeedImpl;
+import com.rometools.rome.feed.synd.SyndLink;
+import com.rometools.rome.feed.synd.SyndLinkImpl;
+import com.rometools.rome.feed.synd.SyndPerson;
+import com.rometools.rome.feed.synd.SyndPersonImpl;
+
+import jakarta.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.consts.BaseConsts;
+import noogel.xyz.search.infrastructure.dto.OPDSResMetaDataDto;
+import noogel.xyz.search.infrastructure.dto.UrlDto;
 
 @Slf4j
 public class OPDSHelper {
@@ -48,10 +65,10 @@ public class OPDSHelper {
         startLink.setType(BaseConsts.APPLICATION_ATOM_XML_FEED_CATALOG);
         startLink.setHref(url.getRequestUrl());
 
-//        SyndLink selfLink = new SyndLinkImpl();
-//        selfLink.setRel("self");
-//        selfLink.setType(BaseConsts.APPLICATION_ATOM_XML_FEED_CATALOG);
-//        selfLink.setHref(url.getRequestUrl());
+        // SyndLink selfLink = new SyndLinkImpl();
+        // selfLink.setRel("self");
+        // selfLink.setType(BaseConsts.APPLICATION_ATOM_XML_FEED_CATALOG);
+        // selfLink.setHref(url.getRequestUrl());
 
         SyndLink searchLink = new SyndLinkImpl();
         searchLink.setRel("search");
@@ -61,7 +78,7 @@ public class OPDSHelper {
 
         ArrayList<SyndLink> objects = new ArrayList<>();
         objects.add(startLink);
-//        objects.add(selfLink);
+        // objects.add(selfLink);
         objects.add(searchLink);
         return objects;
     }
@@ -111,7 +128,6 @@ public class OPDSHelper {
         SyndContent syndContent = new SyndContentImpl();
         syndContent.setType("text");
         syndContent.setValue(content);
-
 
         SyndEntry syndEntry = new SyndEntryImpl();
         syndEntry.setTitle(title);
@@ -167,7 +183,8 @@ public class OPDSHelper {
                         Optional.of(jsonNode).map(t -> t.get("metadata")).map(t -> t.get("creator"))
                                 .ifPresent(t -> {
                                     List<String> authors = new ArrayList<>();
-                                    Consumer<JsonNode> fn = (ti) -> Optional.of(ti).map(k -> k.get("")).map(JsonNode::toString)
+                                    Consumer<JsonNode> fn = (ti) -> Optional.of(ti).map(k -> k.get(""))
+                                            .map(JsonNode::toString)
                                             .map(AuthorHelper::format).ifPresent(authors::add);
                                     if (t.isArray()) {
                                         t.forEach(fn);
@@ -201,9 +218,10 @@ public class OPDSHelper {
                                     dto.setMeta(new HashMap<>());
                                     for (JsonNode node : t) {
                                         dto.getMeta().put(
-                                                Optional.of(node.findPath("name")).filter(JsonNode::isTextual).map(JsonNode::asText).orElse(""),
-                                                Optional.of(node.findPath("content")).filter(JsonNode::isTextual).map(JsonNode::asText).orElse("")
-                                        );
+                                                Optional.of(node.findPath("name")).filter(JsonNode::isTextual)
+                                                        .map(JsonNode::asText).orElse(""),
+                                                Optional.of(node.findPath("content")).filter(JsonNode::isTextual)
+                                                        .map(JsonNode::asText).orElse(""));
                                     }
                                 });
                         dto.setSource(jsonNode);
@@ -217,8 +235,4 @@ public class OPDSHelper {
         return null;
     }
 
-    public static void main(String[] args) {
-        OPDSResMetaDataDto opdsResMetaDataDto = readMetaData("/home/xyz/DockerSharingData/TestSearch/calibre书库/(Ai Er Lan )Xie Zhi Zhu/Dang Ni Lao Le (23110)");
-        System.out.println(opdsResMetaDataDto);
-    }
 }

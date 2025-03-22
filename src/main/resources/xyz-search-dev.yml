@@ -43,7 +43,7 @@ app:
       desc: aaa
       searchUrl: https
   chat:
-    enable: false
+    enable: true
     ollama:
       baseUrl: "http://localhost:11434"
       chatModel: "deepseek-r1:14b"
