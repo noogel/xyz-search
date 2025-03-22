@@ -21,4 +21,4 @@ push:
 git-push:
 	git add . \
  && git commit -am "auto update" \
- && git push origin xyz-feat-spb_3_4
+ && git push origin dev
