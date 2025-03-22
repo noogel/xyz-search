@@ -1,42 +1,17 @@
 package noogel.xyz.search.infrastructure.utils;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 // Java program to calculate MD5 hash value
 public class MD5Helper {
-
-    public static String getMD5(String input) {
-        try {
-
-            // Static getInstance method is called with hashing MD5
-            MessageDigest md = MessageDigest.getInstance("MD5");
-
-            // digest() method is called to calculate message digest
-            // of an input digest() return array of byte
-            byte[] messageDigest = md.digest(input.getBytes());
-
-            // Convert byte array into signum representation
-            BigInteger no = new BigInteger(1, messageDigest);
-
-            // Convert message digest into hex value
-            String hashtext = no.toString(16);
-            while (hashtext.length() < 32) {
-                hashtext = "0" + hashtext;
-            }
-            return hashtext;
-        }
-        // For specifying wrong message digest algorithms
-        catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * 获取一个文件的md5值(可处理大文件)
@@ -80,6 +55,32 @@ public class MD5Helper {
                 }
             }
             // 将哈希值转换为十六进制字符串
+            byte[] digestBytes = md.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : digestBytes) {
+                hexString.append(String.format("%02x", b));
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 使用流式处理计算大字符串的 MD5
+     * @param content 需要计算 MD5 的字符串内容
+     * @return MD5 哈希值
+     */
+    public static String getMD5Stream(String content) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] buffer = new byte[1024 * 1024];
+            try (InputStream is = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    md.update(buffer, 0, bytesRead);
+                }
+            }
             byte[] digestBytes = md.digest();
             StringBuilder hexString = new StringBuilder();
             for (byte b : digestBytes) {

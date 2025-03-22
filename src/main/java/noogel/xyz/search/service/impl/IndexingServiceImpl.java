@@ -1,5 +1,13 @@
 package noogel.xyz.search.service.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -14,13 +22,6 @@ import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.IndexingService;
 import noogel.xyz.search.service.extension.ExtensionService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -115,7 +116,7 @@ public class IndexingServiceImpl implements IndexingService {
         es.setResType(t.getType());
         es.setResSize(t.getSize());
         es.setContent(content);
-        es.setContentHash(MD5Helper.getMD5(content));
+        es.setContentHash(MD5Helper.getMD5Stream(content));
         es.setContentSize(content.length());
         es.setModifiedAt(t.getModifiedAt());
         return es;
