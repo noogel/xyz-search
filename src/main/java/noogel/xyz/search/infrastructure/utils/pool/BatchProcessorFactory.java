@@ -1,12 +1,13 @@
 package noogel.xyz.search.infrastructure.utils.pool;
 
-import jakarta.annotation.PreDestroy;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PreDestroy;
 
 /**
  * 批处理器工厂
