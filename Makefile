@@ -12,13 +12,20 @@ build:
  && docker build --platform linux/amd64 -t $(project)\:$(version) . \
  && rm $(project)-*.war \
  && docker tag $(project)\:$(version) noogel/$(project)\:$(version) \
+ && docker tag $(project)\:$(version) noogel/$(project)\:latest \
  && docker tag $(project)\:$(version) $(hub)\:$(port)/noogel/$(project)\:$(version) \
+ && docker tag $(project)\:$(version) $(hub)\:$(port)/noogel/$(project)\:latest \
  && cd ../
 
-push:
+push-local:
 	docker push $(hub)\:$(port)/noogel/$(project)\:$(version)
+	docker push $(hub)\:$(port)/noogel/$(project)\:latest
 
-git-push:
+push-hub:
+	docker push $(hub)\:$(port)/noogel/$(project)\:$(version)
+	docker push $(hub)\:$(port)/noogel/$(project)\:latest
+
+git-push-dev:
 	git add . \
  && git commit -am "auto update" \
  && git push origin dev
