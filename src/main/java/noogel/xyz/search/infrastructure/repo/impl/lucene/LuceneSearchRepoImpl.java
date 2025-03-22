@@ -162,8 +162,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
     public void init() {
         luceneWriter = new LuceneWriter(configProperties.getBase().indexerFilePath(),
                 new PerFieldAnalyzerWrapper(DEFAULT_ANALYZER, generateAnalyzer()));
-        luceneSearcher = new LuceneSearcher(configProperties.getBase().indexerFilePath(),
-                new PerFieldAnalyzerWrapper(DEFAULT_ANALYZER, generateAnalyzer()));
+        luceneSearcher = new LuceneSearcher(configProperties.getBase().indexerFilePath());
 
         // 减小批处理大小为20条，增加处理间隔到10秒，限制队列容量为500
         batchUpsertProcessor = batchProcessorFactory.getOrCreate(
