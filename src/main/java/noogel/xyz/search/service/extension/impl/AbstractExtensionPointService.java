@@ -1,6 +1,7 @@
 package noogel.xyz.search.service.extension.impl;
 
 
+import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
 import noogel.xyz.search.infrastructure.dto.OPDSResMetaDataDto;
@@ -10,7 +11,6 @@ import noogel.xyz.search.infrastructure.utils.OPDSHelper;
 import noogel.xyz.search.service.extension.ExtensionPointService;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Objects;
 import java.util.Optional;

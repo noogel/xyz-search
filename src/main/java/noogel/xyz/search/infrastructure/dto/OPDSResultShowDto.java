@@ -14,9 +14,5 @@ public class OPDSResultShowDto {
      * 数量
      */
     private int size;
-    /**
-     * 是否准确数量
-     */
-    private boolean exactSize;
 
 }

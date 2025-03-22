@@ -1,25 +1,23 @@
 package noogel.xyz.search.infrastructure.config;
 
-import org.apache.commons.lang3.StringUtils;
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
-import java.util.Optional;
+import jakarta.annotation.Resource;
 
 @Configuration
 public class DataSourceConfiguration {
 
-    @Bean(name = "EmbeddeddataSource")
-    public DataSource dataSource(@Autowired SearchPropertyConfig.SearchConfig searchConfig) {
-        String dbPath = Optional.ofNullable(searchConfig.getBase().getConfigFilePath()).orElse("");
-        if (StringUtils.isNotBlank(dbPath)) {
-            dbPath += "/";
-        }
-        dbPath += "search.xyz";
+    @Resource
+    private ConfigProperties configProperties;
 
+    @Bean(name = "EmbeddeddataSource")
+    public DataSource dataSource(@Autowired ConfigProperties configProperties) {
+        String dbPath = configProperties.getBase().dbPath().toString();
         return DataSourceBuilder.create()
                 .driverClassName("org.sqlite.JDBC")
                 .url("jdbc:sqlite:" + dbPath)

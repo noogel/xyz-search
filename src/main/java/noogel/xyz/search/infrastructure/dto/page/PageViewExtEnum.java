@@ -36,6 +36,8 @@ public enum PageViewExtEnum {
     TIFF(true, "/file/view/%s"),
     HTM(false, "/file/view/%s"),
     HEIF(false, null),
+    DOCX(false, null),
+    DOC(false, null),
     HEIC(false, null),
     MOBI(false, null),
     AZW3(false, null),
@@ -44,6 +46,7 @@ public enum PageViewExtEnum {
     MD(false, null),
     ;
 
+    public static final String VIEW_TEXT_URL_TPL = "/file/view/text/%s";
     private static final String THUMBNAIL_URL_TPL = "/file/view/thumbnail/%s";
     private static final String DOWNLOAD_URL_TPL = "/file/%s/download";
     private static final String DIR_VIEW_URL_TPL = "/?resId=%s&relativeResDir=%s";
@@ -60,6 +63,10 @@ public enum PageViewExtEnum {
 
     public static String downloadUrl(String resId) {
         return String.format(DOWNLOAD_URL_TPL, resId.trim());
+    }
+
+    public static String textUrl(String resId) {
+        return String.format(VIEW_TEXT_URL_TPL, resId.trim());
     }
 
     public static String dirViewUrl(String resId, String relativeResDir) {

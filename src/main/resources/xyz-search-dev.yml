@@ -1,15 +1,55 @@
 base:
-  configFilePath:
+  dataPath: appData/
+  configSubPath: config/
+  indexerSubPath: indexer/
+  vectorSubPath: vector/
+  tmpSubPath: tmp/
   ftsIndexName: xyz_search
   username: xyz
   password: search
+runtime:
+  defaultSleepMs: 1000
 app:
-  elasticsearchHost: "http://localhost:9200"
-  elasticsearchUser:
-  elasticsearchPassword:
-  elasticsearchCAPath:
-  elasticsearchConnectionTimeout: 1000
-  elasticsearchSocketTimeout: 5000
-  searchDirectories:
-    - /Users/xyz/MyDebug/XyzSearchTestData
-  indexLimitMs: 10
+  indexDirectories:
+    -
+      directory: /Users/xyz/MyDebug/XyzSearchTestData
+      excludesDirectories:
+        - /Users/xyz/MyDebug/XyzSearchTestData/skip
+      excludeFileProcessClass:
+        - OTHER
+  collectDirectories:
+    -
+      fromList:
+        - /a
+        - /b
+      to: /c
+      filterRegex: "pdf"
+      autoDelete: true
+  opdsDirectory:
+  uploadFileDirectory: /d
+  markDeleteDirectory: /Users/xyz/MyDebug/XyzSearchTestData/skip
+  notifyEmail:
+    senderEmail:
+    emailHost:
+    emailPort:
+    emailPass:
+    receivers:
+      - aaa@email.com
+  paddleOcr:
+    url:
+    timeout: 10000
+  linkItems:
+    -
+      desc: aaa
+      searchUrl: https
+  chat:
+    enable: true
+    ollama:
+      baseUrl: "http://localhost:11434"
+      chatModel: "deepseek-r1:14b"
+      chatOptionTemperature: 0.7
+      chatOptionNumCtx: 4096
+      chatOptionNumPredict: 10000
+      pullModelStrategy: when_missing
+      embeddingAdditionalModels:
+        - "jinaai/jina-embeddings-v2-base-zh"

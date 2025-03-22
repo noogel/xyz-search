@@ -13,6 +13,7 @@ public enum FileProcessClassEnum {
     HTML("网页"),
     PDF("PDF"),
     EPUB("电子书"),
+    OFFICE("办公文档"),
     OTHER("其它"),
     ;
 

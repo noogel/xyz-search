@@ -7,10 +7,10 @@ public class PagingDto {
     private SearchQueryDto query;
     private long total;
 
-    private long startOffset;
-    private long prevOffset;
-    private long nextOffset;
-    private long endOffset;
+    private long startPage;
+    private long prevPage;
+    private long nextPage;
+    private long endPage;
     private boolean prevPageDisable;
     private boolean nextPageDisable;
     private String pageDesc;
@@ -20,38 +20,37 @@ public class PagingDto {
         dto.query = query;
         dto.total = total;
         // 当前页
-        long currentPage = query.getOffset() / query.getLimit() + 1;
+        long currentPage = query.getPage();
         // 总页数
-        long totalPage = (total / query.getLimit()) + (Math.min(1, total % query.getLimit()));
+        long totalPage = (total / query.getLimit()) + Math.min(1, total % query.getLimit());
 
         // 计算按钮的 offset
-        dto.startOffset = 0;
-        dto.prevOffset = Math.max(currentPage - 1, 1) * query.getLimit() - query.getLimit();
-        dto.nextOffset = Math.min(currentPage + 1, totalPage) * query.getLimit() - query.getLimit();
-        dto.endOffset = totalPage * query.getLimit() - query.getLimit();
+        dto.startPage = 1;
+        dto.prevPage = Math.max(currentPage - 1, 1);
+        dto.nextPage = Math.min(currentPage + 1, totalPage);
+        dto.endPage = totalPage;
         // 页面的描述
         dto.pageDesc = String.format("第 %s 页 / 共 %s 页 | %s 条", currentPage, totalPage, total);
         // 禁用的计算
         dto.prevPageDisable = currentPage == 1;
         dto.nextPageDisable = currentPage == totalPage;
-
         return dto;
     }
 
     public String getStartPageQuery() {
-        return query.getUrlQuery(startOffset);
+        return query.getUrlQuery(startPage);
     }
 
     public String getPrevPageQuery() {
-        return query.getUrlQuery(prevOffset);
+        return query.getUrlQuery(prevPage);
     }
 
     public String getNextPageQuery() {
-        return query.getUrlQuery(nextOffset);
+        return query.getUrlQuery(nextPage);
     }
 
     public String getEndPageQuery() {
-        return query.getUrlQuery(endOffset);
+        return query.getUrlQuery(endPage);
     }
 
     public String getPageDesc() {

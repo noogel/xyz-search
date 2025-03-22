@@ -2,7 +2,7 @@ package noogel.xyz.search.application.controller;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.SearchPropertyConfig;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.dto.dropzone.UploadRespDto;
 import noogel.xyz.search.infrastructure.exception.BizException;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
@@ -22,7 +22,7 @@ public class UploadCtrl {
     @Resource
     private FileProcessService fileProcessService;
     @Resource
-    private SearchPropertyConfig.SearchConfig searchConfig;
+    private ConfigProperties configProperties;
 
     @RequestMapping(value = "/upload", method = RequestMethod.GET)
     public ModelAndView uploadPage() {
@@ -32,23 +32,21 @@ public class UploadCtrl {
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public @ResponseBody ResponseEntity<String> postUploadPage(@RequestParam("file") MultipartFile file) {
         try {
-            if (StringUtils.isBlank(searchConfig.getApp().getUploadFileDirectory())) {
+            if (StringUtils.isBlank(configProperties.getApp().getUploadFileDirectory())) {
                 throw ExceptionCode.CONFIG_ERROR.throwExc("当前配置未开启");
             }
             if (file.isEmpty()) {
                 throw ExceptionCode.FILE_ACCESS_ERROR.throwExc("文件为空");
             }
-            fileProcessService.uploadFile(file, searchConfig.getApp().getUploadFileDirectory());
-            return new ResponseEntity<>(JsonHelper.toJson(
-                    UploadRespDto.of("Success!")), HttpStatus.OK);
+            fileProcessService.uploadFile(file, configProperties.getApp().getUploadFileDirectory());
+            return new ResponseEntity<>(JsonHelper.toJson(UploadRespDto.of("Success!")), HttpStatus.OK);
         } catch (Exception exception) {
             if (exception instanceof BizException) {
                 log.warn("postUploadPage warn.", exception);
             } else {
                 log.error("postUploadPage error.", exception);
             }
-            return new ResponseEntity<>(JsonHelper.toJson(
-                    UploadRespDto.of(exception.getMessage())), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(JsonHelper.toJson(UploadRespDto.of(exception.getMessage())), HttpStatus.BAD_REQUEST);
         }
     }
 

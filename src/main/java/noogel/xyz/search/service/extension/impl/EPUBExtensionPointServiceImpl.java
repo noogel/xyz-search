@@ -93,6 +93,6 @@ public class EPUBExtensionPointServiceImpl extends AbstractExtensionPointService
         List<ChapterDto> chapters = parseFileToChapters(file);
         ResRelationInfoDto resRel = autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
-        return FileResContentDto.of(chapters, title);
+        return FileResContentDto.of(chapters).metaData("metaTitle", title);
     }
 }

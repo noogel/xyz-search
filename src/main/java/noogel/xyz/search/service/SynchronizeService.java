@@ -1,5 +1,7 @@
 package noogel.xyz.search.service;
 
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+
 import java.io.File;
 import java.util.List;
 
@@ -13,7 +15,7 @@ public interface SynchronizeService {
     /**
      * 异步索引
      */
-    void asyncDirectories(List<String> syncDirectories, List<String> removeDirectories);
+    void asyncDirectories(List<ConfigProperties.IndexItem> syncDirectories, List<ConfigProperties.IndexItem> removeDirectories);
 
     /**
      * 重置索引

@@ -2,7 +2,7 @@ package noogel.xyz.search.application.scheduler;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.CommonsConsts;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.service.FileDbService;
@@ -43,7 +43,7 @@ public class CollectServiceScheduler {
             if (errorRecords.isEmpty()) {
                 break;
             }
-            log.info("asyncCleanDbErrorFiles {}", errorRecords.size());
+            log.info("定时任务处理异常 db 记录: {}", errorRecords.size());
             // 恢复记录状态
             errorRecords.forEach(t -> fileDbService.updateFileState(t.getFieldId(), FileStateEnum.VALID));
         }

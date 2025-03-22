@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>畅文全索</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/custom.css" rel="stylesheet">
-    <script src="js/bootstrap.bundle.min.js"></script>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/custom.css" rel="stylesheet">
+    <script src="/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
         function fetch_data(obj) {
             const href = obj.href;
@@ -58,7 +58,6 @@
                     document.querySelector("#imageThumbnail").setAttribute("class", "img-thumbnail invisible");
                 }
 
-                document.querySelector("#linkCalibre").href = "http://192.168.124.13:8080/#library_id=%E7%94%B5%E5%AD%90%E4%B9%A6%E5%BA%93&panel=book_list&search=" + data.searchableTitle + "&sort=last_modified.desc";
                 document.querySelector("#linkDouban").href = "https://m.douban.com/search/?query=" + data.searchableTitle;
                 document.querySelector("#linkJd").href = "https://so.m.jd.com/ware/search.action?keyword=" + data.searchableTitle;
                 document.querySelector("#linkGG").href = "https://www.google.com/search?q=" + data.searchableTitle;
@@ -141,20 +140,66 @@
                                                     小于 100MB
                                                 </label>
                                             </div>
-<!--                                            <div class="form-check small">-->
-<!--                                                <input class="form-check-input" type="radio" name="resSize"-->
-<!--                                                       id="resSizeGt1048576" value="GT:1048576"-->
-<!--                                                       th:checked="(${result.paging.query.resSize} == 'GT:1048576') ? 'checked'">-->
-<!--                                                <label class="form-check-label" for="resSizeGt1048576">-->
-<!--                                                    大于 1MB-->
-<!--                                                </label>-->
-<!--                                            </div>-->
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="resSize"
-                                                       id="resSizeGt10485760" value="GT:10485760"
-                                                       th:checked="(${result.paging.query.resSize} == 'GT:10485760') ? 'checked'">
-                                                <label class="form-check-label" for="resSizeGt10485760">
-                                                    大于 10MB
+                                                       id="resSizeGt104857600" value="GT:104857600"
+                                                       th:checked="(${result.paging.query.resSize} == 'GT:104857600') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeGt104857600">
+                                                    大于 100MB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="radio" name="resSize"
+                                                       id="resSizeGt1073741824" value="GT:1073741824"
+                                                       th:checked="(${result.paging.query.resSize} == 'GT:1073741824') ? 'checked'">
+                                                <label class="form-check-label" for="resSizeGt1073741824">
+                                                    大于 1GB
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-auto">
+
+                                        <fieldset>
+                                            <legend>文件类型</legend>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtPDF" value="FILE:PDF"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:PDF')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtPDF">
+                                                    PDF
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtEPUB" value="FILE:EPUB"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:EPUB')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtEPUB">
+                                                    EPUB
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtHTML" value="FILE:HTML"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:HTML')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtHTML">
+                                                    HTML
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtMD" value="FILE:MD"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:MD')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtMD">
+                                                    Markdown
+                                                </label>
+                                            </div>
+                                            <div class="form-check small">
+                                                <input class="form-check-input" type="checkbox" name="resType"
+                                                       id="resTypeAtMP4" value="FILE:MP4"
+                                                       th:checked="(${result.paging.query.resType?.contains('FILE:MP4')}) ? 'checked'">
+                                                <label class="form-check-label" for="resTypeAtMP4">
+                                                    MP4
                                                 </label>
                                             </div>
                                         </fieldset>
@@ -186,74 +231,20 @@
                                                     一个月内
                                                 </label>
                                             </div>
-<!--                                            <div class="form-check small">-->
-<!--                                                <input class="form-check-input" type="radio" name="modifiedAt"-->
-<!--                                                       id="latestModifiedAtLt6Month" value="GT:16070400"-->
-<!--                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:16070400') ? 'checked'">-->
-<!--                                                <label class="form-check-label" for="latestModifiedAtLt6Month">-->
-<!--                                                    半年内-->
-<!--                                                </label>-->
-<!--                                            </div>-->
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="modifiedAt"
-                                                       id="latestModifiedAtGt7Day" value="LT:604800"
-                                                       th:checked="(${result.paging.query.modifiedAt} == 'LT:604800') ? 'checked'">
-                                                <label class="form-check-label" for="latestModifiedAtGt7Day">
-                                                    七天前
+                                                       id="latestModifiedAtLt1Year" value="GT:31536000"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'GT:31536000') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtLt1Year">
+                                                    一年内
                                                 </label>
                                             </div>
                                             <div class="form-check small">
                                                 <input class="form-check-input" type="radio" name="modifiedAt"
-                                                       id="latestModifiedAtGt1Month" value="LT:2678400"
-                                                       th:checked="(${result.paging.query.modifiedAt} == 'LT:2678400') ? 'checked'">
-                                                <label class="form-check-label" for="latestModifiedAtGt1Month">
-                                                    一个月前
-                                                </label>
-                                            </div>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-auto">
-
-                                        <fieldset>
-                                            <legend>文件类型</legend>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtNone" value=""
-                                                       th:checked="${#strings.isEmpty(result.paging.query.resType)} ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtNone">
-                                                    不限制
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtPDF" value="FILE:PDF"
-                                                       th:checked="(${result.paging.query.resType} == 'FILE:PDF') ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtPDF">
-                                                    PDF
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtEPUB" value="FILE:EPUB"
-                                                       th:checked="(${result.paging.query.resType} == 'FILE:EPUB') ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtEPUB">
-                                                    EPUB
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtHTML" value="FILE:HTML"
-                                                       th:checked="(${result.paging.query.resType} == 'FILE:HTML') ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtHTML">
-                                                    HTML
-                                                </label>
-                                            </div>
-                                            <div class="form-check small">
-                                                <input class="form-check-input" type="radio" name="resType"
-                                                       id="resTypeAtMP4" value="FILE:MP4"
-                                                       th:checked="(${result.paging.query.resType} == 'FILE:MP4') ? 'checked'">
-                                                <label class="form-check-label" for="resTypeAtMP4">
-                                                    MP4
+                                                       id="latestModifiedAtGt1Year" value="LT:31536000"
+                                                       th:checked="(${result.paging.query.modifiedAt} == 'LT:31536000') ? 'checked'">
+                                                <label class="form-check-label" for="latestModifiedAtGt1Year">
+                                                    一年前
                                                 </label>
                                             </div>
                                         </fieldset>
@@ -398,10 +389,6 @@
                     <div class="my-3 row justify-content-end">
                         <!-- 文件内容结果列表 操作 -->
                         <div class="col-auto">
-                            <a class="page-link" id="linkCalibre" href="#" target="_blank">
-                                <button id="linkCalibreBtn" type="button" class="btn btn-link">Calibre</button></a>
-                        </div>
-                        <div class="col-auto">
                             <a class="page-link" id="linkDouban" href="#" target="_blank">
                                 <button id="linkDoubanBtn" type="button" class="btn btn-link">豆瓣</button></a>
                         </div>
@@ -414,9 +401,6 @@
                                 <button type="linkGGBtn" class="btn btn-link">谷歌</button></a>
                         </div>
                     </div>
-<!--                    <div class="my-3 row justify-content-end">-->
-<!--                        <iframe id="subPage" src="#" height="600" width="auto" title=""></iframe>-->
-<!--                    </div>-->
                 </div>
                 <div class="offcanvas-header justify-content-center">
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -444,12 +428,12 @@
             <footer class="py-3 my-4">
                 <ul class="nav justify-content-center border-bottom pb-3 mb-3">
                     <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
-                    <li class="nav-item"><a href="/?random=true" class="nav-link px-2 text-muted">随机</a></li>
+                    <li class="nav-item"><a href="/chat/page" class="nav-link px-2 text-muted">AI 对话</a></li>
                     <li class="nav-item"><a href="/upload" class="nav-link px-2 text-muted">上传</a></li>
                     <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
                     <li class="nav-item"><a href="/logout" class="nav-link px-2 text-muted">登出</a></li>
                 </ul>
-                <p class="text-center text-muted">© 2015 – 2024 <span style="font-size: 0.8rem">❤</span> noogel</p>
+                <p class="text-center text-muted">© 2015 – 2025 <span style="font-size: 0.8rem">❤</span> noogel</p>
             </footer>
         </div>
     </div>

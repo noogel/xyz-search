@@ -1,5 +1,6 @@
 package noogel.xyz.search.service.extension.impl;
 
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
@@ -11,7 +12,6 @@ import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -38,6 +38,6 @@ public class HTMLExtensionPointServiceImpl extends AbstractExtensionPointService
         } catch (IOException e) {
             throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
-        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text)), null);
+        return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text)));
     }
 }

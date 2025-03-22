@@ -3,11 +3,10 @@ package noogel.xyz.search.service;
 import noogel.xyz.search.infrastructure.dto.OPDSResultShowDto;
 import noogel.xyz.search.infrastructure.dto.ResourceDownloadDto;
 import noogel.xyz.search.infrastructure.dto.SearchQueryDto;
+import noogel.xyz.search.infrastructure.dto.api.SearchQueryApiDto;
+import noogel.xyz.search.infrastructure.dto.api.SearchResultApiDto;
 import noogel.xyz.search.infrastructure.dto.page.ResourcePageDto;
-import noogel.xyz.search.infrastructure.dto.page.ResourceSimpleDto;
 import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
-
-import java.util.List;
 
 public interface SearchService {
     /**
@@ -17,6 +16,14 @@ public interface SearchService {
      * @return
      */
     SearchResultShowDto pageSearch(SearchQueryDto query);
+
+    /**
+     * api 搜索
+     *
+     * @param query
+     * @return
+     */
+    SearchResultApiDto apiSearch(SearchQueryApiDto query);
 
     /**
      * opds 资源搜索
@@ -36,18 +43,18 @@ public interface SearchService {
     ResourcePageDto searchByResId(String resId, String search);
 
     /**
-     * 根据文件 MD5 搜索
-     *
-     * @param resHash
-     * @return
-     */
-    List<ResourceSimpleDto> searchByResHash(String resHash);
-
-    /**
      * 获取资源下载信息
      *
      * @param resId
      * @return
      */
     ResourceDownloadDto getDownloadResource(String resId);
+
+    /**
+     * 获取资源内容
+     *
+     * @param resId
+     * @return
+     */
+    String getResourceContent(String resId);
 }

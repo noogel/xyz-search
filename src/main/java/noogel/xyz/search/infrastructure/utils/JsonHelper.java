@@ -2,9 +2,9 @@ package noogel.xyz.search.infrastructure.utils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Nullable;
 import lombok.SneakyThrows;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 
 

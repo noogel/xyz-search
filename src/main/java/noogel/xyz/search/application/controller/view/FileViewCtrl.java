@@ -66,4 +66,10 @@ public class FileViewCtrl {
         }
     }
 
+    @RequestMapping(value = "/file/view/text/{resId}", method = RequestMethod.GET)
+    public String fileViewText(@PathVariable String resId,
+                               HttpServletResponse response) {
+        return searchService.getResourceContent(resId);
+    }
+
 }

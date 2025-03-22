@@ -57,31 +57,17 @@
                         <label for="username" class="form-label">登录名
                             <span class="text-muted">（只读）</span></label>
                         <input type="text" class="form-control" id="username" name="username"
-                               placeholder="elastic" th:value="${searchConfig.username}" disabled>
+                               placeholder="elastic" th:value="${configProperties.username}" disabled>
                     </div>
-
                     <div class="col-sm-6">
                         <label for="password" class="form-label">密码</label>
                         <input type="password" class="form-control" id="password" name="password"
-                               placeholder="" th:value="${searchConfig.password}">
-                    </div>
-                    <div class="col-sm-6">
-                        <label for="configFilePath" class="form-label">配置路径
-                            <span class="text-muted">（只读）</span></label>
-                        <input type="text" class="form-control" id="configFilePath" name="configFilePath"
-                               placeholder="" th:value="${searchConfig.configFilePath}" disabled>
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="ftsIndexName" class="form-label">索引名
-                            <span class="text-muted">（只读）</span></label>
-                        <input type="text" class="form-control" id="ftsIndexName" name="ftsIndexName"
-                               placeholder="" th:value="${searchConfig.ftsIndexName}" disabled>
+                               placeholder="" th:value="${configProperties.password}">
                     </div>
                     <div class="col-12">
                         <label class="form-label">应用配置</label>
                         <div id="jsoneditor" style="width: auto; height: 600px;"></div>
-                        <input type="hidden" id="appConfig" name="appConfig" th:value="${searchConfig.appConfig}">
+                        <input type="hidden" id="app" name="appConfig" th:value="${configProperties.appConfig}">
                     </div>
                 </div>
                 <div class="row justify-content-end my-4">
@@ -89,16 +75,13 @@
                         <button class="btn btn-primary" type="submit">保存</button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-info" onclick="fetch_data_post('/settings/connect/testing', this)">测试连接</button>
+                        <button type="button" class="btn btn-warning" onclick="fetch_data_post('/settings/sync/all', this)">全量更新</button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-warning" onclick="fetch_data_post('/settings/data/reset', this)">重建索引</button>
+                        <button type="button" class="btn btn-success" onclick="fetch_data_post('/settings/sync/fast', this)">快速更新</button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-success" onclick="fetch_data_post('/settings/data/sync', this)">更新索引</button>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-info" onclick="fetch_data_post('/settings/data/collect', this)">收集文件</button>
+                        <button type="button" class="btn btn-info" onclick="fetch_data_post('/settings/sync/collect', this)">收集文件</button>
                     </div>
                 </div>
                 <div class="accordion" id="accordionExample">
@@ -118,7 +101,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr th:each="m:${searchConfig.configDesc}">
+                                        <tr th:each="m:${configProperties.configDesc}">
                                             <td th:text="${m.left}"></td>
                                             <td th:text="${m.right}"></td>
                                         </tr>
@@ -135,12 +118,12 @@
             <footer class="py-3 my-4">
                 <ul class="nav justify-content-center border-bottom pb-3 mb-3">
                     <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
-                    <li class="nav-item"><a href="/?random=true" class="nav-link px-2 text-muted">随机</a></li>
+                    <li class="nav-item"><a href="/chat/page" class="nav-link px-2 text-muted">AI 对话</a></li>
                     <li class="nav-item"><a href="/upload" class="nav-link px-2 text-muted">上传</a></li>
                     <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
                     <li class="nav-item"><a href="/logout" class="nav-link px-2 text-muted">登出</a></li>
                 </ul>
-                <p class="text-center text-muted">© 2015 – 2024 <span style="font-size: 0.8rem">❤</span> noogel</p>
+                <p class="text-center text-muted">© 2015 – 2025 <span style="font-size: 0.8rem">❤</span> noogel</p>
             </footer>
         </div>
 
@@ -178,11 +161,11 @@
         "enableSort": false,
         "enableTransform": false,
         "onChange": () => {
-            document.querySelector("#appConfig").value = JSON.stringify(editor.get());
+            document.querySelector("#app").value = JSON.stringify(editor.get());
         }
     }
     const editor = new JSONEditor(container, options)
-    editor.set(JSON.parse(document.querySelector("#appConfig").value));
+    editor.set(JSON.parse(document.querySelector("#app").value));
 
 </script>
 </body>
