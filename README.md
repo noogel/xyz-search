@@ -2,7 +2,7 @@
 
 <h1>xyz-search👋</h1>
 
-[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![License](https://img.shields.io/badge/license-GPL%203.0-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Docker Pulls](https://img.shields.io/docker/pulls/noogel/xyz-search.svg?style=flat-square)](https://hub.docker.com/r/noogel/xyz-search)
 [![Version](https://img.shields.io/badge/version-1.2.1-blue.svg?style=flat-square)](https://github.com/noogel/xyz-search/releases)
 
@@ -382,4 +382,4 @@ A: 可以通过RESTful API或将xyz-search作为依赖添加到项目中进行�
 
 ## 📄 许可证
 
-本项目采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 许可证
+本项目采用 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html) 许可证
