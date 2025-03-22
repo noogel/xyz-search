@@ -11,8 +11,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,6 +35,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHits;
+import org.apache.lucene.search.UsageTrackingQueryCachingPolicy;
 import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Fragmenter;
 import org.apache.lucene.search.highlight.Highlighter;
@@ -41,7 +44,9 @@ import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.search.highlight.SimpleSpanFragmenter;
 import org.apache.lucene.search.highlight.TextFragment;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.MMapDirectory;
 import org.springframework.util.CollectionUtils;
 
 import jakarta.annotation.Nullable;
@@ -56,31 +61,68 @@ public class LuceneSearcher {
 
     public LuceneSearcher(Path dir) {
         try {
-            this.directory = FSDirectory.open(dir);
+            // 使用 MMapDirectory 来提升性能，如果系统支持的话
+            if (MMapDirectory.UNMAP_SUPPORTED) {
+                this.directory = MMapDirectory.open(dir);
+            } else {
+                this.directory = FSDirectory.open(dir);
+            }
 
-            // 创建 Lucene 查询缓存
-            this.queryCache = new LRUQueryCache(1000, 512 * 1024 * 1024);
+            // 创建 Lucene 查询缓存，优化配置
+            this.queryCache = new LRUQueryCache(
+                    4000, // 增加缓存最大文档数到4000
+                    256 * 1024 * 1024 // 增加缓存大小限制到256MB
+            );
+
+            // 创建 DirectoryReader
+            DirectoryReader reader = DirectoryReader.open(directory);
 
             // 创建 SearcherManager
-            DirectoryReader reader = DirectoryReader.open(directory);
-            this.searcherManager = new SearcherManager(reader, new SearcherFactory() {
+            SearcherFactory searcherFactory = new SearcherFactory() {
                 @Override
                 public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
-                    IndexSearcher searcher = new IndexSearcher(reader);
+                    // 创建自定义线程池，设置合理的队列长度和拒绝策略
+                    ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                            Runtime.getRuntime().availableProcessors(), // 核心线程数
+                            Runtime.getRuntime().availableProcessors() * 2, // 最大线程数
+                            60L, TimeUnit.SECONDS, // 线程空闲超时时间
+                            new ArrayBlockingQueue<>(1000), // 设置队列长度为1000
+                            r -> {
+                                Thread thread = new Thread(r);
+                                thread.setName("lucene-search-" + Thread.currentThread().getId());
+                                thread.setDaemon(true);
+                                return thread;
+                            },
+                            new ThreadPoolExecutor.CallerRunsPolicy());
+
+                    IndexSearcher searcher = new IndexSearcher(reader, executor);
                     searcher.setQueryCache(queryCache);
+                    searcher.setQueryCachingPolicy(new UsageTrackingQueryCachingPolicy());
+
+                    // 优化BM25参数：k1=1.2, b=0.75是经典配置
+                    searcher.setSimilarity(new BM25Similarity(1.2f, 0.75f));
+
                     return searcher;
                 }
-            });
+            };
+
+            this.searcherManager = new SearcherManager(reader, searcherFactory);
 
             // 创建定时刷新任务
-            this.executor = Executors.newSingleThreadScheduledExecutor();
+            this.executor = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread thread = new Thread(r, "lucene-refresh-thread");
+                thread.setDaemon(true);
+                return thread;
+            });
+
+            // 增加刷新频率到每15秒一次
             this.executor.scheduleAtFixedRate(() -> {
                 try {
                     searcherManager.maybeRefresh();
                 } catch (IOException e) {
                     // 忽略刷新异常
                 }
-            }, 0, 30, TimeUnit.SECONDS);
+            }, 0, 15, TimeUnit.SECONDS);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -278,6 +320,58 @@ public class LuceneSearcher {
         }
     }
 
+    /**
+     * 使用 searchAfter 进行高效分页查询
+     * 
+     * @param query    查询条件
+     * @param pageSize 每页大小
+     * @param lastDoc  上一页最后一个文档的 ScoreDoc，首页传 null
+     * @param order    排序条件
+     * @return 分页结果
+     */
+    public Pair<List<LuceneDocument>, ScoreDoc> searchAfter(Query query, int pageSize, @Nullable ScoreDoc lastDoc,
+            @Nullable OrderBy order) {
+        IndexSearcher searcher = null;
+        try {
+            searcher = getSearcher();
+            // 排序
+            Sort sort = null;
+            if (Objects.nonNull(order)) {
+                String sortedName = String.format("%s_sorted", order.getField());
+                sort = new Sort(new SortField(sortedName, order.getType(), !order.isAsc()));
+            } else {
+                // 如果没有指定排序，默认按照文档得分排序
+                sort = new Sort(SortField.FIELD_SCORE);
+            }
+
+            // 使用 searchAfter 进行分页
+            TopDocs topDocs = lastDoc == null ? searcher.search(query, pageSize, sort)
+                    : searcher.searchAfter(lastDoc, query, pageSize, sort);
+
+            List<LuceneDocument> documents = new ArrayList<>();
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                Document document = searcher.getIndexReader().storedFields().document(scoreDoc.doc);
+                documents.add(convert(document));
+            }
+
+            // 返回文档列表和最后一个文档的 ScoreDoc（用于下一页查询）
+            ScoreDoc lastScoreDoc = topDocs.scoreDocs.length > 0 ? topDocs.scoreDocs[topDocs.scoreDocs.length - 1]
+                    : null;
+            return Pair.of(documents, lastScoreDoc);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (searcher != null) {
+                try {
+                    releaseSearcher(searcher);
+                } catch (IOException e) {
+                    // 忽略关闭异常
+                }
+            }
+        }
+    }
+
     public FullTextSearchModel convert(Document document) {
         FullTextSearchModel model = new FullTextSearchModel();
         for (Field declaredField : model.getClass().getDeclaredFields()) {
@@ -301,5 +395,33 @@ public class LuceneSearcher {
             }
         }
         return model;
+    }
+
+    /**
+     * 预热索引
+     */
+    public void warmUp() {
+        IndexSearcher searcher = null;
+        try {
+            searcher = getSearcher();
+            // 加载所有 segments 到内存
+            searcher.getIndexReader().leaves().forEach(leaf -> {
+                try {
+                    leaf.reader().terms("content").iterator().next();
+                } catch (IOException e) {
+                    // 忽略预热异常
+                }
+            });
+        } catch (IOException e) {
+            // 忽略预热异常
+        } finally {
+            if (searcher != null) {
+                try {
+                    releaseSearcher(searcher);
+                } catch (IOException e) {
+                    // 忽略关闭异常
+                }
+            }
+        }
     }
 }

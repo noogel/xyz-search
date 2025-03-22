@@ -16,8 +16,10 @@ import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.ConcurrentMergeScheduler;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.LogByteSizeMergePolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -64,8 +66,11 @@ public class LuceneWriter {
                     try {
                         IndexWriterConfig config = new IndexWriterConfig(wrapper);
                         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-                        config.setRAMBufferSizeMB(128);
-                        config.setMaxBufferedDocs(500);
+                        config.setRAMBufferSizeMB(256);
+                        config.setMaxBufferedDocs(2000);
+                        config.setMergePolicy(new LogByteSizeMergePolicy());
+                        config.setMergeScheduler(new ConcurrentMergeScheduler());
+                        config.setUseCompoundFile(false);
                         writer = new IndexWriter(directory, config);
                         writerRef.set(writer);
                     } catch (IOException e) {
