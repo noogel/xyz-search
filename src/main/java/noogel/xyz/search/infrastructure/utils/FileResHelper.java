@@ -1,12 +1,12 @@
 package noogel.xyz.search.infrastructure.utils;
 
-import jakarta.annotation.Nonnull;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.UUID;
+
+import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
 
 @Slf4j
 public abstract class FileResHelper {
@@ -21,7 +21,7 @@ public abstract class FileResHelper {
         dto.setRank(RankHelper.calcRank(file.getName()));
         dto.setType("FILE:" + FileHelper.getFileExtension(file.getName()).name());
         try {
-            dto.setHash(MD5Helper.getMD5(file));
+            dto.setHash(MD5Helper.calculateMD5Buffered(file.getAbsolutePath()));
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
         }

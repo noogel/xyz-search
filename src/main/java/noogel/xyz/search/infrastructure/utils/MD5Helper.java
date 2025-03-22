@@ -1,8 +1,10 @@
 package noogel.xyz.search.infrastructure.utils;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -63,6 +65,29 @@ public class MD5Helper {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public static String calculateMD5Buffered(String filePath) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            // 使用较大的缓冲区（例如1MB）以提高IO效率
+            byte[] buffer = new byte[1024 * 1024];
+            try (InputStream inputStream = new BufferedInputStream(new FileInputStream(filePath))) {
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    md.update(buffer, 0, bytesRead);
+                }
+            }
+            // 将哈希值转换为十六进制字符串
+            byte[] digestBytes = md.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : digestBytes) {
+                hexString.append(String.format("%02x", b));
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

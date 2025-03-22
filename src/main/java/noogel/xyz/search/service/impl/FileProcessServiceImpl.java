@@ -1,5 +1,30 @@
 package noogel.xyz.search.service.impl;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -15,26 +40,6 @@ import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.FileProcessService;
 import noogel.xyz.search.service.SynchronizeService;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -113,7 +118,7 @@ public class FileProcessServiceImpl implements FileProcessService {
                     .resolve(realPath.getName(realPath.getNameCount() - 1) + CommonsConsts.FILE_SUFFIX)
                     .normalize().toAbsolutePath();
             Files.copy(file.getInputStream(), tmpPath);
-            String md5 = MD5Helper.getMD5(tmpPath.toFile());
+            String md5 = MD5Helper.calculateMD5Buffered(tmpPath.toFile().getAbsolutePath());
             // 文件存在则删除文件
             if (fileDbService.findFirstByHash(md5).isPresent()) {
                 Files.deleteIfExists(tmpPath);
@@ -286,8 +291,7 @@ public class FileProcessServiceImpl implements FileProcessService {
             }
             // 目标文件不存在
             if (Objects.nonNull(targetFile)) {
-                // 计算原始文件是否存在 ES
-                String fromMD5 = MD5Helper.getMD5(sourceFile);
+                String fromMD5 = MD5Helper.calculateMD5Buffered(sourceFile.getAbsolutePath());
                 Optional<FileViewDto> fileDbDto = fileDbService.findFirstByHash(fromMD5);
                 if (fileDbDto.isPresent()) {
                     log.warn("文件收集:待转移文件已存在: {} md5:{}", sourceFile.getAbsolutePath(), fromMD5);
