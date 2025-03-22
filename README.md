@@ -31,6 +31,7 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统，支持多�
 ## ✨ 主要特性
 
 ### 📄 多格式文档支持
+
 * 支持PDF、Office文档等多种格式
 * 支持电子书内容识别和索引
 * 支持图片内容识别
@@ -38,6 +39,7 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统，支持多�
 * 支持视频 metadata 索引和预览
 
 ### 🔎 高性能搜索引擎
+
 * 基于Lucene的高效索引和检索
 * 支持中文分词和智能检索
 * 实时索引更新和搜索结果优化
@@ -46,6 +48,7 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统，支持多�
 * 支持搜索结果高亮显示
 
 ### 🤖 AI增强能力
+
 * 集成Spring AI，支持智能搜索
 * 内容理解和语义分析
 * 支持对话式搜索体验
@@ -54,6 +57,7 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统，支持多�
 * 搜索结果智能排序
 
 ### 📚 电子书管理
+
 * 支持OPDS协议，方便电子书管理
 * 提供格式转换和阅读功能
 * 支持电子书元数据提取和管理
@@ -61,6 +65,7 @@ xyz-search是一个基于Spring Boot和Lucene的全文搜索系统，支持多�
 * 支持封面和目录索引
 
 ### 💻 易用的界面与API
+
 * 简洁现代的Web界面
 * 完整的RESTful API
 * 支持自定义主题和布局
@@ -119,10 +124,10 @@ search
 http://localhost:8081
 ```
 
-
 ### 使用示例
 
 **1. 索引文件**
+
 ```bash
 # 重置索引
 curl http://localhost:8081/admin/es/index/reset
@@ -135,6 +140,7 @@ curl "http://localhost:8081/admin/es/data/sync?dir=/path/to/documents"
 ```
 
 **2. 搜索文件**
+
 ```bash
 # 基本搜索
 curl "http://localhost:8081/api/search?q=关键词"
@@ -147,6 +153,7 @@ curl "http://localhost:8081/api/search?q=关键词&limit=50"
 ```
 
 **3. 智能聊天**
+
 ```bash
 # 基于文档的对话
 curl "http://localhost:8081/chat/stream?message=请找出关于spring的文档"
@@ -350,15 +357,15 @@ A: 可以通过RESTful API或将xyz-search作为依赖添加到项目中进行�
 
 ## 📊 开发计划
 
-- [ ] 支持音频内容识别与索引
-- [ ] 优化搜索性能
-- [ ] 添加更多AI模型支持
-- [ ] 改进Web界面，提供更丰富的主题
-- [ ] 添加用户认证和权限管理
-- [ ] 开发移动端应用
-- [ ] 优化中文分词效果
-- [ ] 支持多语言搜索
-- [ ] 添加搜索结果聚合功能
+* [ ] 支持音频内容识别与索引
+* [ ] 优化搜索性能
+* [ ] 添加更多AI模型支持
+* [ ] 改进Web界面，提供更丰富的主题
+* [ ] 添加用户认证和权限管理
+* [ ] 开发移动端应用
+* [ ] 优化中文分词效果
+* [ ] 支持多语言搜索
+* [ ] 添加搜索结果聚合功能
 
 ## 👥 贡献指南
 
@@ -368,10 +375,10 @@ A: 可以通过RESTful API或将xyz-search作为依赖添加到项目中进行�
 4. 新建 Pull Request
 
 我们欢迎各种形式的贡献，包括但不限于：
-- 新功能开发
-- Bug修复
-- 文档改进
-- 测试用例编写
+* 新功能开发
+* Bug修复
+* 文档改进
+* 测试用例编写
 
 ## 📄 许可证
 
