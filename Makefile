@@ -22,8 +22,8 @@ push-local:
 	docker push $(hub)\:$(port)/noogel/$(project)\:latest
 
 push-hub:
-	docker push $(hub)\:$(port)/noogel/$(project)\:$(version)
-	docker push $(hub)\:$(port)/noogel/$(project)\:latest
+	docker push noogel/$(project)\:$(version)
+	docker push noogel/$(project)\:latest
 
 git-push-dev:
 	git add . \
