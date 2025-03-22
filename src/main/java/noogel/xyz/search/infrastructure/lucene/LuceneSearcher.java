@@ -51,6 +51,7 @@ import org.springframework.util.CollectionUtils;
 
 import jakarta.annotation.Nullable;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.utils.cache.LocalQueryCache;
 
 public class LuceneSearcher {
 
@@ -58,6 +59,7 @@ public class LuceneSearcher {
     private final SearcherManager searcherManager;
     private final QueryCache queryCache;
     private final ScheduledExecutorService executor;
+    private final LocalQueryCache localQueryCache;
 
     public LuceneSearcher(Path dir) {
         try {
@@ -73,6 +75,9 @@ public class LuceneSearcher {
                     4000, // 增加缓存最大文档数到4000
                     256 * 1024 * 1024 // 增加缓存大小限制到256MB
             );
+
+            // 初始化本地查询缓存，设置15秒过期时间和1000个最大缓存条目
+            this.localQueryCache = new LocalQueryCache(15 * 1000, 1000);
 
             // 创建 DirectoryReader
             DirectoryReader reader = DirectoryReader.open(directory);
@@ -166,32 +171,39 @@ public class LuceneSearcher {
                 // 忽略关闭异常
             }
         }
+        // 清理本地缓存
+        if (localQueryCache != null) {
+            localQueryCache.clear();
+        }
     }
 
     @Nullable
     public LuceneDocument findFirst(Query query) {
-        IndexSearcher searcher = null;
-        try {
-            searcher = getSearcher();
-            TopDocs topDocs = searcher.search(query, 1);
-            TotalHits totalHits = topDocs.totalHits;
-            if (totalHits.value < 1) {
-                return null;
-            }
-            int docId = topDocs.scoreDocs[0].doc;
-            Document document = searcher.getIndexReader().storedFields().document(docId);
-            return convert(document);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (searcher != null) {
-                try {
-                    releaseSearcher(searcher);
-                } catch (IOException e) {
-                    // 忽略关闭异常
+        String cacheKey = "findFirst:" + query.toString();
+        return localQueryCache.getOrCompute(cacheKey, () -> {
+            IndexSearcher searcher = null;
+            try {
+                searcher = getSearcher();
+                TopDocs topDocs = searcher.search(query, 1);
+                TotalHits totalHits = topDocs.totalHits;
+                if (totalHits.value < 1) {
+                    return null;
+                }
+                int docId = topDocs.scoreDocs[0].doc;
+                Document document = searcher.getIndexReader().storedFields().document(docId);
+                return convert(document);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (searcher != null) {
+                    try {
+                        releaseSearcher(searcher);
+                    } catch (IOException e) {
+                        // 忽略关闭异常
+                    }
                 }
             }
-        }
+        });
     }
 
     @Nullable
@@ -233,91 +245,98 @@ public class LuceneSearcher {
     }
 
     public Pair<List<LuceneDocument>, List<String>> llmSearch(Query query, Paging paging, HighlightOptions options) {
-        IndexSearcher searcher = null;
-        try {
-            searcher = getSearcher();
-            TopDocs topDocs = searcher.search(query, paging.calculateNextOffset());
+        String cacheKey = String.format("llmSearch:%s:%s:%s", query.toString(), paging.toString(), options.toString());
+        return localQueryCache.getOrCompute(cacheKey, () -> {
+            IndexSearcher searcher = null;
+            try {
+                searcher = getSearcher();
+                TopDocs topDocs = searcher.search(query, paging.calculateNextOffset());
 
-            // 高亮
-            Formatter formatter = new SimpleHTMLFormatter(options.getPreTag(), options.getPostTag());
-            QueryScorer scorer = new QueryScorer(query);
-            Highlighter highlighter = new Highlighter(formatter, scorer);
-            Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, options.getFragmentSize());
-            highlighter.setTextFragmenter(fragmenter);
+                // 高亮
+                Formatter formatter = new SimpleHTMLFormatter(options.getPreTag(), options.getPostTag());
+                QueryScorer scorer = new QueryScorer(query);
+                Highlighter highlighter = new Highlighter(formatter, scorer);
+                Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, options.getFragmentSize());
+                highlighter.setTextFragmenter(fragmenter);
 
-            List<List<TextFragment>> textFragmentList = new ArrayList<>();
-            List<LuceneDocument> documents = new ArrayList<>();
-            for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(),
-                    paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
-                int docId = scoreDoc.doc;
-                Document document = searcher.getIndexReader().storedFields().document(docId);
-                try (Analyzer analyzer = new SmartChineseAnalyzer(STOPWORDS)) {
-                    // 高亮文本
-                    TokenStream tokenStream = analyzer.tokenStream("content", document.get("content"));
-                    TextFragment[] highlightedText = highlighter.getBestTextFragments(
-                            tokenStream, document.get("content"), true, options.getMaxNumFragments());
-                    textFragmentList.add(Arrays.stream(highlightedText).toList());
+                List<List<TextFragment>> textFragmentList = new ArrayList<>();
+                List<LuceneDocument> documents = new ArrayList<>();
+                for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(),
+                        paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
+                    int docId = scoreDoc.doc;
+                    Document document = searcher.getIndexReader().storedFields().document(docId);
+                    try (Analyzer analyzer = new SmartChineseAnalyzer(STOPWORDS)) {
+                        // 高亮文本
+                        TokenStream tokenStream = analyzer.tokenStream("content", document.get("content"));
+                        TextFragment[] highlightedText = highlighter.getBestTextFragments(
+                                tokenStream, document.get("content"), true, options.getMaxNumFragments());
+                        textFragmentList.add(Arrays.stream(highlightedText).toList());
+                    }
+                }
+                if (CollectionUtils.isEmpty(textFragmentList)) {
+                    return Pair.of(documents, Collections.emptyList());
+                }
+                // 排序，切割
+                List<String> fragments = textFragmentList.stream().flatMap(Collection::stream)
+                        .filter(l -> l.getScore() > 100.0)
+                        .sorted((l, r) -> (r.getScore() + r.getFragNum()) > (l.getScore() + r.getFragNum()) ? 1 : -1)
+                        .map(TextFragment::toString).toList();
+                fragments = fragments.subList(0, Math.min(options.getMaxNumFragments(), fragments.size()));
+                return Pair.of(documents, fragments);
+
+            } catch (IOException | InvalidTokenOffsetsException e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (searcher != null) {
+                    try {
+                        releaseSearcher(searcher);
+                    } catch (IOException e) {
+                        // 忽略关闭异常
+                    }
                 }
             }
-            if (CollectionUtils.isEmpty(textFragmentList)) {
-                return Pair.of(documents, Collections.emptyList());
-            }
-            // 排序，切割
-            List<String> fragments = textFragmentList.stream().flatMap(Collection::stream)
-                    .filter(l -> l.getScore() > 100.0)
-                    .sorted((l, r) -> (r.getScore() + r.getFragNum()) > (l.getScore() + r.getFragNum()) ? 1 : -1)
-                    .map(TextFragment::toString).toList();
-            fragments = fragments.subList(0, Math.min(options.getMaxNumFragments(), fragments.size()));
-            return Pair.of(documents, fragments);
-
-        } catch (IOException | InvalidTokenOffsetsException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (searcher != null) {
-                try {
-                    releaseSearcher(searcher);
-                } catch (IOException e) {
-                    // 忽略关闭异常
-                }
-            }
-        }
+        });
     }
 
     public Pair<Integer, List<LuceneDocument>> pagingSearch(Query query, Paging paging, @Nullable OrderBy order) {
-        IndexSearcher searcher = null;
-        try {
-            searcher = getSearcher();
-            // 获取最大匹配条数
-            int count = searcher.count(query);
-            // 排序
-            Sort sort = null;
-            if (Objects.nonNull(order)) {
-                String sortedName = String.format("%s_sorted", order.getField());
-                sort = new Sort(new SortField(sortedName, order.getType(), !order.isAsc()));
-            }
-            // 获取当前页数据
-            TopDocs topDocs = Objects.nonNull(sort) ? searcher.search(query, paging.calculateNextOffset(), sort)
-                    : searcher.search(query, paging.calculateNextOffset());
-            List<LuceneDocument> documents = new ArrayList<>();
-            for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(),
-                    paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
-                int docId = scoreDoc.doc;
-                Document document = searcher.getIndexReader().storedFields().document(docId);
-                documents.add(convert(document));
-            }
+        String cacheKey = String.format("pagingSearch:%s:%s:%s", query.toString(), paging.toString(),
+                order != null ? order.toString() : "null");
+        return localQueryCache.getOrCompute(cacheKey, () -> {
+            IndexSearcher searcher = null;
+            try {
+                searcher = getSearcher();
+                // 获取最大匹配条数
+                int count = searcher.count(query);
+                // 排序
+                Sort sort = null;
+                if (Objects.nonNull(order)) {
+                    String sortedName = String.format("%s_sorted", order.getField());
+                    sort = new Sort(new SortField(sortedName, order.getType(), !order.isAsc()));
+                }
+                // 获取当前页数据
+                TopDocs topDocs = Objects.nonNull(sort) ? searcher.search(query, paging.calculateNextOffset(), sort)
+                        : searcher.search(query, paging.calculateNextOffset());
+                List<LuceneDocument> documents = new ArrayList<>();
+                for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(),
+                        paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
+                    int docId = scoreDoc.doc;
+                    Document document = searcher.getIndexReader().storedFields().document(docId);
+                    documents.add(convert(document));
+                }
 
-            return Pair.of(count, documents);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (searcher != null) {
-                try {
-                    releaseSearcher(searcher);
-                } catch (IOException e) {
-                    // 忽略关闭异常
+                return Pair.of(count, documents);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (searcher != null) {
+                    try {
+                        releaseSearcher(searcher);
+                    } catch (IOException e) {
+                        // 忽略关闭异常
+                    }
                 }
             }
-        }
+        });
     }
 
     /**
@@ -331,45 +350,50 @@ public class LuceneSearcher {
      */
     public Pair<List<LuceneDocument>, ScoreDoc> searchAfter(Query query, int pageSize, @Nullable ScoreDoc lastDoc,
             @Nullable OrderBy order) {
-        IndexSearcher searcher = null;
-        try {
-            searcher = getSearcher();
-            // 排序
-            Sort sort = null;
-            if (Objects.nonNull(order)) {
-                String sortedName = String.format("%s_sorted", order.getField());
-                sort = new Sort(new SortField(sortedName, order.getType(), !order.isAsc()));
-            } else {
-                // 如果没有指定排序，默认按照文档得分排序
-                sort = new Sort(SortField.FIELD_SCORE);
-            }
+        String cacheKey = String.format("searchAfter:%s:%d:%s:%s", query.toString(), pageSize,
+                lastDoc != null ? lastDoc.toString() : "null",
+                order != null ? order.toString() : "null");
+        return localQueryCache.getOrCompute(cacheKey, () -> {
+            IndexSearcher searcher = null;
+            try {
+                searcher = getSearcher();
+                // 排序
+                Sort sort = null;
+                if (Objects.nonNull(order)) {
+                    String sortedName = String.format("%s_sorted", order.getField());
+                    sort = new Sort(new SortField(sortedName, order.getType(), !order.isAsc()));
+                } else {
+                    // 如果没有指定排序，默认按照文档得分排序
+                    sort = new Sort(SortField.FIELD_SCORE);
+                }
 
-            // 使用 searchAfter 进行分页
-            TopDocs topDocs = lastDoc == null ? searcher.search(query, pageSize, sort)
-                    : searcher.searchAfter(lastDoc, query, pageSize, sort);
+                // 使用 searchAfter 进行分页
+                TopDocs topDocs = lastDoc == null ? searcher.search(query, pageSize, sort)
+                        : searcher.searchAfter(lastDoc, query, pageSize, sort);
 
-            List<LuceneDocument> documents = new ArrayList<>();
-            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                Document document = searcher.getIndexReader().storedFields().document(scoreDoc.doc);
-                documents.add(convert(document));
-            }
+                List<LuceneDocument> documents = new ArrayList<>();
+                for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                    Document document = searcher.getIndexReader().storedFields().document(scoreDoc.doc);
+                    documents.add(convert(document));
+                }
 
-            // 返回文档列表和最后一个文档的 ScoreDoc（用于下一页查询）
-            ScoreDoc lastScoreDoc = topDocs.scoreDocs.length > 0 ? topDocs.scoreDocs[topDocs.scoreDocs.length - 1]
-                    : null;
-            return Pair.of(documents, lastScoreDoc);
+                // 返回文档列表和最后一个文档的 ScoreDoc（用于下一页查询）
+                ScoreDoc lastScoreDoc = topDocs.scoreDocs.length > 0 ? topDocs.scoreDocs[topDocs.scoreDocs.length - 1]
+                        : null;
+                return Pair.of(documents, lastScoreDoc);
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (searcher != null) {
-                try {
-                    releaseSearcher(searcher);
-                } catch (IOException e) {
-                    // 忽略关闭异常
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (searcher != null) {
+                    try {
+                        releaseSearcher(searcher);
+                    } catch (IOException e) {
+                        // 忽略关闭异常
+                    }
                 }
             }
-        }
+        });
     }
 
     public FullTextSearchModel convert(Document document) {

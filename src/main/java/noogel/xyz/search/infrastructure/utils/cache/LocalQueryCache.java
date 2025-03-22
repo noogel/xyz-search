@@ -1,15 +1,15 @@
 package noogel.xyz.search.infrastructure.utils.cache;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 查询缓存管理器
  */
 @Slf4j
-public class QueryCache {
+public class LocalQueryCache {
     // 查询结果缓存，key 为查询字符串，value 为缓存条目
     private final ConcurrentHashMap<String, CacheEntry<Object>> cache = new ConcurrentHashMap<>();
     // 缓存过期时间（毫秒）
@@ -23,7 +23,7 @@ public class QueryCache {
      * @param expireTime 缓存过期时间（毫秒）
      * @param maxSize    最大缓存条目数
      */
-    public QueryCache(long expireTime, int maxSize) {
+    public LocalQueryCache(long expireTime, int maxSize) {
         this.expireTime = expireTime;
         this.maxSize = maxSize;
     }
