@@ -1,5 +1,34 @@
 package noogel.xyz.search.infrastructure.repo.impl.lucene;
 
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.DEFAULT_ANALYZER;
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.generateAnalyzer;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
+import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -13,31 +42,16 @@ import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
-import noogel.xyz.search.infrastructure.lucene.*;
+import noogel.xyz.search.infrastructure.lucene.HighlightOptions;
+import noogel.xyz.search.infrastructure.lucene.LuceneDocument;
+import noogel.xyz.search.infrastructure.lucene.LuceneSearcher;
+import noogel.xyz.search.infrastructure.lucene.LuceneWriter;
+import noogel.xyz.search.infrastructure.lucene.OrderBy;
+import noogel.xyz.search.infrastructure.lucene.Paging;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessor;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessorFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
-import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
-import org.apache.lucene.document.LongPoint;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.*;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.*;
 
 @Service
 @Slf4j
@@ -57,9 +71,10 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         if (!StringUtils.isEmpty(searchDto.getSearchQuery())) {
             // 创建查询解析器，并指定要搜索的字段列表
-            String[] fields = {"resName", "content"};
+            String[] fields = { "resName", "content" };
             Map<String, Float> boosts = Map.of("resName", 500.F, "content", 100.F);
-            MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new SmartChineseAnalyzer(STOPWORDS), boosts);
+            MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new SmartChineseAnalyzer(STOPWORDS),
+                    boosts);
             String searchQuery = QueryParser.escape(searchDto.getSearchQuery());
             Query query = parser.parse(searchQuery);
             builder.add(query, BooleanClause.Occur.MUST);
@@ -113,11 +128,11 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         // 若需动态控制字段是否精确匹配，可通过自定义 FieldType 实现
         // 自定义字段类型（不分词、不存储词频）
         // FieldType exactMatchType = new FieldType();
-        // exactMatchType.setTokenized(false);       // 不分词
-        // exactMatchType.setOmitNorms(true);        // 不存储词频
+        // exactMatchType.setTokenized(false); // 不分词
+        // exactMatchType.setOmitNorms(true); // 不存储词频
         // exactMatchType.setIndexOptions(IndexOptions.DOCS);
-        // exactMatchType.setStored(true);           // 存储原始值
-        // exactMatchType.freeze();                  // 锁定配置
+        // exactMatchType.setStored(true); // 存储原始值
+        // exactMatchType.freeze(); // 锁定配置
         //
         // // 使用自定义类型添加字段
         // doc.add(new Field("user_id", "user_123", exactMatchType));
@@ -150,21 +165,19 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         luceneSearcher = new LuceneSearcher(configProperties.getBase().indexerFilePath(),
                 new PerFieldAnalyzerWrapper(DEFAULT_ANALYZER, generateAnalyzer()));
 
-        // 初始化批处理器，每100条数据或每5秒处理一次
+        // 减小批处理大小为20条，增加处理间隔到10秒
         batchUpsertProcessor = batchProcessorFactory.getOrCreate(
                 "lucene-writer",
-                100,
+                20,
                 CommonsConsts.DEFAULT_BATCH_COMMIT_LIMIT_MS,
-                this::batchUpsert
-        );
+                this::batchUpsert);
 
-        // 初始化删除批处理器
+        // 减小删除批处理大小为25条
         deleteBatchProcessor = batchProcessorFactory.getOrCreate(
                 "lucene-deleter",
-                50,
+                25,
                 CommonsConsts.DEFAULT_BATCH_COMMIT_LIMIT_MS,
-                this::batchDelete
-        );
+                this::batchDelete);
     }
 
     @PreDestroy
@@ -180,8 +193,8 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
      */
     private void batchUpsert(List<FullTextSearchModel> models) {
         log.info("start 批量添加 {} 条数据到 lucene", models.size());
-//        log.info("批量添加 {} 条数据：\n{}", models.size(), models.stream()
-//                .map(FullTextSearchModel::calculateAbsolutePath).collect(Collectors.joining("\n")));
+        // log.info("批量添加 {} 条数据：\n{}", models.size(), models.stream()
+        // .map(FullTextSearchModel::calculateAbsolutePath).collect(Collectors.joining("\n")));
         for (FullTextSearchModel model : models) {
             luceneWriter.update(model);
         }

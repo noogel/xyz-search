@@ -4,7 +4,7 @@ LABEL description="Xyz Search - Full-text search system based on Spring Boot and
 
 ENV PROJECT_NAME="xyz-search"
 ENV DEPLOY_ENV="docker"
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+ENV JAVA_OPTS="-Xms256m -Xmx1g -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
 
 # gcompat opencv opencv-dev
 RUN apk add --no-cache ffmpeg netcat-openbsd && \

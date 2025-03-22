@@ -1,10 +1,21 @@
 package noogel.xyz.search.infrastructure.lucene;
 
-import noogel.xyz.search.infrastructure.lucene.annotation.KeyWordId;
-import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
-import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
-import org.apache.lucene.document.*;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.IntField;
+import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
@@ -12,12 +23,9 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
+import noogel.xyz.search.infrastructure.lucene.annotation.KeyWordId;
+import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
+import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;
 
 public class LuceneWriter {
 
@@ -56,8 +64,8 @@ public class LuceneWriter {
                     try {
                         IndexWriterConfig config = new IndexWriterConfig(wrapper);
                         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-                        config.setRAMBufferSizeMB(256);
-                        config.setMaxBufferedDocs(1000);
+                        config.setRAMBufferSizeMB(128);
+                        config.setMaxBufferedDocs(500);
                         writer = new IndexWriter(directory, config);
                         writerRef.set(writer);
                     } catch (IOException e) {
@@ -160,7 +168,7 @@ public class LuceneWriter {
     }
 
     public List<Field> convert(Class<?> clazz, String name, Object value,
-                               PkId pkId, SortedId sortedId, KeyWordId keyWordId) {
+            PkId pkId, SortedId sortedId, KeyWordId keyWordId) {
         List<Field> result = new ArrayList<>();
         if (Objects.nonNull(pkId)) {
             StringField fd = new StringField(name, Objects.isNull(value) ? "" : ((String) value), Field.Store.YES);
@@ -168,7 +176,8 @@ public class LuceneWriter {
         } else if (String.class.equals(clazz)) {
             if (Objects.nonNull(sortedId)) {
                 String sortedName = String.format("%s_sorted", name);
-                SortedDocValuesField sfd = new SortedDocValuesField(sortedName, new BytesRef((Objects.isNull(value) ? "" : ((String) value)).getBytes()));
+                SortedDocValuesField sfd = new SortedDocValuesField(sortedName,
+                        new BytesRef((Objects.isNull(value) ? "" : ((String) value)).getBytes()));
                 result.add(sfd);
             }
             // Lucene 字段类型决定是否支持搜索
@@ -185,7 +194,8 @@ public class LuceneWriter {
         } else if (Long.class.equals(clazz)) {
             if (Objects.nonNull(sortedId)) {
                 String sortedName = String.format("%s_sorted", name);
-                NumericDocValuesField nfd = new NumericDocValuesField(sortedName, Objects.isNull(value) ? 0L : ((Long) value));
+                NumericDocValuesField nfd = new NumericDocValuesField(sortedName,
+                        Objects.isNull(value) ? 0L : ((Long) value));
                 result.add(nfd);
             }
             LongField fd = new LongField(name, Objects.isNull(value) ? 0L : ((Long) value), Field.Store.YES);
@@ -193,7 +203,8 @@ public class LuceneWriter {
         } else if (Integer.class.equals(clazz)) {
             if (Objects.nonNull(sortedId)) {
                 String sortedName = String.format("%s_sorted", name);
-                NumericDocValuesField nfd = new NumericDocValuesField(sortedName, Objects.isNull(value) ? 0 : ((Long) value));
+                NumericDocValuesField nfd = new NumericDocValuesField(sortedName,
+                        Objects.isNull(value) ? 0 : ((Long) value));
                 result.add(nfd);
             }
             IntField fd = new IntField(name, Objects.isNull(value) ? 0 : ((Integer) value), Field.Store.YES);

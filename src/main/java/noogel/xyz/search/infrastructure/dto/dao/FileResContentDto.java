@@ -1,12 +1,12 @@
 package noogel.xyz.search.infrastructure.dto.dao;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
@@ -28,10 +28,17 @@ public class FileResContentDto {
     }
 
     public String genContent() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(estimateContentLength() + 1024);
+
         for (ChapterDto dto : chapterList) {
             sb.append(dto.getContent());
         }
         return sb.toString();
+    }
+
+    private int estimateContentLength() {
+        return chapterList.stream()
+                .mapToInt(chapter -> chapter.getContent() != null ? chapter.getContent().length() : 0)
+                .sum();
     }
 }
