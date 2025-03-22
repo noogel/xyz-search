@@ -1,10 +1,10 @@
 package noogel.xyz.search.infrastructure.consts;
 
+import java.util.Arrays;
+
 import jakarta.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.util.Arrays;
 
 @AllArgsConstructor
 @Getter
@@ -18,6 +18,8 @@ public enum FileExtEnum {
     MP4,
     DOCX,
     DOC,
+    XLSX,
+    XLS,
     AVI,
     MKV,
     JPEG,
