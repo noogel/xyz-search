@@ -58,7 +58,6 @@
                     document.querySelector("#imageThumbnail").setAttribute("class", "img-thumbnail invisible");
                 }
 
-                document.querySelector("#linkCalibre").href = "http://192.168.124.13:8080/#library_id=%E7%94%B5%E5%AD%90%E4%B9%A6%E5%BA%93&panel=book_list&search=" + data.searchableTitle + "&sort=last_modified.desc";
                 document.querySelector("#linkDouban").href = "https://m.douban.com/search/?query=" + data.searchableTitle;
                 document.querySelector("#linkJd").href = "https://so.m.jd.com/ware/search.action?keyword=" + data.searchableTitle;
                 document.querySelector("#linkGG").href = "https://www.google.com/search?q=" + data.searchableTitle;
@@ -390,10 +389,6 @@
                     <div class="my-3 row justify-content-end">
                         <!-- 文件内容结果列表 操作 -->
                         <div class="col-auto">
-                            <a class="page-link" id="linkCalibre" href="#" target="_blank">
-                                <button id="linkCalibreBtn" type="button" class="btn btn-link">Calibre</button></a>
-                        </div>
-                        <div class="col-auto">
                             <a class="page-link" id="linkDouban" href="#" target="_blank">
                                 <button id="linkDoubanBtn" type="button" class="btn btn-link">豆瓣</button></a>
                         </div>
@@ -406,9 +401,6 @@
                                 <button type="linkGGBtn" class="btn btn-link">谷歌</button></a>
                         </div>
                     </div>
-<!--                    <div class="my-3 row justify-content-end">-->
-<!--                        <iframe id="subPage" src="#" height="600" width="auto" title=""></iframe>-->
-<!--                    </div>-->
                 </div>
                 <div class="offcanvas-header justify-content-center">
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>

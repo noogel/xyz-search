@@ -16,7 +16,7 @@ app:
       excludesDirectories:
         - /Users/xyz/MyDebug/XyzSearchTestData/skip
       excludeFileProcessClass:
-        - Eaa
+        - OTHER
   collectDirectories:
     -
       fromList:
@@ -45,7 +45,7 @@ app:
   chat:
     enable: false
     ollama:
-      baseUrl: "http://192.168.124.101:11434"
+      baseUrl: "http://localhost:11434"
       chatModel: "deepseek-r1:14b"
       chatOptionTemperature: 0.7
       chatOptionNumCtx: 4096

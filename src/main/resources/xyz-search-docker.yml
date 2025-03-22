@@ -16,13 +16,13 @@ app:
       excludesDirectories:
         - /data/share/skip
       excludeFileProcessClass:
-        -
+        - OTHER
   collectDirectories:
     -
       fromList:
         - /collect
       to: /data/share/collect
-      filterRegex: "pdf"
+      filterRegex: "\\.(html|HTML|htm)"
       autoDelete: false
   opdsDirectory:
   uploadFileDirectory: /data/share/upload
@@ -33,14 +33,14 @@ app:
     emailPort:
     emailPass:
     receivers:
-      - aaa@email.com
+      - xxx@email.com
   paddleOcr:
     url:
     timeout: 10000
   linkItems:
     -
-      desc: aaa
-      searchUrl: https
+      desc: 百度
+      searchUrl: https://www.baidu.com?q={query}
   chat:
     enable: false
     ollama:
