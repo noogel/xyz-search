@@ -25,6 +25,11 @@ push-hub:
 	docker push noogel/$(project)\:$(version)
 	docker push noogel/$(project)\:latest
 
+git-push-master:
+	git add . \
+ && git commit -am "auto update" \
+ && git push origin master
+
 git-push-dev:
 	git add . \
  && git commit -am "auto update" \
