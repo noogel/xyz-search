@@ -1,6 +1,6 @@
 #!/bin/sh
 
-version = 1.2.1
+version = 1.2.2
 project = xyz-search
 hub = 192.168.124.11
 port = 8111
