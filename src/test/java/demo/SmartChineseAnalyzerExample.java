@@ -1,18 +1,21 @@
 package demo;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.junit.jupiter.api.Test;
 
 public class SmartChineseAnalyzerExample {
-    public static void main(String[] args) throws Exception {
+
+    @Test
+    public void test() {
         String text = "今天是个好日子，心情很好天气也好。";
 
         try (Analyzer analyzer = new SmartChineseAnalyzer();

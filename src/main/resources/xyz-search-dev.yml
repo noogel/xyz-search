@@ -56,3 +56,8 @@ app:
       pullModelStrategy: when_missing
       embeddingAdditionalModels:
         - "jinaai/jina-embeddings-v2-base-zh"
+    qdrant:
+      host: localhost
+      port: 6334
+      # collection-name: xyz_search
+      # initialize-schema: true

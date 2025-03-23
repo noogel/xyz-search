@@ -135,6 +135,15 @@ public class ConfigProperties {
         private boolean enable;
         @ConfigNote(desc = "ollama")
         private Ollama ollama;
+        @ConfigNote(desc = "qdrant")
+        private Qdrant qdrant;
+    }
+
+    @Data
+    public static class Qdrant {
+        private String host;
+        private Integer port;
+        private String apiKey;
     }
 
     @Data
