@@ -28,6 +28,9 @@ app:
   opdsDirectory:
   uploadFileDirectory: /d
   markDeleteDirectory: /Users/xyz/MyDebug/XyzSearchTestData/skip
+  notify:
+    type: email
+    accessIntervalHours: null
   notifyEmail:
     senderEmail:
     emailHost:

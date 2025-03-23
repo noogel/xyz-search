@@ -1,17 +1,5 @@
 package noogel.xyz.search.infrastructure.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.consts.CommonsConsts;
-import noogel.xyz.search.infrastructure.utils.ConfigNote;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.BeanUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,6 +9,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.BeanUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
+import noogel.xyz.search.infrastructure.utils.ConfigNote;
 
 @Data
 @Slf4j
@@ -93,6 +95,15 @@ public class ConfigProperties {
     }
 
     @Data
+    public static class Notify {
+        @ConfigNote(desc = "notify:通知类型")
+        private String type = "email";
+        // 访问通知间隔
+        @ConfigNote(desc = "notify:访问通知间隔(小时)，null不通知")
+        private Integer accessIntervalHours;
+    }
+
+    @Data
     public static class PaddleOcr {
         @ConfigNote(desc = "paddleOcr:OCR服务地址")
         private String url;
@@ -160,6 +171,8 @@ public class ConfigProperties {
         private String markDeleteDirectory;
         @ConfigNote(desc = "访问邮件通知")
         private NotifyEmail notifyEmail;
+        @ConfigNote(desc = "通知配置")
+        private Notify notify;
         @ConfigNote(desc = "外部 OCR 服务")
         private PaddleOcr paddleOcr;
         @ConfigNote(desc = "外链配置")

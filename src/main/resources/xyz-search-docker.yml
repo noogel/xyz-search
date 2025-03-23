@@ -27,6 +27,9 @@ app:
   opdsDirectory:
   uploadFileDirectory: /data/share/upload
   markDeleteDirectory: /data/share/skip/deleted
+  notify:
+    type: email
+    accessIntervalHours: 6
   notifyEmail:
     senderEmail:
     emailHost:
