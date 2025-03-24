@@ -24,6 +24,7 @@ import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.LRUQueryCache;
 import org.apache.lucene.search.Query;
@@ -36,6 +37,7 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.UsageTrackingQueryCachingPolicy;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Fragmenter;
 import org.apache.lucene.search.highlight.Highlighter;
@@ -50,9 +52,11 @@ import org.apache.lucene.store.MMapDirectory;
 import org.springframework.util.CollectionUtils;
 
 import jakarta.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.utils.cache.LocalQueryCache;
 
+@Slf4j
 public class LuceneSearcher {
 
     private final FSDirectory directory;
@@ -71,13 +75,12 @@ public class LuceneSearcher {
             }
 
             // 创建 Lucene 查询缓存，优化配置
-            this.queryCache = new LRUQueryCache(
-                    4000, // 增加缓存最大文档数到4000
+            this.queryCache = new LRUQueryCache(4000, // 增加缓存最大文档数到4000
                     256 * 1024 * 1024 // 增加缓存大小限制到256MB
             );
 
-            // 初始化本地查询缓存，设置15秒过期时间和1000个最大缓存条目
-            this.localQueryCache = new LocalQueryCache(15 * 1000, 1000);
+            // 初始化本地查询缓存，设置30秒过期时间和2000个最大缓存条目
+            this.localQueryCache = new LocalQueryCache(30 * 1000, 2000);
 
             // 创建 DirectoryReader
             DirectoryReader reader = DirectoryReader.open(directory);
@@ -87,25 +90,22 @@ public class LuceneSearcher {
                 @Override
                 public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
                     // 创建自定义线程池，设置合理的队列长度和拒绝策略
-                    ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                            Runtime.getRuntime().availableProcessors(), // 核心线程数
-                            Runtime.getRuntime().availableProcessors() * 2, // 最大线程数
-                            60L, TimeUnit.SECONDS, // 线程空闲超时时间
-                            new ArrayBlockingQueue<>(1000), // 设置队列长度为1000
+                    ThreadPoolExecutor executor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2, // 增加核心线程数
+                            Runtime.getRuntime().availableProcessors() * 4, // 增加最大线程数
+                            60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(2000), // 增加队列长度
                             r -> {
                                 Thread thread = new Thread(r);
                                 thread.setName("lucene-search-" + Thread.currentThread().getId());
                                 thread.setDaemon(true);
                                 return thread;
-                            },
-                            new ThreadPoolExecutor.CallerRunsPolicy());
+                            }, new ThreadPoolExecutor.CallerRunsPolicy());
 
                     IndexSearcher searcher = new IndexSearcher(reader, executor);
                     searcher.setQueryCache(queryCache);
                     searcher.setQueryCachingPolicy(new UsageTrackingQueryCachingPolicy());
 
-                    // 优化BM25参数：k1=1.2, b=0.75是经典配置
-                    searcher.setSimilarity(new BM25Similarity(1.2f, 0.75f));
+                    // 优化BM25参数：调整k1和b参数以提高准确性
+                    searcher.setSimilarity(new BM25Similarity(1.5f, 0.8f));
 
                     return searcher;
                 }
@@ -227,8 +227,8 @@ public class LuceneSearcher {
             highlighter.setTextFragmenter(fragmenter);
             // 高亮文本
             try (Analyzer analyzer = new SmartChineseAnalyzer(STOPWORDS)) {
-                String[] highlightedText = highlighter.getBestFragments(
-                        analyzer, "content", document.get("content"), options.getMaxNumFragments());
+                String[] highlightedText = highlighter.getBestFragments(analyzer, "content", document.get("content"),
+                        options.getMaxNumFragments());
                 return Pair.of(convert(document), Arrays.asList(highlightedText));
             }
         } catch (IOException | InvalidTokenOffsetsException e) {
@@ -268,8 +268,8 @@ public class LuceneSearcher {
                     try (Analyzer analyzer = new SmartChineseAnalyzer(STOPWORDS)) {
                         // 高亮文本
                         TokenStream tokenStream = analyzer.tokenStream("content", document.get("content"));
-                        TextFragment[] highlightedText = highlighter.getBestTextFragments(
-                                tokenStream, document.get("content"), true, options.getMaxNumFragments());
+                        TextFragment[] highlightedText = highlighter.getBestTextFragments(tokenStream,
+                                document.get("content"), true, options.getMaxNumFragments());
                         textFragmentList.add(Arrays.stream(highlightedText).toList());
                     }
                 }
@@ -351,8 +351,7 @@ public class LuceneSearcher {
     public Pair<List<LuceneDocument>, ScoreDoc> searchAfter(Query query, int pageSize, @Nullable ScoreDoc lastDoc,
             @Nullable OrderBy order) {
         String cacheKey = String.format("searchAfter:%s:%d:%s:%s", query.toString(), pageSize,
-                lastDoc != null ? lastDoc.toString() : "null",
-                order != null ? order.toString() : "null");
+                lastDoc != null ? lastDoc.toString() : "null", order != null ? order.toString() : "null");
         return localQueryCache.getOrCompute(cacheKey, () -> {
             IndexSearcher searcher = null;
             try {
@@ -428,16 +427,27 @@ public class LuceneSearcher {
         IndexSearcher searcher = null;
         try {
             searcher = getSearcher();
-            // 加载所有 segments 到内存
-            searcher.getIndexReader().leaves().forEach(leaf -> {
-                try {
-                    leaf.reader().terms("content").iterator().next();
-                } catch (IOException e) {
-                    // 忽略预热异常
-                }
-            });
+            // 预热所有字段的terms
+            for (String field : Arrays.asList("content")) {
+                searcher.getIndexReader().leaves().forEach(leaf -> {
+                    try {
+                        leaf.reader().terms(field).iterator().next();
+                    } catch (IOException e) {
+                        // 忽略预热异常
+                    }
+                });
+            }
+
+            // 预热常用查询
+            Query[] warmupQueries = new Query[] { new WildcardQuery(new Term("content", "*")), };
+
+            for (Query query : warmupQueries) {
+                searcher.search(query, 1);
+            }
         } catch (IOException e) {
             // 忽略预热异常
+        } catch (Exception e) {
+            log.error("warmUp error", e);
         } finally {
             if (searcher != null) {
                 try {
