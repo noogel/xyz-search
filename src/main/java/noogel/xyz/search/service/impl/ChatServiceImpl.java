@@ -21,8 +21,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.client.OllamaClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.config.OllamaClient;
 import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
 import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
 import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
@@ -52,7 +52,7 @@ public class ChatServiceImpl implements ChatService {
         SseEmitter emitter = new SseEmitter();
 
         // 检查 Ollama 服务是否开启
-        if (!configProperties.getApp().getChat().isEnable()) {
+        if (!configProperties.getApp().getChat().getOllama().isEnable()) {
             try {
                 emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), "ollama 未开启"));
                 emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), ""));
@@ -87,7 +87,7 @@ public class ChatServiceImpl implements ChatService {
         SseEmitter emitter = new SseEmitter();
 
         // 检查 Ollama 服务是否开启
-        if (!configProperties.getApp().getChat().isEnable()) {
+        if (!configProperties.getApp().getChat().getOllama().isEnable()) {
             try {
                 emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), "ollama 未开启"));
                 emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), ""));
@@ -118,7 +118,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Flux<ChatResponse> fluxChatStream(ChatRequestDto dto) {
         // 检查 Ollama 服务是否开启
-        if (!configProperties.getApp().getChat().isEnable()) {
+        if (!configProperties.getApp().getChat().getOllama().isEnable()) {
             return Flux.error(new RuntimeException("ollama 未开启"));
         }
 

@@ -45,8 +45,8 @@ app:
       desc: 百度
       searchUrl: https://www.baidu.com?q={query}
   chat:
-    enable: false
     ollama:
+      enable: false
       baseUrl: "http://localhost:11434"
       chatModel: "deepseek-r1:1.5b"
       chatOptionTemperature: 0.7
@@ -55,8 +55,11 @@ app:
       pullModelStrategy: when_missing
       embeddingAdditionalModels:
         - "jinaai/jina-embeddings-v2-base-zh"
-    qdrant:
-      host: null
-      port: 6334
-      # collection-name: xyz_search
-      # initialize-schema: true
+    elastic:
+      enable: false
+      host: 
+      user: elastic
+      password: elastic
+      caPath: 
+      connectionTimeout: 30000
+      socketTimeout: 60000

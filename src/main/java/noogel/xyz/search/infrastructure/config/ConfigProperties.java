@@ -131,37 +131,47 @@ public class ConfigProperties {
 
     @Data
     public static class Chat {
-        @ConfigNote(desc = "是否开启")
-        private boolean enable;
-        @ConfigNote(desc = "ollama")
+        @ConfigNote(desc = "ollama 支持 LLM 和 embedding")
         private Ollama ollama;
-        @ConfigNote(desc = "qdrant")
-        private Qdrant qdrant;
+        @ConfigNote(desc = "elastic 支持索引和向量数据库")
+        private Elastic elastic;
     }
 
     @Data
-    public static class Qdrant {
+    public static class Elastic {
+        @ConfigNote(desc = "是否开启")
+        private boolean enable;
+        @ConfigNote(desc = "host")
         private String host;
-        private Integer port;
-        private String apiKey;
+        @ConfigNote(desc = "user")
+        private String user;
+        @ConfigNote(desc = "password")
+        private String password;
+        @ConfigNote(desc = "caPath")
+        private String caPath;
+        @ConfigNote(desc = "connectionTimeout")
+        private Integer connectionTimeout;
+        @ConfigNote(desc = "socketTimeout")
+        private Integer socketTimeout;
     }
 
     @Data
     public static class Ollama {
-        /**
-         * #spring.ai.ollama.base-url=http://localhost:11434
-         * #spring.ai.ollama.chat.model=deepseek-r1:1.5b
-         * spring.ai.ollama.chat.options.temperature=0.7
-         * spring.ai.ollama.chat.options.num-predict=10000
-         * spring.ai.ollama.init.embedding.additional-models=jinaai/jina-embeddings-v2-base-zh
-         * spring.ai.ollama.init.pull-model-strategy=never
-         */
+        @ConfigNote(desc = "是否开启")
+        private boolean enable;
+        @ConfigNote(desc = "baseUrl")
         private String baseUrl;
+        @ConfigNote(desc = "chatModel")
         private String chatModel;
+        @ConfigNote(desc = "chatOptionNumCtx")
         private String chatOptionNumCtx;
+        @ConfigNote(desc = "chatOptionTemperature")
         private String chatOptionTemperature;
+        @ConfigNote(desc = "chatOptionNumPredict")
         private String chatOptionNumPredict;
+        @ConfigNote(desc = "embeddingAdditionalModels")
         private List<String> embeddingAdditionalModels;
+        @ConfigNote(desc = "pullModelStrategy")
         private String pullModelStrategy;
     }
 

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.client.VectorClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.config.VectorClient;
 import noogel.xyz.search.service.rag.RAGService;
 
 @Service

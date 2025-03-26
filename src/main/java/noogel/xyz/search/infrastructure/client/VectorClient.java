@@ -1,4 +1,4 @@
-package noogel.xyz.search.infrastructure.config;
+package noogel.xyz.search.infrastructure.client;
 
 import java.util.Objects;
 
@@ -10,11 +10,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import io.qdrant.client.QdrantClient;
-import io.qdrant.client.QdrantGrpcClient;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 
@@ -34,9 +34,7 @@ public class VectorClient {
     @PostConstruct
     public void init() {
         try {
-            if (configProperties.getApp().getChat().getQdrant() != null
-                    && configProperties.getApp().getChat().getQdrant().getHost() != null
-                    && configProperties.getApp().getChat().getQdrant().getPort() != null) {
+            if (configProperties.getApp().getChat().getElastic().isEnable()) {
                 initClient();
             }
         } catch (Exception e) {
@@ -49,8 +47,8 @@ public class VectorClient {
         try {
             ConfigProperties.App newApp = event.getNewApp();
             ConfigProperties.App oldApp = event.getOldApp();
-            if (!Objects.equals(JsonHelper.toJson(newApp.getChat().getQdrant()),
-                    JsonHelper.toJson(oldApp.getChat().getQdrant()))) {
+            if (!Objects.equals(JsonHelper.toJson(newApp.getChat().getElastic()),
+                    JsonHelper.toJson(oldApp.getChat().getElastic()))) {
                 initClient();
             }
         } catch (Exception e) {
@@ -64,9 +62,7 @@ public class VectorClient {
      */
     private void initClient() {
         try {
-            if (configProperties.getApp().getChat().getQdrant() != null
-                    && configProperties.getApp().getChat().getQdrant().getHost() != null
-                    && configProperties.getApp().getChat().getQdrant().getPort() != null) {
+            if (configProperties.getApp().getChat().getElastic().isEnable()) {
                 this.qdrantClient = qdrantClient();
                 this.vectorStore = vectorStore(this.qdrantClient, ollamaClient.getEmbeddingModel());
             }
@@ -76,15 +72,7 @@ public class VectorClient {
     }
 
     private QdrantClient qdrantClient() {
-        String host = configProperties.getApp().getChat().getQdrant().getHost();
-        Integer port = configProperties.getApp().getChat().getQdrant().getPort();
-        String apiKey = configProperties.getApp().getChat().getQdrant().getApiKey();
-        boolean useTransportLayerSecurity = host.startsWith("https://");
-        QdrantGrpcClient.Builder grpcClientBuilder = QdrantGrpcClient.newBuilder(host, port, useTransportLayerSecurity);
-        if (apiKey != null && !apiKey.isEmpty()) {
-            grpcClientBuilder.withApiKey(apiKey);
-        }
-        return new QdrantClient(grpcClientBuilder.build());
+        return null;
     }
 
     private VectorStore vectorStore(QdrantClient qdrantClient, EmbeddingModel embeddingModel) {

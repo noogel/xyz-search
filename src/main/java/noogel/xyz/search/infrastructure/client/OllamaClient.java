@@ -1,4 +1,4 @@
-package noogel.xyz.search.infrastructure.config;
+package noogel.xyz.search.infrastructure.client;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -22,6 +22,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 
@@ -56,7 +57,7 @@ public class OllamaClient {
     @PostConstruct
     public void init() {
         try {
-            if (configProperties.getApp().getChat().isEnable()) {
+            if (configProperties.getApp().getChat().getOllama().isEnable()) {
                 initOllama();
             }
         } catch (Exception e) {
@@ -69,7 +70,8 @@ public class OllamaClient {
         try {
             ConfigProperties.App newApp = event.getNewApp();
             ConfigProperties.App oldApp = event.getOldApp();
-            if (!Objects.equals(JsonHelper.toJson(newApp.getChat()), JsonHelper.toJson(oldApp.getChat()))) {
+            if (!Objects.equals(JsonHelper.toJson(newApp.getChat().getOllama()),
+                        JsonHelper.toJson(oldApp.getChat().getOllama()))) {
                 initOllama();
             }
         } catch (Exception e) {
@@ -83,7 +85,7 @@ public class OllamaClient {
      * @return
      */
     public boolean isEnabled() {
-        return configProperties.getApp().getChat().isEnable() && Objects.nonNull(chatModel);
+        return configProperties.getApp().getChat().getOllama().isEnable() && Objects.nonNull(chatModel);
     }
 
     /**

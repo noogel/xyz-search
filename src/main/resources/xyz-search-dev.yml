@@ -46,8 +46,8 @@ app:
       desc: aaa
       searchUrl: https
   chat:
-    enable: true
     ollama:
+      enable: true
       baseUrl: "http://localhost:11434"
       chatModel: "deepseek-r1:14b"
       chatOptionTemperature: 0.7
@@ -56,8 +56,11 @@ app:
       pullModelStrategy: when_missing
       embeddingAdditionalModels:
         - "jinaai/jina-embeddings-v2-base-zh"
-    qdrant:
-      host: localhost
-      port: 6334
-      # collection-name: xyz_search
-      # initialize-schema: true
+    elastic:
+      enable: true
+      host: "http://localhost:9200"
+      user: elastic
+      password: elastic
+      caPath: /Users/xyz/MyDebug/XyzSearchTestData/ca.crt
+      connectionTimeout: 10000
+      socketTimeout: 30000
