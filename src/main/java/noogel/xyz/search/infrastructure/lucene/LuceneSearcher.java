@@ -17,6 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import noogel.xyz.search.infrastructure.model.FtsDocument;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -53,7 +54,7 @@ import org.springframework.util.CollectionUtils;
 
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.utils.cache.LocalQueryCache;
 
 @Slf4j

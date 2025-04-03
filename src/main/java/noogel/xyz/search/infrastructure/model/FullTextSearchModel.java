@@ -1,11 +1,10 @@
-package noogel.xyz.search.infrastructure.model.lucene;
+package noogel.xyz.search.infrastructure.model;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import lombok.Data;
-import noogel.xyz.search.infrastructure.lucene.FtsDocument;
 import noogel.xyz.search.infrastructure.lucene.annotation.KeyWordId;
 import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
 import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;

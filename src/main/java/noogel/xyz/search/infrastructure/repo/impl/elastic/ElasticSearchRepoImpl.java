@@ -46,7 +46,7 @@ import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto.Field;
 import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 
 @Repository

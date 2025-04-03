@@ -15,7 +15,7 @@ import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
