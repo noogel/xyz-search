@@ -1,10 +1,10 @@
 package noogel.xyz.search.infrastructure.dto.repo;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 public class CommonSearchDto {
@@ -56,6 +56,10 @@ public class CommonSearchDto {
     public static class Paging {
         private Integer limit = 20;
         private Integer page = 1;
+
+        public int getOffset() {
+            return (page - 1) * limit;
+        }
     }
 
     @Data

@@ -178,7 +178,7 @@ public class LuceneSearcher {
     }
 
     @Nullable
-    public LuceneDocument findFirst(Query query) {
+    public FtsDocument findFirst(Query query) {
         String cacheKey = "findFirst:" + query.toString();
         return localQueryCache.getOrCompute(cacheKey, () -> {
             IndexSearcher searcher = null;
@@ -207,7 +207,7 @@ public class LuceneSearcher {
     }
 
     @Nullable
-    public Pair<LuceneDocument, List<String>> findFirstWithHighlight(Query query, HighlightOptions options) {
+    public Pair<FtsDocument, List<String>> findFirstWithHighlight(Query query, HighlightOptions options) {
         IndexSearcher searcher = null;
         try {
             searcher = getSearcher();
@@ -244,7 +244,7 @@ public class LuceneSearcher {
         }
     }
 
-    public Pair<List<LuceneDocument>, List<String>> llmSearch(Query query, Paging paging, HighlightOptions options) {
+    public Pair<List<FtsDocument>, List<String>> llmSearch(Query query, Paging paging, HighlightOptions options) {
         String cacheKey = String.format("llmSearch:%s:%s:%s", query.toString(), paging.toString(), options.toString());
         return localQueryCache.getOrCompute(cacheKey, () -> {
             IndexSearcher searcher = null;
@@ -260,7 +260,7 @@ public class LuceneSearcher {
                 highlighter.setTextFragmenter(fragmenter);
 
                 List<List<TextFragment>> textFragmentList = new ArrayList<>();
-                List<LuceneDocument> documents = new ArrayList<>();
+                List<FtsDocument> documents = new ArrayList<>();
                 for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(),
                         paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
                     int docId = scoreDoc.doc;
@@ -298,7 +298,7 @@ public class LuceneSearcher {
         });
     }
 
-    public Pair<Integer, List<LuceneDocument>> pagingSearch(Query query, Paging paging, @Nullable OrderBy order) {
+    public Pair<Integer, List<FtsDocument>> pagingSearch(Query query, Paging paging, @Nullable OrderBy order) {
         String cacheKey = String.format("pagingSearch:%s:%s:%s", query.toString(), paging.toString(),
                 order != null ? order.toString() : "null");
         return localQueryCache.getOrCompute(cacheKey, () -> {
@@ -316,7 +316,7 @@ public class LuceneSearcher {
                 // 获取当前页数据
                 TopDocs topDocs = Objects.nonNull(sort) ? searcher.search(query, paging.calculateNextOffset(), sort)
                         : searcher.search(query, paging.calculateNextOffset());
-                List<LuceneDocument> documents = new ArrayList<>();
+                List<FtsDocument> documents = new ArrayList<>();
                 for (ScoreDoc scoreDoc : List.of(topDocs.scoreDocs).subList(paging.calculateOffset(),
                         paging.calculateNextOffset(Math.toIntExact(topDocs.totalHits.value)))) {
                     int docId = scoreDoc.doc;
@@ -348,7 +348,7 @@ public class LuceneSearcher {
      * @param order    排序条件
      * @return 分页结果
      */
-    public Pair<List<LuceneDocument>, ScoreDoc> searchAfter(Query query, int pageSize, @Nullable ScoreDoc lastDoc,
+    public Pair<List<FtsDocument>, ScoreDoc> searchAfter(Query query, int pageSize, @Nullable ScoreDoc lastDoc,
             @Nullable OrderBy order) {
         String cacheKey = String.format("searchAfter:%s:%d:%s:%s", query.toString(), pageSize,
                 lastDoc != null ? lastDoc.toString() : "null", order != null ? order.toString() : "null");
@@ -370,7 +370,7 @@ public class LuceneSearcher {
                 TopDocs topDocs = lastDoc == null ? searcher.search(query, pageSize, sort)
                         : searcher.searchAfter(lastDoc, query, pageSize, sort);
 
-                List<LuceneDocument> documents = new ArrayList<>();
+                List<FtsDocument> documents = new ArrayList<>();
                 for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                     Document document = searcher.getIndexReader().storedFields().document(scoreDoc.doc);
                     documents.add(convert(document));

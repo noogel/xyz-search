@@ -1,17 +1,17 @@
 package noogel.xyz.search.infrastructure.model.lucene;
 
-import lombok.Data;
-import noogel.xyz.search.infrastructure.lucene.LuceneDocument;
-import noogel.xyz.search.infrastructure.lucene.annotation.KeyWordId;
-import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
-import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import lombok.Data;
+import noogel.xyz.search.infrastructure.lucene.FtsDocument;
+import noogel.xyz.search.infrastructure.lucene.annotation.KeyWordId;
+import noogel.xyz.search.infrastructure.lucene.annotation.PkId;
+import noogel.xyz.search.infrastructure.lucene.annotation.SortedId;
+
 @Data
-public class FullTextSearchModel implements LuceneDocument {
+public class FullTextSearchModel implements FtsDocument {
 
     /**
      * 资源完整路径 HASH

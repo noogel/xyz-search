@@ -242,13 +242,23 @@ public class ConfigProperties {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Runtime {
         /**
-         * 是否已经初始化索引
+         * 默认睡眠时间
          */
         private Long defaultSleepMs;
+        /**
+         * 索引名称
+         */
+        private String indexName;
+        /**
+         * 是否已经初始化索引
+         */
+        private Boolean initIndex;
 
         public static Runtime init() {
             Runtime rt = new Runtime();
             rt.setDefaultSleepMs(CommonsConsts.DEFAULT_SLEEP_MS);
+            rt.setIndexName(CommonsConsts.DEFAULT_INDEX_NAME);
+            rt.setInitIndex(false);
             return rt;
         }
     }

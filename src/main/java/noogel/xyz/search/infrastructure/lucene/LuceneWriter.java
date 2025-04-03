@@ -114,7 +114,7 @@ public class LuceneWriter {
         }
     }
 
-    public boolean update(LuceneDocument data) {
+    public boolean update(FtsDocument data) {
         try {
             IndexWriter writer = getWriter();
             Document doc = new Document();
@@ -138,7 +138,7 @@ public class LuceneWriter {
         }
     }
 
-    public boolean delete(LuceneDocument data) {
+    public boolean delete(FtsDocument data) {
         try {
             IndexWriter writer = getWriter();
             Term term = null;

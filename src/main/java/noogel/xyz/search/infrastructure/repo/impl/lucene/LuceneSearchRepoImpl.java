@@ -42,8 +42,8 @@ import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
+import noogel.xyz.search.infrastructure.lucene.FtsDocument;
 import noogel.xyz.search.infrastructure.lucene.HighlightOptions;
-import noogel.xyz.search.infrastructure.lucene.LuceneDocument;
 import noogel.xyz.search.infrastructure.lucene.LuceneSearcher;
 import noogel.xyz.search.infrastructure.lucene.LuceneWriter;
 import noogel.xyz.search.infrastructure.lucene.OrderBy;
@@ -262,7 +262,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             Query query = genQueryBuilder(searchDto);
             HighlightOptions highlightOptions = HighlightOptions.of(
                     100, 10, "<em>", "</em>");
-            Pair<LuceneDocument, List<String>> resp = luceneSearcher.findFirstWithHighlight(query, highlightOptions);
+            Pair<FtsDocument, List<String>> resp = luceneSearcher.findFirstWithHighlight(query, highlightOptions);
             ResourceHighlightHitsDto dto = new ResourceHighlightHitsDto();
             dto.setResource((FullTextSearchModel) resp.getLeft());
             dto.setHighlights(resp.getRight());
@@ -297,7 +297,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
                         convertSortType(searchDto.getOrder().getField()), searchDto.getOrder().isAsc());
             }
 
-            Pair<Integer, List<LuceneDocument>> totalHitsListPair = luceneSearcher.pagingSearch(query, paging, order);
+            Pair<Integer, List<FtsDocument>> totalHitsListPair = luceneSearcher.pagingSearch(query, paging, order);
             SearchResultDto resultDto = new SearchResultDto();
             resultDto.setData(totalHitsListPair.getValue().stream().map(t -> (FullTextSearchModel) t).toList());
             resultDto.setSize(totalHitsListPair.getKey());
