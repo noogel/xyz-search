@@ -65,7 +65,8 @@ public class VectorClient {
      */
     private void initClient() {
         try {
-            if (configProperties.getApp().getChat().getElastic().isEnable()) {
+            ConfigProperties.Chat chat = configProperties.getApp().getChat();
+            if (chat.getElastic().isEnable() && chat.getOllama().isEnable()) {
                 this.vectorStore = vectorStore();
             }
         } catch (Exception e) {

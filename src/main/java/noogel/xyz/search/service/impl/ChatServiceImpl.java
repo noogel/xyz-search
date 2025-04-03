@@ -1,27 +1,10 @@
 package noogel.xyz.search.service.impl;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.Generation;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.prompt.SystemPromptTemplate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.client.ElasticClient;
 import noogel.xyz.search.infrastructure.client.OllamaClient;
+import noogel.xyz.search.infrastructure.client.VectorClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
 import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
@@ -29,7 +12,30 @@ import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
 import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.service.ChatService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
+import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -42,6 +48,10 @@ public class ChatServiceImpl implements ChatService {
 
     @Resource
     private OllamaClient ollamaClient;
+    @Resource
+    private ElasticClient elasticClient;
+    @Resource
+    private VectorClient vectorClient;
     @Resource
     private FullTextSearchRepo fullTextSearchRepo;
     @Resource
@@ -64,10 +74,36 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        String message = dto.getMessage();
-        Prompt prompt = this.getRawPrompt(message);
-        ollamaClient.getChatModel().stream(prompt)
-                .subscribe(
+        // 检查 Elastic 服务是否开启
+        if (!configProperties.getApp().getChat().getElastic().isEnable()) {
+            try {
+                emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), "elastic 未开启"));
+                emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), ""));
+                emitter.complete();
+                return emitter;
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+                return emitter;
+            }
+        }
+
+        // https://docs.spring.io/spring-ai/reference/1.0/api/retrieval-augmented-generation.html
+        ChatClient.Builder chatClientBuilder = ChatClient.builder(ollamaClient.getChatModel());
+        ChatClient chatClient = chatClientBuilder.build();
+        Advisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor.builder()
+                .queryTransformers(RewriteQueryTransformer.builder()
+                        .chatClientBuilder(chatClientBuilder.build().mutate())
+                        .build())
+                .documentRetriever(VectorStoreDocumentRetriever.builder()
+                        .similarityThreshold(0.50)
+                        .vectorStore(vectorClient.getVectorStore())
+                        .build())
+                .build();
+
+        chatClient.prompt()
+                .advisors(retrievalAugmentationAdvisor)
+                .user(dto.getMessage())
+                .stream().chatResponse().subscribe(
                         chatResponse -> {
                             try {
                                 ChatResponseDto chatResponseDto = new ChatResponseDto(
