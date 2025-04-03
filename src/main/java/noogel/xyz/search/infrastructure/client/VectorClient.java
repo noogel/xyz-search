@@ -1,15 +1,5 @@
 package noogel.xyz.search.infrastructure.client;
 
-import java.util.Objects;
-
-import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.embedding.TokenCountBatchingStrategy;
-import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.qdrant.QdrantVectorStore;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-
-import io.qdrant.client.QdrantClient;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.Getter;
@@ -17,12 +7,23 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.springframework.ai.embedding.TokenCountBatchingStrategy;
+import org.springframework.ai.ollama.OllamaEmbeddingModel;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStore;
+import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStoreOptions;
+import org.springframework.ai.vectorstore.elasticsearch.SimilarityFunction;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @Component
 @Slf4j
 public class VectorClient {
 
-    private QdrantClient qdrantClient;
     @Getter
     private VectorStore vectorStore;
 
@@ -30,6 +31,8 @@ public class VectorClient {
     private ConfigProperties configProperties;
     @Resource
     private OllamaClient ollamaClient;
+    @Resource
+    private ElasticClient elasticClient;
 
     @PostConstruct
     public void init() {
@@ -63,26 +66,53 @@ public class VectorClient {
     private void initClient() {
         try {
             if (configProperties.getApp().getChat().getElastic().isEnable()) {
-                this.qdrantClient = qdrantClient();
-                this.vectorStore = vectorStore(this.qdrantClient, ollamaClient.getEmbeddingModel());
+                this.vectorStore = vectorStore();
             }
         } catch (Exception e) {
             log.error("qdrant 配置初始化失败", e);
         }
     }
 
-    private QdrantClient qdrantClient() {
-        return null;
+    private RestClient restClient() {
+        ConfigProperties.Elastic elastic = configProperties.getApp().getChat().getElastic();
+        RestClient restClient = RestClient.builder(HttpHost.create(elastic.getHost())).build();
+// todo 账户名和鉴权
+//
+//                .setDefaultHeaders(new Header[]{
+//                new BasicHeader("Authorization", "Basic <encoded username and password>")
+//        })
+        return restClient;
     }
 
-    private VectorStore vectorStore(QdrantClient qdrantClient, EmbeddingModel embeddingModel) {
+    private VectorStore vectorStore() {
+        OllamaEmbeddingModel embeddingModel = ollamaClient.getEmbeddingModel();
         if (embeddingModel == null) {
             throw new RuntimeException("embeddingModel 为空，请先配置好 ollama 客户端 embedding 配置");
         }
-        return QdrantVectorStore.builder(qdrantClient, embeddingModel)
-                .collectionName("custom-collection") // Optional: defaults to "vector_store"
-                .initializeSchema(true) // Optional: defaults to false
+        ConfigProperties.Elastic elastic = configProperties.getApp().getChat().getElastic();
+        ConfigProperties.Runtime runtime = configProperties.getRuntime();
+        ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
+        options.setIndexName(runtime.getVectorIndexName());    // Optional: defaults to "spring-ai-document-index"
+        options.setSimilarity(similarityFunction(elastic.getSimilarity()));           // Optional: defaults to COSINE
+        options.setDimensions(elastic.getDimensions());             // Optional: defaults to model dimensions or 1536
+
+        return ElasticsearchVectorStore.builder(restClient(), embeddingModel)
+                .options(options)                     // Optional: use custom options
+                .initializeSchema(true)               // Optional: defaults to false
                 .batchingStrategy(new TokenCountBatchingStrategy()) // Optional: defaults to TokenCountBatchingStrategy
                 .build();
     }
+
+    private static SimilarityFunction similarityFunction(String similarity) {
+        if (SimilarityFunction.cosine.name().equalsIgnoreCase(similarity)) {
+            return SimilarityFunction.cosine;
+        } else if (SimilarityFunction.dot_product.name().equalsIgnoreCase(similarity)) {
+            return SimilarityFunction.dot_product;
+        } else if (SimilarityFunction.l2_norm.name().equalsIgnoreCase(similarity)) {
+            return SimilarityFunction.l2_norm;
+        } else {
+            return SimilarityFunction.cosine;
+        }
+    }
+
 }
