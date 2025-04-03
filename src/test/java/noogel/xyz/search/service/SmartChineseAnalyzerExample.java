@@ -1,16 +1,16 @@
-package demo;
-
-import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
-
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
+package noogel.xyz.search.service;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.jupiter.api.Test;
+
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
 
 public class SmartChineseAnalyzerExample {
 

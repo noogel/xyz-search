@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @Entity
@@ -31,11 +29,15 @@ public class WorkQueueModel {
     /**
      * 队列名称
      */
-    private String tube;
+    private String jobType;
     /**
      * 执行次数
      */
     private Integer runCount;
+    /**
+     * 超时（秒）
+     */
+    private Long timeout;
     /**
      * 最大重试次数
      */
