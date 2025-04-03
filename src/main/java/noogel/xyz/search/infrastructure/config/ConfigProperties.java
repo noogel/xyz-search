@@ -143,8 +143,8 @@ public class ConfigProperties {
         private boolean enable;
         @ConfigNote(desc = "host")
         private String host;
-        @ConfigNote(desc = "user")
-        private String user;
+        @ConfigNote(desc = "username")
+        private String username;
         @ConfigNote(desc = "password")
         private String password;
         @ConfigNote(desc = "caPath")
@@ -153,6 +153,10 @@ public class ConfigProperties {
         private Integer connectionTimeout;
         @ConfigNote(desc = "socketTimeout")
         private Integer socketTimeout;
+        @ConfigNote(desc = "dimensions")
+        private Integer dimensions;
+        @ConfigNote(desc = "similarity")
+        private String similarity;
     }
 
     @Data
@@ -248,17 +252,27 @@ public class ConfigProperties {
         /**
          * 索引名称
          */
-        private String indexName;
+        private String ftsIndexName;
         /**
          * 是否已经初始化索引
          */
-        private Boolean initIndex;
+        private Boolean ftsInitIndex;
+        /**
+         * 向量索引名称
+         */
+        private String vectorIndexName;
+        /**
+         * 是否已经初始化向量索引
+         */
+        private Boolean vectorInitIndex;
 
         public static Runtime init() {
             Runtime rt = new Runtime();
             rt.setDefaultSleepMs(CommonsConsts.DEFAULT_SLEEP_MS);
-            rt.setIndexName(CommonsConsts.DEFAULT_INDEX_NAME);
-            rt.setInitIndex(false);
+            rt.setFtsIndexName(CommonsConsts.DEFAULT_INDEX_NAME);
+            rt.setFtsInitIndex(false);
+            rt.setVectorIndexName(CommonsConsts.DEFAULT_VECTOR_INDEX_NAME);
+            rt.setVectorInitIndex(false);
             return rt;
         }
     }

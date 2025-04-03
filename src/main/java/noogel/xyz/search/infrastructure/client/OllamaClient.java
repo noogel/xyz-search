@@ -71,7 +71,7 @@ public class OllamaClient {
             ConfigProperties.App newApp = event.getNewApp();
             ConfigProperties.App oldApp = event.getOldApp();
             if (!Objects.equals(JsonHelper.toJson(newApp.getChat().getOllama()),
-                        JsonHelper.toJson(oldApp.getChat().getOllama()))) {
+                    JsonHelper.toJson(oldApp.getChat().getOllama()))) {
                 initOllama();
             }
         } catch (Exception e) {

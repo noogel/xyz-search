@@ -58,8 +58,10 @@ app:
     elastic:
       enable: false
       host: 
-      user: elastic
+      username: elastic
       password: elastic
       caPath: 
       connectionTimeout: 30000
       socketTimeout: 60000
+      dimensions: 1536
+      similarity: "cosine"

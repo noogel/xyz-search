@@ -51,7 +51,7 @@ public class ElasticClient {
     @PostConstruct
     public void init() {
         try {
-            if (configProperties.getApp().getChat().isEnable()) {
+            if (configProperties.getApp().getChat().getElastic().isEnable()) {
                 loadClient();
             }
         } catch (Exception e) {
@@ -130,11 +130,11 @@ public class ElasticClient {
                         .setSocketTimeout(sc.getSocketTimeout()))
                 .setHttpClientConfigCallback(builder -> {
                     // 如果开启了认证
-                    if (StringUtils.isNotBlank(sc.getUser()) && StringUtils.isNotBlank(sc.getPassword())) {
+                    if (StringUtils.isNotBlank(sc.getUsername()) && StringUtils.isNotBlank(sc.getPassword())) {
                         // 认证
                         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
                         credentialsProvider.setCredentials(AuthScope.ANY,
-                                new UsernamePasswordCredentials(sc.getUser(), sc.getPassword()));
+                                new UsernamePasswordCredentials(sc.getUsername(), sc.getPassword()));
                         builder.setDefaultCredentialsProvider(credentialsProvider);
                     }
                     // CA 证书

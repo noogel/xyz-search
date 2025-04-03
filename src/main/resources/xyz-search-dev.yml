@@ -59,8 +59,10 @@ app:
     elastic:
       enable: true
       host: "http://localhost:9200"
-      user: elastic
+      username: elastic
       password: elastic
       caPath: /Users/xyz/MyDebug/XyzSearchTestData/ca.crt
       connectionTimeout: 10000
       socketTimeout: 30000
+      dimensions: 1536
+      similarity: "cosine"

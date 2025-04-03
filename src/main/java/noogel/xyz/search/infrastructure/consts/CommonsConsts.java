@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class CommonsConsts {
     public static final String FILE_SUFFIX = ".tmp.xyz.search";
     public static final String DEFAULT_INDEX_NAME = "fts_index";
+    public static final String DEFAULT_VECTOR_INDEX_NAME = "vector_index";
     public static final long DEFAULT_SLEEP_MS = 60_000L;
     public static final int DEFAULT_BATCH_COMMIT_LIMIT_MS = 3_000;
     public static final int DEFAULT_SCAN_FILE_LIMIT_MS = DEFAULT_BATCH_COMMIT_LIMIT_MS + 6_000;

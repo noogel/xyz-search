@@ -79,7 +79,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
                         k.analyzer("path_tokenizer", a -> a.custom(l -> l.tokenizer("path_hierarchy"))))));
                 log.info("CreateIndexResponse delete: {}", response.acknowledged());
                 // 持久化配置
-                searchConfig.getRuntime().setInitIndex(true);
+                searchConfig.getRuntime().setFtsInitIndex(true);
                 searchConfig.overrideToFile();
             }
             return true;
@@ -95,7 +95,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
      * @return
      */
     private String getIndexName() {
-        return searchConfig.getRuntime().getIndexName();
+        return searchConfig.getRuntime().getFtsIndexName();
     }
 
     @Override
@@ -173,7 +173,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
     public boolean upsert(FullTextSearchModel model, Runnable onSuccess) {
         try {
             // 如果没有初始化索引，则创建。
-            if (!searchConfig.getRuntime().getInitIndex()) {
+            if (!searchConfig.getRuntime().getFtsInitIndex()) {
                 createIndex(false);
             }
             IndexResponse response = elasticClient.getClient().index(i -> i
@@ -195,7 +195,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
     @Override
     public SearchResultDto commonSearch(CommonSearchDto searchDto) {
         // 如果没有初始化索引，则创建。
-        if (!searchConfig.getRuntime().getInitIndex()) {
+        if (!searchConfig.getRuntime().getFtsInitIndex()) {
             createIndex(false);
         }
         // 执行搜索
@@ -284,7 +284,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
     @Override
     public SearchResultDto randomSearch(RandomSearchDto searchDto) {
         // 如果没有初始化索引，则创建。
-        if (!searchConfig.getRuntime().getInitIndex()) {
+        if (!searchConfig.getRuntime().getFtsInitIndex()) {
             createIndex(false);
         }
         // 执行搜索
