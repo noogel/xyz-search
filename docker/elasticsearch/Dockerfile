@@ -44,7 +44,7 @@ RUN for iter in 1 2 3 4 5 6 7 8 9 10; do \
 RUN mkdir /usr/share/elasticsearch
 WORKDIR /usr/share/elasticsearch
 
-RUN curl --retry 10 -S -L --output /tmp/elasticsearch.tar.gz https://artifacts-no-kpi.elastic.co/downloads/elasticsearch/elasticsearch-8.17.4-linux-$(arch).tar.gz
+RUN curl --retry 10 -S -L --output /tmp/elasticsearch.tar.gz https://artifacts-no-kpi.elastic.co/downloads/elasticsearch/elasticsearch-8.17.0-linux-$(arch).tar.gz
 
 RUN tar -zxf /tmp/elasticsearch.tar.gz --strip-components=1
 
@@ -137,8 +137,8 @@ RUN /etc/ca-certificates/update.d/docker-openjdk
 
 # Install plugin
 # see https://release.infinilabs.com/analysis-ik/stable/
-RUN echo "y" | /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-smartcn \
-    && echo "y" | /usr/share/elasticsearch/bin/elasticsearch-plugin install https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-8.17.4.zip
+RUN /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-smartcn
+RUN /usr/share/elasticsearch/bin/elasticsearch-plugin install https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-8.17.0.zip
 
 EXPOSE 9200 9300
 
