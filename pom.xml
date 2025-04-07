@@ -12,6 +12,7 @@
     <properties>
         <java.version>17</java.version>
         <lucene.version>9.12.1</lucene.version>
+        <elasticsearch.version>8.17.3</elasticsearch.version>
         <mainClass>noogel.xyz.search.MainApp</mainClass>
     </properties>
     <repositories>
@@ -171,12 +172,12 @@
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.17.3</version>
+            <version>${elasticsearch.version}</version>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>
-            <version>8.17.3</version>
+            <version>${elasticsearch.version}</version>
         </dependency>
         <!-- Hibernate and Jakarta Persistence API Dependencies -->
         <dependency>

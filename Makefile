@@ -7,15 +7,15 @@ port = 8111
 
 build:
 	mvn clean package \
- && cp target/$(project)-*.war docker/ \
- && cd docker \
+ && cp target/$(project)-*.war docker/search/ \
+ && cd docker/search \
  && docker build --platform linux/amd64 -t $(project)\:$(version) . \
  && rm $(project)-*.war \
  && docker tag $(project)\:$(version) noogel/$(project)\:$(version) \
  && docker tag $(project)\:$(version) noogel/$(project)\:latest \
  && docker tag $(project)\:$(version) $(hub)\:$(port)/noogel/$(project)\:$(version) \
  && docker tag $(project)\:$(version) $(hub)\:$(port)/noogel/$(project)\:latest \
- && cd ../
+ && cd ../../
 
 push-local:
 	docker push $(hub)\:$(port)/noogel/$(project)\:$(version)
