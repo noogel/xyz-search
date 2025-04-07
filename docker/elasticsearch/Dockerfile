@@ -136,6 +136,7 @@ COPY bin/docker-openjdk /etc/ca-certificates/update.d/docker-openjdk
 RUN /etc/ca-certificates/update.d/docker-openjdk
 
 # Install plugin
+# see https://release.infinilabs.com/analysis-ik/stable/
 RUN echo "y" | /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-smartcn \
     && echo "y" | /usr/share/elasticsearch/bin/elasticsearch-plugin install https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-8.17.4.zip
 
