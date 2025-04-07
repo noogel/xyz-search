@@ -7,8 +7,8 @@ port = 8111
 
 build:
 	mvn clean package \
- && cp target/$(project)-*.war docker/search/ \
- && cd docker/search \
+ && cp target/$(project)-*.war docker/xyz-search/ \
+ && cd docker/xyz-search \
  && docker build --platform linux/amd64 -t $(project)\:$(version) . \
  && rm $(project)-*.war \
  && docker tag $(project)\:$(version) noogel/$(project)\:$(version) \
