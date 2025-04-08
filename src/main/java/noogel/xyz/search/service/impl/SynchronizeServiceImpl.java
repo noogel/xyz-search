@@ -1,5 +1,15 @@
 package noogel.xyz.search.service.impl;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
@@ -7,20 +17,11 @@ import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
-import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchService;
 import noogel.xyz.search.infrastructure.utils.FileResHelper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.SynchronizeService;
 import noogel.xyz.search.service.extension.ExtensionService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -29,7 +30,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Resource
     private ExtensionService extensionService;
     @Resource
-    private FullTextSearchRepo fullTextSearchRepo;
+    private FullTextSearchService fullTextSearchService;
     @Resource
     private FileDbService fileDbService;
     @Resource
@@ -104,7 +105,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void resetIndex() {
-        fullTextSearchRepo.reset();
+        fullTextSearchService.getBean().reset();
         configProperties.getApp().getIndexDirectories().forEach(t -> {
             int updateCount = fileDbService.updateDirectoryState(t.getDirectory(), FileStateEnum.VALID);
             log.info("重新索引 目录: {} 数量 {}", t, updateCount);

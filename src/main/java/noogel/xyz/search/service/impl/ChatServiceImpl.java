@@ -1,17 +1,12 @@
 package noogel.xyz.search.service.impl;
 
-import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.client.ElasticClient;
-import noogel.xyz.search.infrastructure.client.OllamaClient;
-import noogel.xyz.search.infrastructure.client.VectorClient;
-import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
-import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
-import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
-import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
-import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
-import noogel.xyz.search.service.ChatService;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.RetrievalAugmentationAdvisor;
@@ -28,14 +23,20 @@ import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import reactor.core.publisher.Flux;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.client.ElasticClient;
+import noogel.xyz.search.infrastructure.client.OllamaClient;
+import noogel.xyz.search.infrastructure.client.VectorClient;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
+import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
+import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
+import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchService;
+import noogel.xyz.search.service.ChatService;
+import reactor.core.publisher.Flux;
 
 @Service
 @Slf4j
@@ -53,7 +54,7 @@ public class ChatServiceImpl implements ChatService {
     @Resource
     private VectorClient vectorClient;
     @Resource
-    private FullTextSearchRepo fullTextSearchRepo;
+    private FullTextSearchService fullTextSearchService;
     @Resource
     private ConfigProperties configProperties;
 
@@ -185,7 +186,7 @@ public class ChatServiceImpl implements ChatService {
         dto.setSearchQuery(query);
         dto.setFragmentSize(1024);
         dto.setMaxNumFragments(10);
-        LLMSearchResultDto llmSearchResultDto = fullTextSearchRepo.llmSearch(dto);
+        LLMSearchResultDto llmSearchResultDto = fullTextSearchService.getBean().llmSearch(dto);
         List<String> fixedHighlights = fixedHighlights(llmSearchResultDto.getHighlights());
         String context = String.join("\n\n", fixedHighlights);
         if (StringUtils.isBlank(context)) {

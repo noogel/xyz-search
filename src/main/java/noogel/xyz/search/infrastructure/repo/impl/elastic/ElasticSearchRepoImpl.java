@@ -162,6 +162,9 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
         try {
             DeleteResponse delete = elasticClient.getClient().delete(b -> b.index(getIndexName()).id(resId));
             boolean result = delete.version() > 0;
+            if (result) {
+                onSuccess.run();
+            }
             return result;
         } catch (IOException ex) {
             log.error("deleteByResId err {}", resId, ex);
@@ -180,7 +183,11 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
                     .index(getIndexName())
                     .id(model.getResId())
                     .document(model));
-            return response.version() > 0;
+            boolean result = response.version() > 0;
+            if (result) {
+                onSuccess.run();
+            }
+            return result;
         } catch (IOException ex) {
             log.error("upsertData err", ex);
             return false;
