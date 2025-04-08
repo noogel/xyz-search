@@ -153,7 +153,7 @@ public class SearchServiceImpl implements SearchService {
             dto.setResTitle(t.getResTitle());
             dto.setResSize(t.getResSize());
             dto.setModifiedAt(t.getModifiedAt());
-            dto.setSearchableText(t.getContent());
+            dto.setSearchQuery(t.getContent());
             dto.setResDir(t.getResDir());
             dto.setContentType(contentType);
             return dto;

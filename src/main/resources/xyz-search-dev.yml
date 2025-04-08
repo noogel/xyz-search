@@ -9,6 +9,10 @@ base:
   password: search
 runtime:
   defaultSleepMs: 1000
+  ftsIndexName: xyz_search
+  ftsInitIndex: false
+  vectorIndexName: xyz_search_vector
+  vectorInitIndex: false
 app:
   indexDirectories:
     -
@@ -59,9 +63,9 @@ app:
     elastic:
       enable: true
       host: "http://localhost:9200"
-      username: elastic
-      password: elastic
-      caPath: /Users/xyz/MyDebug/XyzSearchTestData/ca.crt
+      username:
+      password:
+      caPath:
       connectionTimeout: 10000
       socketTimeout: 30000
       dimensions: 1536

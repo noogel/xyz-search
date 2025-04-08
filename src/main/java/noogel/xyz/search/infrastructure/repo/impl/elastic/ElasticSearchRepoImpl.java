@@ -62,31 +62,60 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
      * 创建 mapping
      */
     public boolean createIndex(boolean deleteIfExist) {
-        try {
-            // 查询是否存在
-            boolean indexExist = elasticClient.getClient().indices().exists(b -> b.index(getIndexName())).value();
-            if (indexExist && deleteIfExist) {
-                // 删除索引
-                DeleteIndexResponse delete = elasticClient.getClient().indices().delete(c -> c.index(getIndexName()));
-                log.info("DeleteIndexResponse delete: {}", delete.acknowledged());
+        int maxRetries = 3;
+        int retryInterval = 5000; // 5秒
+
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                log.info("开始检查索引 {} 是否存在，第{}次尝试", getIndexName(), i + 1);
+                boolean indexExist = elasticClient.getClient().indices()
+                    .exists(b -> b.index(getIndexName())).value();
+                
+                if (indexExist && deleteIfExist) {
+                    log.info("删除已存在的索引 {}", getIndexName());
+                    DeleteIndexResponse delete = elasticClient.getClient().indices()
+                        .delete(c -> c.index(getIndexName()));
+                    log.info("索引删除结果: {}", delete.acknowledged());
+                }
+                
+                if (!indexExist || deleteIfExist) {
+                    log.info("创建新索引 {}, mapping配置: {}", getIndexName(), ElasticMapping.generate());
+                    CreateIndexResponse response = elasticClient.getClient().indices()
+                        .create(c -> c
+                            .index(getIndexName())
+                            .mappings(d -> d.properties(ElasticMapping.generate()))
+                            .settings(s -> s.analysis(k ->
+                                k.analyzer("path_tokenizer", 
+                                    a -> a.custom(l -> l.tokenizer("path_hierarchy"))))));
+                    
+                    log.info("索引创建结果: {}", response.acknowledged());
+                    
+                    if (!response.acknowledged()) {
+                        log.error("索引创建失败");
+                        if (i < maxRetries - 1) {
+                            Thread.sleep(retryInterval);
+                            continue;
+                        }
+                        return false;
+                    }
+                    
+                    searchConfig.getRuntime().setFtsInitIndex(true);
+                    searchConfig.overrideToFile();
+                }
+                return true;
+            } catch (Exception ex) {
+                log.error("创建索引发生异常，第{}次尝试", i + 1, ex);
+                if (i < maxRetries - 1) {
+                    try {
+                        Thread.sleep(retryInterval);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
             }
-            if (!indexExist || deleteIfExist) {
-                // 创建索引和 mapping
-                CreateIndexResponse response = elasticClient.getClient().indices().create(c -> c
-                        .index(getIndexName()).mappings(d -> d.properties(ElasticMapping.generate()))
-                        .settings(s -> s.analysis(k ->
-                        // 自定义路径分词工具
-                        k.analyzer("path_tokenizer", a -> a.custom(l -> l.tokenizer("path_hierarchy"))))));
-                log.info("CreateIndexResponse delete: {}", response.acknowledged());
-                // 持久化配置
-                searchConfig.getRuntime().setFtsInitIndex(true);
-                searchConfig.overrideToFile();
-            }
-            return true;
-        } catch (IOException ex) {
-            log.error("createIndex err", ex);
-            return false;
         }
+        return false;
     }
 
     /**
@@ -116,16 +145,16 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
         try {
             BoolQuery.Builder builder = new BoolQuery.Builder();
             if (!StringUtils.isEmpty(text)) {
-                Query searchableText = MatchQuery.of(m -> m.field("searchableText")
+                Query content = MatchQuery.of(m -> m.field("content")
                         .query(text).analyzer("ik_smart"))._toQuery();
                 Query resTitle = MatchQuery.of(m -> m.field("resTitle")
                         .query(text).analyzer("ik_smart"))._toQuery();
-                builder.should(searchableText, resTitle);
+                builder.should(content, resTitle);
             }
             Query redId = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
             builder.must(redId);
 
-            Highlight highlight = Highlight.of(t -> t.fields("searchableText", HighlightField.of(k -> k
+            Highlight highlight = Highlight.of(t -> t.fields("content", HighlightField.of(k -> k
                     .type("plain")
                     // 上下文内容
                     .fragmentSize(200)
@@ -137,7 +166,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
             SearchRequest searchRequest = SearchRequest.of(s -> s
                     .index(getIndexName())
                     .query(q -> q.bool(t -> builder))
-                    .source(l -> l.filter(m -> m.excludes("searchableText")))
+                    .source(l -> l.filter(m -> m.excludes("content")))
                     .highlight(highlight));
             log.info("search:{}", searchRequest.toString());
             SearchResponse<FullTextSearchModel> search = elasticClient.getClient().search(searchRequest,
@@ -148,7 +177,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
             for (Hit<FullTextSearchModel> hit : hits) {
                 ResourceHighlightHitsDto dto = new ResourceHighlightHitsDto();
                 dto.setResource(hit.source());
-                dto.setHighlights(hit.highlight().get("searchableText"));
+                dto.setHighlights(hit.highlight().get("content"));
                 return dto;
             }
         } catch (IOException ex) {
@@ -213,8 +242,8 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
             BoolQuery.Builder builder = new BoolQuery.Builder();
 
             if (!StringUtils.isEmpty(searchDto.getSearchQuery())) {
-                Query searchableText = MatchQuery.of(m -> m
-                        .field("searchableText")
+                Query content = MatchQuery.of(m -> m
+                        .field("content")
                         .query(searchDto.getSearchQuery())
                         .analyzer("ik_smart"))._toQuery();
                 Query resName = MatchQuery.of(m -> m
@@ -223,7 +252,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
                         .boost(10.f)
                         .analyzer("ik_smart"))._toQuery();
                 BoolQuery.Builder orSearch = new BoolQuery.Builder();
-                orSearch.should(searchableText, resName);
+                orSearch.should(content, resName);
                 builder.must(l -> l.bool(orSearch.build()));
             }
             if (CollectionUtils.isNotEmpty(searchDto.getResTypeList())) {
@@ -256,7 +285,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
             }
             SearchRequest searchRequest = SearchRequest.of(s -> s.index(getIndexName())
                     .query(q -> q.bool(t -> builder))
-                    .source(l -> l.filter(m -> m.excludes("searchableText")))
+                    .source(l -> l.filter(m -> m.excludes("content")))
                     .sort(StringUtils.isNoneBlank(searchDto.getDirPrefix()) ? Collections.singletonList(SortOptions
                             .of(l -> l.field(m -> m.field("rank").order(SortOrder.Asc)))) : Collections.emptyList())
                     .size(searchDto.getPaging().getLimit())
@@ -306,7 +335,7 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
                         return r.query(t -> t.matchAll(k -> k))
                                 .functions(FunctionScore.of(l -> l.randomScore(m -> m)));
                     }))
-                    .source(l -> l.filter(m -> m.excludes("searchableText")))
+                    .source(l -> l.filter(m -> m.excludes("content")))
                     .size(searchDto.getLimit()));
             SearchResponse<FullTextSearchModel> search = elasticClient.getClient().search(searchRequest,
                     FullTextSearchModel.class);

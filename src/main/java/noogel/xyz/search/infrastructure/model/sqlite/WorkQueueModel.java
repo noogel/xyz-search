@@ -1,6 +1,11 @@
 package noogel.xyz.search.infrastructure.model.sqlite;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,8 +13,8 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "WorkQueue", indexes = {
-        @Index(name = "idx_workqueue_release", columnList = "jobState, tube, releaseTime"),
-        @Index(name = "idx_workqueue_active", columnList = "jobState, tube, activeTime"),
+        @Index(name = "idx_workqueue_release", columnList = "jobState, jobType, releaseTime"),
+        @Index(name = "idx_workqueue_active", columnList = "jobState, jobType, activeTime"),
         @Index(name = "idx_workqueue_uuid", columnList = "uuid"),
         @Index(name = "idx_workqueue_updatetime", columnList = "updateTime")
 })

@@ -1,7 +1,8 @@
 package noogel.xyz.search.infrastructure.dao.sqlite;
 
+import java.util.List;
 
-import noogel.xyz.search.infrastructure.model.sqlite.WorkQueueModel;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import noogel.xyz.search.infrastructure.model.sqlite.WorkQueueModel;
 
 public interface WorkQueueDao extends JpaRepository<WorkQueueModel, Long> {
 
@@ -20,10 +21,10 @@ public interface WorkQueueDao extends JpaRepository<WorkQueueModel, Long> {
      * @param activeTime
      * @return
      */
-    @Query("select f from WorkQueueModel f where f.jobState = :jobState and f.activeTime < :activeTime limit 50")
+    @Query("select f from WorkQueueModel f where f.jobState = :jobState and f.activeTime < :activeTime")
     @NonNull
-    List<WorkQueueModel> findTop50ByJobState(@Param("jobState") @NonNull Integer jobState,
-                                             @Param("activeTime") @NonNull Long activeTime);
+    List<WorkQueueModel> listActiveJob(@Param("jobState") @NonNull Integer jobState,
+            @Param("activeTime") @NonNull Long activeTime, Pageable pageable);
 
     /**
      * 更新任务状态和超时时间
@@ -37,9 +38,8 @@ public interface WorkQueueDao extends JpaRepository<WorkQueueModel, Long> {
     @Modifying
     @Query("update WorkQueueModel f set f.jobState = :jobState, f.releaseTime = :releaseTime, f.runCount = :runCount where f.id = :id")
     int updateJobStateAndReleaseTimeById(@Param("jobState") @NonNull Integer jobState,
-                                         @Param("releaseTime") @NonNull Long releaseTime,
-                                         @Param("runCount") @NonNull Integer runCount,
-                                         @Param("id") @NonNull Long id);
+            @Param("releaseTime") @NonNull Long releaseTime, @Param("runCount") @NonNull Integer runCount,
+            @Param("id") @NonNull Long id);
 
     /**
      * 获取超时任务
@@ -48,8 +48,8 @@ public interface WorkQueueDao extends JpaRepository<WorkQueueModel, Long> {
      * @param releaseTime
      * @return
      */
-    @Query("select f from WorkQueueModel f where f.jobState = :jobState and f.releaseTime < :releaseTime limit 10")
+    @Query("select f from WorkQueueModel f where f.jobState = :jobState and f.releaseTime < :releaseTime")
     @NonNull
-    List<WorkQueueModel> findTimeoutJob(@Param("jobState") @NonNull Integer jobState,
-                                        @Param("releaseTime") @NonNull Long releaseTime);
+    List<WorkQueueModel> listTimeoutJob(@Param("jobState") @NonNull Integer jobState,
+            @Param("releaseTime") @NonNull Long releaseTime, Pageable pageable);
 }

@@ -1,6 +1,27 @@
 package noogel.xyz.search.infrastructure.queue.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
@@ -12,13 +33,6 @@ import noogel.xyz.search.infrastructure.queue.JobMetaDto;
 import noogel.xyz.search.infrastructure.queue.JobProcessor;
 import noogel.xyz.search.infrastructure.queue.JobProcessorFactory;
 import noogel.xyz.search.infrastructure.queue.WorkQueueService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * 工作队列服务实现类
@@ -37,7 +51,10 @@ public class WorkQueueServiceImpl implements WorkQueueService {
     @Resource
     private ObjectMapper objectMapper;
 
-    private final ExecutorService executorService = new ThreadPoolExecutor(PROCESS, PROCESS, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(100), new ThreadPoolExecutor.CallerRunsPolicy());
+    private final List<Thread> threads = new ArrayList<>();
+
+    private final ExecutorService executorService = new ThreadPoolExecutor(PROCESS, PROCESS, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<Runnable>(100), new ThreadPoolExecutor.CallerRunsPolicy());
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
@@ -53,7 +70,6 @@ public class WorkQueueServiceImpl implements WorkQueueService {
     public void init() {
         // 初始化任务优先级
         initJobTypePriorities();
-
         // 启动任务处理线程
         startJobProcessor();
         // 启动超时任务检查线程
@@ -98,41 +114,46 @@ public class WorkQueueServiceImpl implements WorkQueueService {
      * 启动任务处理线程
      */
     private void startJobProcessor() {
-        while (running.get()) {
-            try {
-                // 获取所有队列的待处理任务
-                List<WorkQueueModel> pendingJobs = workQueueDao.findTop50ByJobState(QueueStateEnum.INIT.getVal(), System.currentTimeMillis());
-                if (pendingJobs.isEmpty()) {
-                    Thread.sleep(3000);
-                    continue;
-                }
-                // 按优先级排序任务
-                List<WorkQueueModel> sortedJobs = sortJobsByPriority(pendingJobs);
-                // 任务列表
-                List<CompletableFuture<Void>> futures = new ArrayList<>();
-                // 处理每个任务
-                for (WorkQueueModel job : sortedJobs) {
-                    futures.add(CompletableFuture.runAsync(() -> processJob(job), executorService));
-                }
-                CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
-            } catch (Exception e) {
-                log.error("处理任务时发生错误", e);
+        var thread = new Thread(() -> {
+            while (running.get()) {
                 try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    break;
+                    // 获取所有队列的待处理任务，限制为50条
+                    List<WorkQueueModel> pendingJobs = workQueueDao.listActiveJob(QueueStateEnum.INIT.getVal(),
+                            System.currentTimeMillis(), PageRequest.of(0, 50));
+                    if (pendingJobs.isEmpty()) {
+                        Thread.sleep(3000);
+                        continue;
+                    }
+                    // 按优先级排序任务
+                    List<WorkQueueModel> sortedJobs = sortJobsByPriority(pendingJobs);
+                    // 任务列表
+                    List<CompletableFuture<Void>> futures = new ArrayList<>();
+                    // 处理每个任务
+                    for (WorkQueueModel job : sortedJobs) {
+                        futures.add(CompletableFuture.runAsync(() -> processJob(job), executorService));
+                    }
+                    CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+                } catch (Exception e) {
+                    log.error("处理任务时发生错误", e);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
                 }
             }
-        }
+        });
+        thread.setName("job-processor-thread");
+        thread.start();
+        threads.add(thread);
     }
 
     /**
      * 按优先级排序任务
      */
     private List<WorkQueueModel> sortJobsByPriority(List<WorkQueueModel> jobs) {
-        return jobs.stream()
-                .sorted(Comparator.comparingInt(job -> getJobTypePriority(job.getJobType())))
+        return jobs.stream().sorted(Comparator.comparingInt(job -> getJobTypePriority(job.getJobType())))
                 .collect(Collectors.toList());
     }
 
@@ -146,8 +167,9 @@ public class WorkQueueServiceImpl implements WorkQueueService {
             }
 
             try {
-                // 获取所有超时的任务
-                List<WorkQueueModel> processingJobs = workQueueDao.findTimeoutJob(QueueStateEnum.PROCESSING.getVal(), System.currentTimeMillis());
+                // 获取所有超时的任务，限制为10条
+                List<WorkQueueModel> processingJobs = workQueueDao.listTimeoutJob(QueueStateEnum.PROCESSING.getVal(),
+                        System.currentTimeMillis(), PageRequest.of(0, 10));
 
                 if (processingJobs.isEmpty()) {
                     return;
@@ -175,7 +197,8 @@ public class WorkQueueServiceImpl implements WorkQueueService {
         try {
             // 更新任务状态为处理中
             long releaseTime = System.currentTimeMillis() + job.getTimeout() * 1000;
-            boolean updated = updateJobState(job.getId(), QueueStateEnum.PROCESSING.getVal(), releaseTime, job.getRunCount() + 1);
+            boolean updated = updateJobState(job.getId(), QueueStateEnum.PROCESSING.getVal(), releaseTime,
+                    job.getRunCount() + 1);
 
             if (!updated) {
                 log.warn("更新任务状态失败，任务ID: {}", job.getId());

@@ -27,7 +27,7 @@ public class OPDSItemShowDto {
     /**
      * 搜索内容
      */
-    private String searchableText;
+    private String searchQuery;
     /**
      * 资源路径
      */

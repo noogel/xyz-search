@@ -1,12 +1,7 @@
 package noogel.xyz.search.infrastructure.client;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
-import noogel.xyz.search.infrastructure.utils.JsonHelper;
+import java.util.Objects;
+
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.springframework.ai.embedding.TokenCountBatchingStrategy;
@@ -18,7 +13,13 @@ import org.springframework.ai.vectorstore.elasticsearch.SimilarityFunction;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
+import noogel.xyz.search.infrastructure.utils.JsonHelper;
 
 @Component
 @Slf4j
@@ -41,7 +42,7 @@ public class VectorClient {
                 initClient();
             }
         } catch (Exception e) {
-            log.error("qdrant 配置初始化失败", e);
+            log.error("vector 配置初始化失败", e);
         }
     }
 
@@ -55,7 +56,7 @@ public class VectorClient {
                 initClient();
             }
         } catch (Exception e) {
-            log.error("qdrant 配置更新失败", e);
+            log.error("vector 配置更新失败", e);
         }
     }
 
@@ -68,9 +69,10 @@ public class VectorClient {
             ConfigProperties.Chat chat = configProperties.getApp().getChat();
             if (chat.getElastic().isEnable() && chat.getOllama().isEnable()) {
                 this.vectorStore = vectorStore();
+                log.info("vector 配置初始化成功");
             }
         } catch (Exception e) {
-            log.error("qdrant 配置初始化失败", e);
+            log.error("vector 配置初始化失败", e);
         }
     }
 

@@ -44,18 +44,33 @@ import noogel.xyz.search.infrastructure.utils.JsonHelper;
 public class ElasticClient {
 
     private ClientHolder holder = null;
+    private static final int MAX_RETRIES = 3;
+    private static final int RETRY_INTERVAL = 5000; // 5秒
 
     @Resource
     private ConfigProperties configProperties;
 
     @PostConstruct
     public void init() {
-        try {
-            if (configProperties.getApp().getChat().getElastic().isEnable()) {
-                loadClient();
+        for(int i = 0; i < MAX_RETRIES; i++) {
+            try {
+                if (configProperties.getApp().getChat().getElastic().isEnable()) {
+                    log.info("开始初始化 ES 客户端，第{}次尝试", i + 1);
+                    loadClient();
+                    log.info("ES 客户端初始化成功");
+                    break;
+                }
+            } catch (Exception e) {
+                log.error("elastic 配置初始化失败，第{}次重试", i + 1, e);
+                if(i < MAX_RETRIES - 1) {
+                    try {
+                        Thread.sleep(RETRY_INTERVAL);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
             }
-        } catch (Exception e) {
-            log.error("elastic 配置初始化失败", e);
         }
     }
 
@@ -98,7 +113,9 @@ public class ElasticClient {
      */
     public void loadClient() {
         if (Objects.nonNull(configProperties.getApp().getChat().getElastic())) {
-            holder = ClientHolder.of(genClient(configProperties.getApp().getChat().getElastic()));
+            ConfigProperties.Elastic elastic = configProperties.getApp().getChat().getElastic();
+            log.info("开始创建 ES 客户端, 配置: host={}, timeout={}", elastic.getHost(), elastic.getConnectionTimeout());
+            holder = ClientHolder.of(genClient(elastic));
         }
     }
 
@@ -122,50 +139,70 @@ public class ElasticClient {
      */
     @SneakyThrows
     public ElasticsearchClient genClient(ConfigProperties.Elastic sc) {
+        try {
+            // 设置默认超时时间
+            if (sc.getConnectionTimeout() == null) {
+                sc.setConnectionTimeout(30000); // 30秒
+            }
+            if (sc.getSocketTimeout() == null) {
+                sc.setSocketTimeout(60000); // 60秒
+            }
 
-        // Create the low-level client
-        final RestClient restClient = RestClient.builder(HttpHost.create(sc.getHost()))
-                // 超时设置
-                .setRequestConfigCallback(builder -> builder.setConnectTimeout(sc.getConnectionTimeout())
-                        .setSocketTimeout(sc.getSocketTimeout()))
-                .setHttpClientConfigCallback(builder -> {
-                    // 如果开启了认证
-                    if (StringUtils.isNotBlank(sc.getUsername()) && StringUtils.isNotBlank(sc.getPassword())) {
-                        // 认证
-                        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-                        credentialsProvider.setCredentials(AuthScope.ANY,
-                                new UsernamePasswordCredentials(sc.getUsername(), sc.getPassword()));
-                        builder.setDefaultCredentialsProvider(credentialsProvider);
-                    }
-                    // CA 证书
-                    if (StringUtils.isNotBlank(sc.getCaPath())) {
-                        try {
-                            Path caCertificatePath = Paths.get(sc.getCaPath());
-                            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-                            Certificate trustedCa;
-                            try (InputStream is = Files.newInputStream(caCertificatePath)) {
-                                trustedCa = factory.generateCertificate(is);
-                            }
-                            KeyStore trustStore = KeyStore.getInstance("pkcs12");
-                            trustStore.load(null, null);
-                            trustStore.setCertificateEntry("ca", trustedCa);
-                            SSLContextBuilder sslContextBuilder = SSLContexts.custom().loadTrustMaterial(trustStore,
-                                    null);
-                            final SSLContext sslContext = sslContextBuilder.build();
-                            builder.setSSLContext(sslContext);
-                        } catch (Exception ex) {
-                            throw ExceptionCode.CONFIG_ERROR.throwExc(ex);
+            final RestClient restClient = RestClient.builder(HttpHost.create(sc.getHost()))
+                    .setRequestConfigCallback(builder -> builder
+                            .setConnectTimeout(sc.getConnectionTimeout())
+                            .setSocketTimeout(sc.getSocketTimeout())
+                            .setConnectionRequestTimeout(20000))
+                    .setHttpClientConfigCallback(builder -> {
+                        if (StringUtils.isNotBlank(sc.getUsername()) && StringUtils.isNotBlank(sc.getPassword())) {
+                            log.info("配置 ES 认证信息");
+                            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                            credentialsProvider.setCredentials(AuthScope.ANY,
+                                    new UsernamePasswordCredentials(sc.getUsername(), sc.getPassword()));
+                            builder.setDefaultCredentialsProvider(credentialsProvider);
                         }
-                    }
-                    return builder;
-                }).build();
 
-        // Create the transport with a Jackson mapper
-        final ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+                        if (StringUtils.isNotBlank(sc.getCaPath())) {
+                            log.info("配置 ES SSL 证书");
+                            try {
+                                Path caCertificatePath = Paths.get(sc.getCaPath());
+                                CertificateFactory factory = CertificateFactory.getInstance("X.509");
+                                Certificate trustedCa;
+                                try (InputStream is = Files.newInputStream(caCertificatePath)) {
+                                    trustedCa = factory.generateCertificate(is);
+                                }
+                                KeyStore trustStore = KeyStore.getInstance("pkcs12");
+                                trustStore.load(null, null);
+                                trustStore.setCertificateEntry("ca", trustedCa);
+                                SSLContextBuilder sslContextBuilder = SSLContexts.custom()
+                                        .loadTrustMaterial(trustStore, null);
+                                final SSLContext sslContext = sslContextBuilder.build();
+                                builder.setSSLContext(sslContext);
+                            } catch (Exception ex) {
+                                log.error("配置 SSL 证书失败", ex);
+                                throw ExceptionCode.CONFIG_ERROR.throwExc(ex);
+                            }
+                        }
 
-        // And create the API client
-        final ElasticsearchClient client = new ElasticsearchClient(transport);
+                        // 设置最大重试次数
+                        builder.setMaxConnTotal(50)
+                              .setMaxConnPerRoute(10)
+                              .disableAuthCaching()
+                              .setKeepAliveStrategy((response, context) -> 30000);
 
-        return client;
+                        return builder;
+                    }).build();
+
+            log.info("创建 ES transport");
+            final ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+
+            log.info("创建 ES client");
+            final ElasticsearchClient client = new ElasticsearchClient(transport);
+
+            return client;
+        } catch (Exception e) {
+            log.error("ES 客户端创建失败", e);
+            throw e;
+        }
     }
 }
