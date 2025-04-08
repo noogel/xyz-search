@@ -13,7 +13,17 @@ import java.util.List;
 
 public interface WorkQueueDao extends JpaRepository<WorkQueueModel, Long> {
 
-    List<WorkQueueModel> findTop48ByJobState(@NonNull Integer jobState);
+    /**
+     * 获取超时任务
+     *
+     * @param jobState
+     * @param activeTime
+     * @return
+     */
+    @Query("select f from WorkQueueModel f where f.jobState = :jobState and f.activeTime < :activeTime limit 50")
+    @NonNull
+    List<WorkQueueModel> findTop50ByJobState(@Param("jobState") @NonNull Integer jobState,
+                                             @Param("activeTime") @NonNull Long activeTime);
 
     /**
      * 更新任务状态和超时时间

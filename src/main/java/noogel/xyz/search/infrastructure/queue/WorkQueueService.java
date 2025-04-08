@@ -13,9 +13,7 @@ public interface WorkQueueService {
      *
      * @param jobType 队列名称
      * @param jobData 任务数据
-     * @param maxRetry 最大重试次数
-     * @param timeout 延迟秒数
-     * @return 任务ID
+     * @param jobMetaDto 任务元数据
      */
-    Long addDelayJob(String jobType, String jobData, Integer maxRetry, Duration timeout);
+    Long addDelayJob(String jobType, String uk, String jobData, JobMetaDto jobMetaDto);
 } 

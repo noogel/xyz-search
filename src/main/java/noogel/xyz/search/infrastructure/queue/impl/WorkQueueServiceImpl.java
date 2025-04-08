@@ -8,12 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.consts.QueueStateEnum;
 import noogel.xyz.search.infrastructure.dao.sqlite.WorkQueueDao;
 import noogel.xyz.search.infrastructure.model.sqlite.WorkQueueModel;
+import noogel.xyz.search.infrastructure.queue.JobMetaDto;
 import noogel.xyz.search.infrastructure.queue.JobProcessor;
 import noogel.xyz.search.infrastructure.queue.JobProcessorFactory;
 import noogel.xyz.search.infrastructure.queue.WorkQueueService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -100,7 +101,7 @@ public class WorkQueueServiceImpl implements WorkQueueService {
         while (running.get()) {
             try {
                 // 获取所有队列的待处理任务
-                List<WorkQueueModel> pendingJobs = workQueueDao.findTop48ByJobState(QueueStateEnum.INIT.getVal());
+                List<WorkQueueModel> pendingJobs = workQueueDao.findTop50ByJobState(QueueStateEnum.INIT.getVal(), System.currentTimeMillis());
                 if (pendingJobs.isEmpty()) {
                     Thread.sleep(3000);
                     continue;
@@ -238,19 +239,20 @@ public class WorkQueueServiceImpl implements WorkQueueService {
     }
 
     @Override
-    public Long addDelayJob(String jobType, String jobData, Integer maxRetry, Duration timeout) {
+    public Long addDelayJob(String jobType, String uk, String jobData, JobMetaDto jobMetaDto) {
         WorkQueueModel job = new WorkQueueModel();
         job.setJobType(jobType);
+        job.setUuid(StringUtils.isEmpty(uk) ? UUID.randomUUID().toString() : uk);
         job.setJobData(jobData);
-        job.setMaxRetry(maxRetry != null ? maxRetry : 3);
+        job.setMaxRetry(jobMetaDto.getMaxRetry() != null ? jobMetaDto.getMaxRetry() : 3);
         job.setRunCount(0);
         job.setJobState(QueueStateEnum.INIT.getVal());
-        job.setTimeout(timeout.toSeconds());
+        job.setActiveTime(System.currentTimeMillis() + jobMetaDto.getDelay().toMillis());
+        job.setTimeout(jobMetaDto.getTimeout().toSeconds());
         job.setCreateTime(System.currentTimeMillis());
         job.setUpdateTime(System.currentTimeMillis());
-
         WorkQueueModel savedJob = workQueueDao.save(job);
         return savedJob.getId();
     }
 
-} 
+}

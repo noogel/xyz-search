@@ -8,7 +8,9 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "WorkQueue", indexes = {
-        @Index(name = "idx_workqueue_mix", columnList = "jobState, tube, releaseTime"),
+        @Index(name = "idx_workqueue_release", columnList = "jobState, tube, releaseTime"),
+        @Index(name = "idx_workqueue_active", columnList = "jobState, tube, activeTime"),
+        @Index(name = "idx_workqueue_uuid", columnList = "uuid"),
         @Index(name = "idx_workqueue_updatetime", columnList = "updateTime")
 })
 public class WorkQueueModel {
@@ -19,9 +21,17 @@ public class WorkQueueModel {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     /**
+     * 唯一标识
+     */
+    private String uuid;
+    /**
      * 任务状态
      */
     private Integer jobState;
+    /**
+     * 激活时间
+     */
+    private Long activeTime;
     /**
      * 超时时间
      */
