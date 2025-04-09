@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,6 +20,8 @@ public class JobProcessorFactory {
 
     @Resource
     private ApplicationContext applicationContext;
+    @Resource
+    private List<JobProcessor> jobProcessorList;
 
     private final Map<String, JobProcessor> processorMap = new HashMap<>();
     private final Map<String, Integer> proprityMap = new HashMap<>();
@@ -29,7 +32,7 @@ public class JobProcessorFactory {
         Map<String, JobProcessor> processors = applicationContext.getBeansOfType(JobProcessor.class);
 
         // 注册处理器
-        for (JobProcessor processor : processors.values()) {
+        for (JobProcessor processor : jobProcessorList) {
             String jobType = processor.getJobType();
             processorMap.put(jobType, processor);
             proprityMap.put(jobType, processor.getPriorities());
