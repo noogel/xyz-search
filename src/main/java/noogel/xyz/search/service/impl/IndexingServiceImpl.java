@@ -22,7 +22,6 @@ import org.springframework.ai.document.Document;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -188,11 +187,14 @@ public class IndexingServiceImpl implements IndexingService {
             // 按照最长 1000 字符分割
             List<String> splitList = splitText(content, 1000);
             Map<String, Object> metadata = new HashMap<>();
-            Optional.ofNullable(dto.getMetadata()).ifPresent(metadata::putAll);
-            List<Document> documents = splitList.stream()
-                    .map(l -> Document.builder().text(l)
-                            .metadata(Map.copyOf(metadata)).build())
-                    .collect(Collectors.toList());
+            Optional.ofNullable(dto.getMetadata()).ifPresent(l -> l.forEach((k, v) -> metadata.put(k, Objects.isNull(v) ? "" : v)));
+            metadata.put("count", splitList.size());
+
+            List<Document> documents = new ArrayList<>();
+
+            for (int i = 0; i < splitList.size(); i++) {
+                documents.add(new Document(t.getResId() + "_" + i, splitList.get(i), new HashMap<>(metadata)));
+            }
 
             // Add the documents to Elasticsearch
             vectorClient.getVectorStore().add(documents);

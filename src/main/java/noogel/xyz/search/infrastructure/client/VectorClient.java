@@ -1,7 +1,12 @@
 package noogel.xyz.search.infrastructure.client;
 
-import java.util.Objects;
-
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
+import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.springframework.ai.embedding.TokenCountBatchingStrategy;
@@ -13,13 +18,7 @@ import org.springframework.ai.vectorstore.elasticsearch.SimilarityFunction;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
-import noogel.xyz.search.infrastructure.utils.JsonHelper;
+import java.util.Objects;
 
 @Component
 @Slf4j
@@ -79,11 +78,7 @@ public class VectorClient {
     private RestClient restClient() {
         ConfigProperties.Elastic elastic = configProperties.getApp().getChat().getElastic();
         RestClient restClient = RestClient.builder(HttpHost.create(elastic.getHost())).build();
-// todo 账户名和鉴权
-//
-//                .setDefaultHeaders(new Header[]{
-//                new BasicHeader("Authorization", "Basic <encoded username and password>")
-//        })
+        // todo 账户名和鉴权
         return restClient;
     }
 
@@ -99,11 +94,13 @@ public class VectorClient {
         options.setSimilarity(similarityFunction(elastic.getSimilarity()));           // Optional: defaults to COSINE
         options.setDimensions(elastic.getDimensions());             // Optional: defaults to model dimensions or 1536
 
-        return ElasticsearchVectorStore.builder(restClient(), embeddingModel)
+        ElasticsearchVectorStore store = ElasticsearchVectorStore.builder(restClient(), embeddingModel)
                 .options(options)                     // Optional: use custom options
                 .initializeSchema(true)               // Optional: defaults to false
                 .batchingStrategy(new TokenCountBatchingStrategy()) // Optional: defaults to TokenCountBatchingStrategy
                 .build();
+        store.afterPropertiesSet();
+        return store;
     }
 
     private static SimilarityFunction similarityFunction(String similarity) {
