@@ -1,21 +1,13 @@
 package noogel.xyz.search.service.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.client.ElasticClient;
+import noogel.xyz.search.infrastructure.client.VectorClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
-import noogel.xyz.search.infrastructure.dto.IndexedContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
@@ -25,6 +17,12 @@ import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.IndexingService;
 import noogel.xyz.search.service.VectorProcessService;
 import noogel.xyz.search.service.extension.ExtensionService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.ai.document.Document;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -42,6 +40,8 @@ public class IndexingServiceImpl implements IndexingService {
     private ConfigProperties configProperties;
     @Resource
     private ElasticClient elasticClient;
+    @Resource
+    private VectorClient vectorClient;
 
     @PostConstruct
     public void init() {
@@ -93,14 +93,16 @@ public class IndexingServiceImpl implements IndexingService {
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
                             return;
                         }
+                        // todo
+                        addToVectorStore(t, contentDto);
                         // 更新索引
                         fullTextSearchService.getBean().upsert(buildLuceneModel(t, contentDto), () -> {
                             // 更新状态
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                         });
                         // 异步处理向量
-                        IndexedContentDto indexedContentDto = IndexedContentDto.of(t.getResId(), contentDto);
-                        vectorProcessService.asyncUpsert(indexedContentDto);
+                        // IndexedContentDto indexedContentDto = IndexedContentDto.of(t.getResId(), contentDto);
+                        // vectorProcessService.asyncUpsert(indexedContentDto);
                     });
         } catch (Exception ex) {
             log.error("indexFileToEs error {}", t.calFilePath(), ex);
@@ -174,5 +176,52 @@ public class IndexingServiceImpl implements IndexingService {
             options.put("error", ex.getMessage());
             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
         }
+    }
+
+    // @Autowired VectorStore vectorStore;
+    private void addToVectorStore(FileResReadDto t, FileResContentDto dto) {
+        try {
+            String content = dto.genContent();
+            if (StringUtils.isEmpty(content)) {
+                return;
+            }
+            // 按照最长 1000 字符分割
+            List<String> splitList = splitText(content, 1000);
+            Map<String, Object> metadata = new HashMap<>();
+            Optional.ofNullable(dto.getMetadata()).ifPresent(metadata::putAll);
+            List<Document> documents = splitList.stream()
+                    .map(l -> Document.builder().text(l)
+                            .metadata(Map.copyOf(metadata)).build())
+                    .collect(Collectors.toList());
+
+            // Add the documents to Elasticsearch
+            vectorClient.getVectorStore().add(documents);
+
+        } catch (Exception ex) {
+            log.error("addToVectorStore error {}", t.calFilePath(), ex);
+        }
+    }
+
+    public static List<String> splitText(String text, int maxLength) {
+        List<String> paragraphs = new ArrayList<>();
+        int start = 0;
+        while (start < text.length()) {
+            int end = Math.min(start + maxLength, text.length());
+            int lastPunctuation = findLastPunctuation(text, start, end);
+            end = (lastPunctuation != -1) ? lastPunctuation + 1 : end;
+            paragraphs.add(text.substring(start, end).trim());
+            start = end;
+        }
+        return paragraphs;
+    }
+
+    private static int findLastPunctuation(String text, int start, int end) {
+        String[] punctuations = {".", ",", ";", "!", "?"};
+        for (int i = end - 1; i >= start; i--) {
+            for (String p : punctuations) {
+                if (text.startsWith(p, i)) return i;
+            }
+        }
+        return -1;
     }
 }
