@@ -1,5 +1,24 @@
 package noogel.xyz.search.service.extension.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import org.jsoup.Jsoup;
+import org.springframework.stereotype.Service;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.consts.FileExtEnum;
@@ -10,15 +29,6 @@ import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
-import org.jsoup.Jsoup;
-import org.springframework.stereotype.Service;
-
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 @Service
 @Slf4j
@@ -93,6 +103,6 @@ public class EPUBExtensionPointServiceImpl extends AbstractExtensionPointService
         List<ChapterDto> chapters = parseFileToChapters(file);
         ResRelationInfoDto resRel = autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
-        return FileResContentDto.of(chapters).metaData("metaTitle", title);
+        return FileResContentDto.of(chapters).metaData(FileResContentDto.META_TITLE, title);
     }
 }

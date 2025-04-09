@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FileResContentDto {
+    public static final String META_TITLE = "title";
+    public static final String META_CONTENT_TYPE = "content_type";
     private List<ChapterDto> chapterList;
     private Map<String, String> metadata;
 

@@ -34,8 +34,7 @@ public class TikaExtensionPointServiceImpl extends AbstractExtensionPointService
 
     @Getter
     private final Set<FileExtEnum> supportParseFileExtension = Set.of(
-            FileExtEnum.MOBI, FileExtEnum.AZW3, FileExtEnum.AZW, FileExtEnum.MP4, FileExtEnum.MKV, FileExtEnum.AVI
-    );
+            FileExtEnum.MOBI, FileExtEnum.AZW3, FileExtEnum.AZW, FileExtEnum.MP4, FileExtEnum.MKV, FileExtEnum.AVI);
 
     @Override
     public boolean supportFile(String filePath) {
@@ -58,12 +57,12 @@ public class TikaExtensionPointServiceImpl extends AbstractExtensionPointService
         File file = resReadDto.genFile();
         ResRelationInfoDto resRel = autoFindRelationInfo(file);
         String title = Optional.ofNullable(resRel).map(ResRelationInfoDto::getTitle).orElse(null);
-        
+
         // 根据文件类型进行特定处理
         FileExtEnum fileExtension = FileHelper.getFileExtension(file.getName());
         String text;
         Metadata metadata = new Metadata();
-        
+
         switch (fileExtension) {
             case MOBI:
             case AZW3:
@@ -78,14 +77,14 @@ public class TikaExtensionPointServiceImpl extends AbstractExtensionPointService
             default:
                 text = parseToPlainText(file);
         }
-        
+
         if (StringUtils.isBlank(text)) {
             text = title;
         }
 
         return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", text)))
-                .metaData("metaTitle", title)
-                .metaData("format", metadata.get("Content-Type"));
+                .metaData(FileResContentDto.META_TITLE, title)
+                .metaData(FileResContentDto.META_CONTENT_TYPE, metadata.get("Content-Type"));
     }
 
     /**

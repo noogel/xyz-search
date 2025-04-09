@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")
 public class ChapterDto {
-    private String chapterName;
+    private String name;
     private String content;
 }
