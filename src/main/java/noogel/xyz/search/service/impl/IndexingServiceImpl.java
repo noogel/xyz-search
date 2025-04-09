@@ -15,14 +15,15 @@ import noogel.xyz.search.infrastructure.client.ElasticClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
+import noogel.xyz.search.infrastructure.dto.IndexedContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
-import noogel.xyz.search.infrastructure.queue.WorkQueueService;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchService;
 import noogel.xyz.search.infrastructure.utils.MD5Helper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.IndexingService;
+import noogel.xyz.search.service.VectorProcessService;
 import noogel.xyz.search.service.extension.ExtensionService;
 
 @Service
@@ -36,7 +37,7 @@ public class IndexingServiceImpl implements IndexingService {
     @Resource
     private FullTextSearchService fullTextSearchService;
     @Resource
-    private WorkQueueService workQueueService;
+    private VectorProcessService vectorProcessService;
     @Resource
     private ConfigProperties configProperties;
     @Resource
@@ -92,18 +93,14 @@ public class IndexingServiceImpl implements IndexingService {
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
                             return;
                         }
-
-                        // IndexedContentDto indexedContentDto = IndexedContentDto.of(t.getResId(), contentDto);
-                        // // 添加到队列
-                        // workQueueService.addDelayJob(JobTypeEnum.INDEXED_CONTENT.name(), t.getResId(),
-                        //         JsonHelper.toJson(indexedContentDto), JobMetaDto.ofNow(Duration.ofMinutes(1)));
-
-                        FullTextSearchModel fullTextSearchModel = buildLuceneModel(t, contentDto);
-                        // 更新全文索引
-                        fullTextSearchService.getBean().upsert(fullTextSearchModel, () -> {
+                        // 更新索引
+                        fullTextSearchService.getBean().upsert(buildLuceneModel(t, contentDto), () -> {
                             // 更新状态
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                         });
+                        // 异步处理向量
+                        IndexedContentDto indexedContentDto = IndexedContentDto.of(t.getResId(), contentDto);
+                        vectorProcessService.asyncUpsert(indexedContentDto);
                     });
         } catch (Exception ex) {
             log.error("indexFileToEs error {}", t.calFilePath(), ex);
@@ -164,11 +161,13 @@ public class IndexingServiceImpl implements IndexingService {
     private void removeIndexAndFile(FileResReadDto t) {
         log.info("移除全文索引和 db 记录 {}", t.calFilePath());
         try {
-            // 清理ES
+            // 清理索引
             fullTextSearchService.getBean().delete(t.getResId(), () -> {
                 // 清理DB
                 fileDbService.deleteFile(t.getFieldId());
             });
+            // 异步处理向量
+            vectorProcessService.asyncDelete(t.getResId());
         } catch (Exception ex) {
             log.error("removeEsAndFile error {}", t.calFilePath(), ex);
             Map<String, String> options = t.getOptions();
