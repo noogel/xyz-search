@@ -12,6 +12,7 @@ import org.springframework.util.CollectionUtils;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.client.VectorClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
@@ -33,6 +34,8 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     private FullTextSearchService fullTextSearchService;
     @Resource
     private FileDbService fileDbService;
+    @Resource
+    private VectorClient vectorClient;
     @Resource
     private ConfigProperties configProperties;
 
@@ -106,6 +109,7 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Override
     public void resetIndex() {
         fullTextSearchService.getBean().reset();
+        vectorClient.reset();
         configProperties.getApp().getIndexDirectories().forEach(t -> {
             int updateCount = fileDbService.updateDirectoryState(t.getDirectory(), FileStateEnum.VALID);
             log.info("重新索引 目录: {} 数量 {}", t, updateCount);

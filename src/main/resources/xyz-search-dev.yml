@@ -52,7 +52,7 @@ app:
   chat:
     ollama:
       enable: true
-      baseUrl: "http://localhost:11434"
+      baseUrl: "http://192.168.124.101:11434"
       chatModel: "deepseek-r1:14b"
       chatOptionTemperature: 0.7
       chatOptionNumCtx: 4096
@@ -62,11 +62,11 @@ app:
         - "jinaai/jina-embeddings-v2-base-zh"
     elastic:
       enable: true
-      host: "http://localhost:9200"
+      host: "http://192.168.124.13:9200"
       username:
       password:
       caPath:
       connectionTimeout: 10000
       socketTimeout: 30000
-      dimensions: 1536
+      dimensions: 768
       similarity: "cosine"

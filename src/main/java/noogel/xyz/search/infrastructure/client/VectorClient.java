@@ -1,12 +1,7 @@
 package noogel.xyz.search.infrastructure.client;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
-import noogel.xyz.search.infrastructure.utils.JsonHelper;
+import java.util.Objects;
+
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.springframework.ai.embedding.TokenCountBatchingStrategy;
@@ -18,7 +13,13 @@ import org.springframework.ai.vectorstore.elasticsearch.SimilarityFunction;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.event.ConfigAppUpdateEvent;
+import noogel.xyz.search.infrastructure.utils.JsonHelper;
 
 @Component
 @Slf4j
@@ -82,6 +83,18 @@ public class VectorClient {
         return restClient;
     }
 
+    public void reset() {
+        try {
+            if (Objects.nonNull(this.vectorStore)) {
+                ConfigProperties.Runtime runtime = configProperties.getRuntime();
+                elasticClient.getClient().indices().delete(d -> d.index(runtime.getVectorIndexName()));
+            }
+            ((ElasticsearchVectorStore) this.vectorStore).afterPropertiesSet();
+        } catch (Exception e) {
+            log.error("vector 配置初始化失败", e);
+        }
+    }
+
     private VectorStore vectorStore() {
         OllamaEmbeddingModel embeddingModel = ollamaClient.getEmbeddingModel();
         if (embeddingModel == null) {
@@ -90,13 +103,13 @@ public class VectorClient {
         ConfigProperties.Elastic elastic = configProperties.getApp().getChat().getElastic();
         ConfigProperties.Runtime runtime = configProperties.getRuntime();
         ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
-        options.setIndexName(runtime.getVectorIndexName());    // Optional: defaults to "spring-ai-document-index"
-        options.setSimilarity(similarityFunction(elastic.getSimilarity()));           // Optional: defaults to COSINE
-        options.setDimensions(elastic.getDimensions());             // Optional: defaults to model dimensions or 1536
+        options.setIndexName(runtime.getVectorIndexName()); // Optional: defaults to "spring-ai-document-index"
+        options.setSimilarity(similarityFunction(elastic.getSimilarity())); // Optional: defaults to COSINE
+        options.setDimensions(elastic.getDimensions()); // Optional: defaults to model dimensions or 1536
 
         ElasticsearchVectorStore store = ElasticsearchVectorStore.builder(restClient(), embeddingModel)
-                .options(options)                     // Optional: use custom options
-                .initializeSchema(true)               // Optional: defaults to false
+                .options(options) // Optional: use custom options
+                .initializeSchema(true) // Optional: defaults to false
                 .batchingStrategy(new TokenCountBatchingStrategy()) // Optional: defaults to TokenCountBatchingStrategy
                 .build();
         store.afterPropertiesSet();
