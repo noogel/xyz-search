@@ -1,5 +1,16 @@
 package noogel.xyz.search.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.ai.document.Document;
+import org.springframework.stereotype.Service;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +28,6 @@ import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.IndexingService;
 import noogel.xyz.search.service.VectorProcessService;
 import noogel.xyz.search.service.extension.ExtensionService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.ai.document.Document;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Service
 @Slf4j
@@ -188,12 +194,12 @@ public class IndexingServiceImpl implements IndexingService {
             List<String> splitList = splitText(content, 1000);
             Map<String, Object> metadata = new HashMap<>();
             Optional.ofNullable(dto.getMetadata()).ifPresent(l -> l.forEach((k, v) -> metadata.put(k, Objects.isNull(v) ? "" : v)));
-            metadata.put("count", splitList.size());
+            metadata.put("resId", t.getResId());
 
             List<Document> documents = new ArrayList<>();
 
             for (int i = 0; i < splitList.size(); i++) {
-                documents.add(new Document(t.getResId() + "_" + i, splitList.get(i), new HashMap<>(metadata)));
+                documents.add(new Document(splitList.get(i), new HashMap<>(metadata)));
             }
 
             // Add the documents to Elasticsearch

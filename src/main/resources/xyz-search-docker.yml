@@ -63,5 +63,8 @@ app:
       caPath: 
       connectionTimeout: 30000
       socketTimeout: 60000
-      dimensions: 1536
-      similarity: "cosine"
+    qdrant:
+      enable: false
+      host: localhost
+      port: 6334
+      apiKey: 

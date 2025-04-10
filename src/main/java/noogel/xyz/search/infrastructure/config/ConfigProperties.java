@@ -135,6 +135,8 @@ public class ConfigProperties {
         private Ollama ollama;
         @ConfigNote(desc = "elastic 支持索引和向量数据库")
         private Elastic elastic;
+        @ConfigNote(desc = "qdrant 支持索引和向量数据库")
+        private Qdrant qdrant;
     }
 
     @Data
@@ -153,10 +155,6 @@ public class ConfigProperties {
         private Integer connectionTimeout;
         @ConfigNote(desc = "socketTimeout")
         private Integer socketTimeout;
-        @ConfigNote(desc = "dimensions")
-        private Integer dimensions;
-        @ConfigNote(desc = "similarity")
-        private String similarity;
     }
 
     @Data
@@ -177,6 +175,18 @@ public class ConfigProperties {
         private List<String> embeddingAdditionalModels;
         @ConfigNote(desc = "pullModelStrategy")
         private String pullModelStrategy;
+    }
+
+    @Data
+    public static class Qdrant {
+        @ConfigNote(desc = "是否开启")
+        private boolean enable;
+        @ConfigNote(desc = "host")
+        private String host;
+        @ConfigNote(desc = "port")
+        private Integer port;
+        @ConfigNote(desc = "apiKey")
+        private String apiKey;
     }
 
     @Data

@@ -108,8 +108,8 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void resetIndex() {
-        fullTextSearchService.getBean().reset();
         vectorClient.reset();
+        fullTextSearchService.getBean().reset();
         configProperties.getApp().getIndexDirectories().forEach(t -> {
             int updateCount = fileDbService.updateDirectoryState(t.getDirectory(), FileStateEnum.VALID);
             log.info("重新索引 目录: {} 数量 {}", t, updateCount);

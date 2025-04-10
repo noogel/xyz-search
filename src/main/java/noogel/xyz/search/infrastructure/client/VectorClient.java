@@ -2,17 +2,16 @@ package noogel.xyz.search.infrastructure.client;
 
 import java.util.Objects;
 
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.embedding.TokenCountBatchingStrategy;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStore;
-import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStoreOptions;
-import org.springframework.ai.vectorstore.elasticsearch.SimilarityFunction;
+import org.springframework.ai.vectorstore.qdrant.QdrantVectorStore;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import io.qdrant.client.QdrantClient;
+import io.qdrant.client.QdrantGrpcClient;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.Getter;
@@ -27,13 +26,13 @@ public class VectorClient {
 
     @Getter
     private VectorStore vectorStore;
+    @Getter
+    private QdrantClient qdrantClient;
 
     @Resource
     private ConfigProperties configProperties;
     @Resource
     private OllamaClient ollamaClient;
-    @Resource
-    private ElasticClient elasticClient;
 
     @PostConstruct
     public void init() {
@@ -61,8 +60,7 @@ public class VectorClient {
     }
 
     /**
-     * 初始化 qdrant 客户端
-     * 需要先配置好 ollama 客户端 embedding 配置
+     * 初始化 qdrant 客户端 需要先配置好 ollama 客户端 embedding 配置
      */
     private void initClient() {
         try {
@@ -76,56 +74,48 @@ public class VectorClient {
         }
     }
 
-    private RestClient restClient() {
-        ConfigProperties.Elastic elastic = configProperties.getApp().getChat().getElastic();
-        RestClient restClient = RestClient.builder(HttpHost.create(elastic.getHost())).build();
-        // todo 账户名和鉴权
-        return restClient;
-    }
-
     public void reset() {
         try {
             if (Objects.nonNull(this.vectorStore)) {
                 ConfigProperties.Runtime runtime = configProperties.getRuntime();
-                elasticClient.getClient().indices().delete(d -> d.index(runtime.getVectorIndexName()));
+                this.qdrantClient.deleteCollectionAsync(runtime.getVectorIndexName()).get();
             }
-            ((ElasticsearchVectorStore) this.vectorStore).afterPropertiesSet();
+            ((QdrantVectorStore) this.vectorStore).afterPropertiesSet();
         } catch (Exception e) {
             log.error("vector 配置初始化失败", e);
         }
     }
 
+    /**
+     * 初始化 qdrant 客户端 需要先配置好 ollama 客户端 embedding 配置
+     */
     private VectorStore vectorStore() {
         OllamaEmbeddingModel embeddingModel = ollamaClient.getEmbeddingModel();
         if (embeddingModel == null) {
             throw new RuntimeException("embeddingModel 为空，请先配置好 ollama 客户端 embedding 配置");
         }
-        ConfigProperties.Elastic elastic = configProperties.getApp().getChat().getElastic();
+        ConfigProperties.Qdrant qdrant = configProperties.getApp().getChat().getQdrant();
         ConfigProperties.Runtime runtime = configProperties.getRuntime();
-        ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
-        options.setIndexName(runtime.getVectorIndexName()); // Optional: defaults to "spring-ai-document-index"
-        options.setSimilarity(similarityFunction(elastic.getSimilarity())); // Optional: defaults to COSINE
-        options.setDimensions(elastic.getDimensions()); // Optional: defaults to model dimensions or 1536
 
-        ElasticsearchVectorStore store = ElasticsearchVectorStore.builder(restClient(), embeddingModel)
-                .options(options) // Optional: use custom options
+        QdrantGrpcClient.Builder grpcClientBuilder = QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getPort(), false);
+        if (StringUtils.isNotBlank(qdrant.getApiKey())) {
+            grpcClientBuilder.withApiKey(qdrant.getApiKey());
+        }
+
+        this.qdrantClient = new QdrantClient(grpcClientBuilder.build());
+
+        QdrantVectorStore qdrantVectorStore = QdrantVectorStore.builder(this.qdrantClient, embeddingModel)
+                .collectionName(runtime.getVectorIndexName()) // Optional: defaults to "vector_store"
                 .initializeSchema(true) // Optional: defaults to false
                 .batchingStrategy(new TokenCountBatchingStrategy()) // Optional: defaults to TokenCountBatchingStrategy
                 .build();
-        store.afterPropertiesSet();
-        return store;
-    }
-
-    private static SimilarityFunction similarityFunction(String similarity) {
-        if (SimilarityFunction.cosine.name().equalsIgnoreCase(similarity)) {
-            return SimilarityFunction.cosine;
-        } else if (SimilarityFunction.dot_product.name().equalsIgnoreCase(similarity)) {
-            return SimilarityFunction.dot_product;
-        } else if (SimilarityFunction.l2_norm.name().equalsIgnoreCase(similarity)) {
-            return SimilarityFunction.l2_norm;
-        } else {
-            return SimilarityFunction.cosine;
+        try {
+            qdrantVectorStore.afterPropertiesSet();
+        } catch (Exception e) {
+            log.error("vector 配置初始化失败", e);
         }
+        return qdrantVectorStore;
+
     }
 
 }
