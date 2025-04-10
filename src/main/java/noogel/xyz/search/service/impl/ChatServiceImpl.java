@@ -1,12 +1,16 @@
 package noogel.xyz.search.service.impl;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.client.OllamaClient;
+import noogel.xyz.search.infrastructure.client.VectorClient;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
+import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
+import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
+import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchService;
+import noogel.xyz.search.service.ChatService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.RetrievalAugmentationAdvisor;
@@ -23,20 +27,14 @@ import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.client.ElasticClient;
-import noogel.xyz.search.infrastructure.client.OllamaClient;
-import noogel.xyz.search.infrastructure.client.VectorClient;
-import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.dto.LLMSearchResultDto;
-import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
-import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
-import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
-import noogel.xyz.search.infrastructure.repo.FullTextSearchService;
-import noogel.xyz.search.service.ChatService;
 import reactor.core.publisher.Flux;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -49,8 +47,6 @@ public class ChatServiceImpl implements ChatService {
 
     @Resource
     private OllamaClient ollamaClient;
-    @Resource
-    private ElasticClient elasticClient;
     @Resource
     private VectorClient vectorClient;
     @Resource
@@ -76,9 +72,9 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // 检查 Elastic 服务是否开启
-        if (!configProperties.getApp().getChat().getElastic().isEnable()) {
+        if (!configProperties.getApp().getChat().getQdrant().isEnable()) {
             try {
-                emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), "elastic 未开启"));
+                emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), "qdrant 未开启"));
                 emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), ""));
                 emitter.complete();
                 return emitter;
@@ -91,31 +87,55 @@ public class ChatServiceImpl implements ChatService {
         // https://docs.spring.io/spring-ai/reference/1.0/api/retrieval-augmented-generation.html
         ChatClient.Builder chatClientBuilder = ChatClient.builder(ollamaClient.getChatModel());
         ChatClient chatClient = chatClientBuilder.build();
-        Advisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor.builder()
-                .queryTransformers(RewriteQueryTransformer.builder()
-                        .chatClientBuilder(chatClientBuilder.build().mutate())
-                        .build())
-                .documentRetriever(VectorStoreDocumentRetriever.builder()
-                        .similarityThreshold(0.50)
-                        .vectorStore(vectorClient.getVectorStore())
-                        .build())
+        
+        // 构建查询转换器
+        RewriteQueryTransformer queryTransformer = RewriteQueryTransformer.builder()
+                .chatClientBuilder(chatClientBuilder.build().mutate())
                 .build();
 
+        // 构建文档检索器
+        VectorStoreDocumentRetriever documentRetriever = VectorStoreDocumentRetriever.builder()
+                .similarityThreshold(0.50)
+                .topK(5) // 限制返回的文档数量
+                .vectorStore(vectorClient.getVectorStore())
+                .build();
+                
+        // 构建RAG顾问
+        Advisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor.builder()
+                .queryTransformers(queryTransformer)
+                .documentRetriever(documentRetriever)
+                .build();
+
+        // 添加错误处理
         chatClient.prompt()
                 .advisors(retrievalAugmentationAdvisor)
                 .user(dto.getMessage())
-                .stream().chatResponse().subscribe(
-                        chatResponse -> {
-                            try {
-                                ChatResponseDto chatResponseDto = new ChatResponseDto(
-                                        UUID.randomUUID().toString(), chatResponse.getResult().getOutput().getText());
-                                emitter.send(chatResponseDto);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        emitter::completeWithError,
-                        emitter::complete);
+                .stream()
+                .chatResponse()
+                .doOnError(error -> {
+                    log.error("RAG处理过程中发生错误", error);
+                    try {
+                        emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), 
+                            "抱歉，处理您的请求时发生错误，请稍后重试。"));
+                        emitter.complete();
+                    } catch (IOException e) {
+                        emitter.completeWithError(e);
+                    }
+                })
+                .subscribe(chatResponse -> {
+                    try {
+                        ChatResponseDto chatResponseDto = new ChatResponseDto(
+                            UUID.randomUUID().toString(),
+                            chatResponse.getResult().getOutput().getText()
+                        );
+                        emitter.send(chatResponseDto);
+                    } catch (IOException e) {
+                        log.error("发送SSE消息时发生错误", e);
+                        emitter.completeWithError(e);
+                    }
+                }, 
+                error -> emitter.completeWithError(error),
+                emitter::complete);
         return emitter;
     }
 
@@ -143,8 +163,8 @@ public class ChatServiceImpl implements ChatService {
         try {
             Generation result = call.getResult();
             // log.info("fluxChat result:\n{}", result.getOutput().getText());
-            ChatResponseDto chatResponseDto = new ChatResponseDto(
-                    UUID.randomUUID().toString(), result.getOutput().getText());
+            ChatResponseDto chatResponseDto = new ChatResponseDto(UUID.randomUUID().toString(),
+                    result.getOutput().getText());
             emitter.send(chatResponseDto);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -190,8 +210,7 @@ public class ChatServiceImpl implements ChatService {
         List<String> fixedHighlights = fixedHighlights(llmSearchResultDto.getHighlights());
         String context = String.join("\n\n", fixedHighlights);
         if (StringUtils.isBlank(context)) {
-            return new SystemPromptTemplate(this.chatbotSystemPromptResource)
-                    .createMessage(Map.of("query", query));
+            return new SystemPromptTemplate(this.chatbotSystemPromptResource).createMessage(Map.of("query", query));
         }
         SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.qaSystemPromptResource);
         return systemPromptTemplate.createMessage(Map.of("context", context, "query", query));
