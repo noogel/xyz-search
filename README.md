@@ -203,6 +203,24 @@ noogel/xyz-search:latest
       "chatOptionNumPredict": "10000",
       "embeddingAdditionalModels": [],
       "pullModelStrategy": "when_missing"
+    },
+    // 可选的全文索引
+    "elastic": {
+      "enable": true,
+      "host": "http://192.168.124.13:9200",
+      "username": null,
+      "password": null,
+      "caPath": null,
+      "connectionTimeout": 10000,
+      "socketTimeout": 30000,
+      "highlightMaxAnalyzedOffset": 10000001
+    },
+    // 向量数据库，可选，增强检索
+    "qdrant": {
+      "enable": false,
+      "host": "192.168.124.13",
+      "port": 6334,
+      "apiKey": "xEYepb9JSXjSauW2"
     }
   }
 }
@@ -262,6 +280,61 @@ networks:
 docker-compose up -d
 ```
 
+### 完整配置
+
+```yaml
+services:
+  search:
+    container_name: search
+    environment:
+      - PUID=3000
+      - PGID=3000
+      - TZ=Asia/Shanghai
+      - INIT_MODE=full
+    image: noogel/xyz-search:latest
+    depends_on:
+      - elastic
+      - qdrant
+      - paddleocr
+    ports:
+      - '8081:8081'
+    restart: unless-stopped
+    volumes:
+      - ./docker/search/data:/data/share
+      - ./docker/search/config:/usr/share/xyz-search/data
+  elastic:
+    container_name: elastic
+    environment:
+      - PUID=3000
+      - PGID=3000
+      - TZ=Asia/Shanghai
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx2g
+    image: noogel/elasticsearch:8.17.4-alpha
+    restart: unless-stopped
+    volumes:
+      - ./docker/search/es:/usr/share/elasticsearch/data
+  qdrant:
+    container_name: qdrant
+    image: qdrant/qdrant:latest
+    volumes:
+      - ./docker/search/qdrant:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__API_KEY: "3Yptaw9Z8ELMEsqp"
+    restart: unless-stopped
+  paddleocr:
+    image: 'noogel/paddleocr:cpu-pp-ocrv4-server'
+    restart: unless-stopped
+    container_name: paddleocr
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: 500M
+```
+
 ## 💬 常见问题
 
 **Q: 如何修改系统默认端口？**
@@ -289,10 +362,10 @@ A: 可以通过以下方式优化：
 
 ## 📊 开发计划
 
+* [ x ] 优化 RAG 检索增强生成模型
+* [ x ] 改进中文分词准确率
 * [ ] 全新的响应式搜索界面
-* [ ] 优化 RAG 检索增强生成模型
 * [ ] 实现多用户系统
-* [ ] 改进中文分词准确率
 * [ ] 支持更多文档格式
 
 ## 👥 贡献指南
