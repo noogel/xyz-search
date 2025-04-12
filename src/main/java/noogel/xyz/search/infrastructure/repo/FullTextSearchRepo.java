@@ -7,7 +7,7 @@ import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
-import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
 
 /**
  * 全文搜索资源库

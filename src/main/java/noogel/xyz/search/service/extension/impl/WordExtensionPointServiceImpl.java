@@ -1,5 +1,16 @@
 package noogel.xyz.search.service.extension.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.springframework.stereotype.Service;
+
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -9,18 +20,6 @@ import noogel.xyz.search.infrastructure.dto.dao.ChapterDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -38,7 +37,6 @@ public class WordExtensionPointServiceImpl extends AbstractExtensionPointService
     @Override
     public FileResContentDto parseFile(FileResReadDto resReadDto) {
         File file = resReadDto.genFile();
-        Path path = Paths.get(file.toURI());
         try (InputStream inputStream = new FileInputStream(file)) {
             try (XWPFDocument doc = new XWPFDocument(inputStream)) {
                 // 获取所有段落

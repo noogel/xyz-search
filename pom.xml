@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>noogel.xyz</groupId>
     <artifactId>xyz-search</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <packaging>war</packaging>
     <name>xyz-search</name>
     <description>xyz-search</description>
     <properties>
         <java.version>17</java.version>
         <lucene.version>9.12.1</lucene.version>
+        <elasticsearch.version>8.17.4</elasticsearch.version>
         <mainClass>noogel.xyz.search.MainApp</mainClass>
     </properties>
     <repositories>
@@ -70,12 +71,20 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- https://spring.io/projects/spring-ai#learn-->
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
                 <version>1.0.0-M6</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.apache.tika/tika -->
+            <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika</artifactId>
+                <version>3.1.0</version>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -85,6 +94,14 @@
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-ollama</artifactId>
+        </dependency>
+        <!-- <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-elasticsearch-store</artifactId>
+        </dependency> -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-qdrant-store</artifactId>
         </dependency>
         <!--  spring ai end  -->
 
@@ -154,7 +171,17 @@
             <artifactId>lucene-highlighter</artifactId>
             <version>${lucene.version}</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/co.elastic.clients/elasticsearch-java -->
+        <dependency>
+            <groupId>co.elastic.clients</groupId>
+            <artifactId>elasticsearch-java</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-client</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
         <!-- Hibernate and Jakarta Persistence API Dependencies -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
@@ -206,7 +233,18 @@
         <!-- 修复安全问题的包 end -->
 
         <!-- 文件解析包 -->
-
+        <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers-standard-package -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers-standard-package</artifactId>
+            <version>3.1.0</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
@@ -278,6 +316,12 @@
             <scope>test</scope>
         </dependency>
         <!-- test end -->
+
+        <!-- JavaMail -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
 
     </dependencies>
     <build>

@@ -1,18 +1,27 @@
 package noogel.xyz.search.infrastructure.utils;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.function.Supplier;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.CommonsConsts;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Supplier;
 
 @Slf4j
 public class EmailNotifyHelper {
@@ -28,7 +37,7 @@ public class EmailNotifyHelper {
      * @param successRunnable
      */
     public static void send(ConfigProperties.App cfg, String subject, String message,
-                            Supplier<Boolean> sendCondition, Runnable successRunnable) {
+            Supplier<Boolean> sendCondition, Runnable successRunnable) {
         if (Objects.isNull(cfg.getNotifyEmail())) {
             return;
         }
@@ -52,6 +61,77 @@ public class EmailNotifyHelper {
                 }
             } catch (Exception ex) {
                 log.error("sendMail failed.", ex);
+            }
+        });
+    }
+
+    /**
+     * 使用 SMTP 发送邮件
+     *
+     * @param cfg             配置
+     * @param subject         主题
+     * @param message         消息内容
+     * @param sendCondition   发送条件
+     * @param successRunnable 发送成功后的回调
+     */
+    public static void sendBySmtp(ConfigProperties.App cfg, String subject, String message,
+            Supplier<Boolean> sendCondition, Runnable successRunnable) {
+        if (Objects.isNull(cfg.getNotifyEmail())) {
+            return;
+        }
+        if (StringUtils.isBlank(cfg.getNotifyEmail().getEmailHost())) {
+            return;
+        }
+        if (CollectionUtils.isEmpty(cfg.getNotifyEmail().getReceivers())) {
+            return;
+        }
+        if (StringUtils.isBlank(cfg.getNotifyEmail().getSenderEmail())) {
+            return;
+        }
+        if (StringUtils.isBlank(cfg.getNotifyEmail().getEmailPass())) {
+            return;
+        }
+
+        CommonsConsts.SHORT_EXECUTOR_SERVICE.submit(() -> {
+            if (!sendCondition.get()) {
+                return;
+            }
+
+            try {
+                // 配置邮件服务器属性
+                Properties props = new Properties();
+                props.put("mail.smtp.host", cfg.getNotifyEmail().getEmailHost());
+                props.put("mail.smtp.port", cfg.getNotifyEmail().getEmailPort());
+                props.put("mail.smtp.auth", "true");
+                props.put("mail.smtp.starttls.enable", "true");
+                props.put("mail.smtp.ssl.trust", cfg.getNotifyEmail().getEmailHost());
+
+                // 创建会话
+                Session session = Session.getInstance(props, null);
+
+                // 创建邮件消息
+                MimeMessage mimeMessage = new MimeMessage(session);
+                mimeMessage.setFrom(new InternetAddress(cfg.getNotifyEmail().getSenderEmail()));
+                mimeMessage.setSubject(subject);
+                mimeMessage.setContent(message, "text/html;charset=UTF-8");
+
+                // 设置收件人
+                for (String receiver : cfg.getNotifyEmail().getReceivers()) {
+                    mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(receiver));
+                }
+
+                // 发送邮件
+                Transport transport = session.getTransport("smtp");
+                transport.connect(cfg.getNotifyEmail().getEmailHost(),
+                        cfg.getNotifyEmail().getSenderEmail(),
+                        cfg.getNotifyEmail().getEmailPass());
+                transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+                transport.close();
+
+                log.info("sendMailBySmtp subject:{} message:{} success", subject, message);
+                successRunnable.run();
+            } catch (MessagingException e) {
+                log.error("sendMailBySmtp failed.", e);
             }
         });
     }

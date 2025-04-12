@@ -9,6 +9,7 @@ import noogel.xyz.search.infrastructure.utils.EmailNotifyHelper;
 import noogel.xyz.search.infrastructure.utils.IpUtils;
 import noogel.xyz.search.infrastructure.utils.JsonHelper;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -20,51 +21,75 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-//@Component
+@Component
 public class RequestFilter implements Filter {
-    private static final Map<String, Long> HASH_TIME_MAP = new ConcurrentHashMap<>();
-    private static final long TIME_SHIFT = 600 * 1000L; // 10 分钟
+    private static final Map<String, Long> ACCESS_TIME_MAP = new ConcurrentHashMap<>();
+    private static final long CLEANUP_INTERVAL = 3600 * 1000L; // 每小时清理一次
 
     @Resource
     private ConfigProperties configProperties;
 
-    @Scheduled(fixedRate = TIME_SHIFT * 144)
+    @Scheduled(fixedRate = CLEANUP_INTERVAL)
     public void removeExpiredRecord() {
-        // 移除过期 IP
         long nowTs = Instant.now().toEpochMilli();
-        ArrayList<String> expiredKey = new ArrayList<>();
-        HASH_TIME_MAP.forEach((key, val) -> {
-            if (nowTs - val > TIME_SHIFT) {
-                expiredKey.add(key);
+        Long notifyInterval = getNotifyInterval();
+        if (notifyInterval == null) {
+            return;
+        }
+
+        ArrayList<String> expiredKeys = new ArrayList<>();
+        ACCESS_TIME_MAP.forEach((key, timestamp) -> {
+            if (nowTs - timestamp > notifyInterval) {
+                expiredKeys.add(key);
             }
         });
-        expiredKey.forEach(HASH_TIME_MAP::remove);
+
+        if (!expiredKeys.isEmpty()) {
+            expiredKeys.forEach(ACCESS_TIME_MAP::remove);
+            log.debug("Cleaned up {} expired access records", expiredKeys.size());
+        }
+    }
+
+    private Long getNotifyInterval() {
+        if (configProperties.getApp().getNotify() == null) {
+            return null;
+        }
+        Integer hours = configProperties.getApp().getNotify().getAccessIntervalHours();
+        return hours != null ? hours * 3600 * 1000L : null;
+    }
+
+    private boolean shouldNotify(String hashKey, long nowTs) {
+        if (getNotifyInterval() == null) {
+            return false;
+        }
+        Long lastAccessTime = ACCESS_TIME_MAP.get(hashKey);
+        return lastAccessTime == null || (nowTs - lastAccessTime >= getNotifyInterval());
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         long nowTs = Instant.now().toEpochMilli();
+
         try {
             String remoteIP = IpUtils.getIpAddr(req);
             String serverName = req.getServerName();
             String hashKey = String.format("%s:%s", remoteIP, serverName);
-            // 存在 key 并且 时差小于 x，则不发邮件。
-            if (HASH_TIME_MAP.containsKey(hashKey) && nowTs - HASH_TIME_MAP.get(hashKey) < TIME_SHIFT) {
-                // x 时间内不重复通知，不随访问更新。
-                // IP_TIME_MAP.put(remoteIP, nowTs);
-                log.info("畅文全索请求更新，ip:{}， 访问路径：{} {} 访问参数：{}", remoteIP, req.getMethod(),
-                        req.getRequestURL(), JsonHelper.toJson(req.getParameterMap()));
-            } else {
+
+            if (shouldNotify(hashKey, nowTs)) {
                 String subject = String.format("畅文: %s -> %s", remoteIP, serverName);
                 String msg = String.format("畅文全索请求通知：<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-                                "新 IP:%s，访问时间：%s，访问路径：%s %s，访问参数：%s",
+                        "新 IP:%s，访问时间：%s，访问路径：%s %s，访问参数：%s",
                         remoteIP, LocalDateTime.now(), req.getMethod(), req.getRequestURL(),
                         JsonHelper.toJson(req.getParameterMap()));
-                EmailNotifyHelper.send(configProperties.getApp(), subject, msg,
-                        () -> !HASH_TIME_MAP.containsKey(hashKey),
-                        () -> HASH_TIME_MAP.put(hashKey, nowTs));
+                EmailNotifyHelper.sendBySmtp(configProperties.getApp(), subject, msg,
+                        () -> shouldNotify(hashKey, nowTs),
+                        () -> ACCESS_TIME_MAP.put(hashKey, nowTs));
+            } else {
+                log.debug("Access notification skipped for IP: {}, within notification interval", remoteIP);
             }
+
             HashMap<String, String> headers = new HashMap<>();
             Enumeration<String> headerNames = req.getHeaderNames();
             while (headerNames.hasMoreElements()) {
@@ -72,7 +97,7 @@ public class RequestFilter implements Filter {
                 String headerValue = req.getHeader(headerName);
                 headers.put(headerName, headerValue);
             }
-            log.info("request headers: {}", headers);
+            log.debug("request headers: {}", headers);
         } catch (Exception ex) {
             log.error("畅文全索请求发送通知失败", ex);
         }

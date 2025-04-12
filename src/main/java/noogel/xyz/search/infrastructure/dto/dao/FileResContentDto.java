@@ -1,17 +1,20 @@
 package noogel.xyz.search.infrastructure.dto.dao;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class FileResContentDto {
+    public static final String META_TITLE = "title";
+    public static final String META_CONTENT_TYPE = "content_type";
     private List<ChapterDto> chapterList;
     private Map<String, String> metadata;
 
@@ -22,7 +25,18 @@ public class FileResContentDto {
         return dto;
     }
 
+    public FileResContentDto metaData(Map<String, String> metadata) {
+        if (metadata == null) {
+            return this;
+        }
+        metadata.forEach(this::metaData);
+        return this;
+    }
+
     public FileResContentDto metaData(String key, String val) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(val)) {
+            return this;
+        }
         this.metadata.put(key, val);
         return this;
     }

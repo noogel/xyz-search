@@ -79,7 +79,7 @@ public class ConfigPropertiesConfiguration {
     @Nullable
     public static ConfigProperties readBaseConfigByResource() {
         Resource resource = new DefaultResourceLoader().getResource(
-                String.format("classpath:xyz-search-%s.yml", EnvHelper.DEPLOY_ENV));
+                String.format("classpath:xyz-search-%s.yml", EnvHelper.INIT_MODE));
         try (InputStream inputStream = resource.getInputStream()) {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 byte[] b = new byte[10240];
@@ -144,7 +144,7 @@ public class ConfigPropertiesConfiguration {
     private void overrideFromEnv(ConfigProperties configProperties) {
         String esIdxEnv = EnvHelper.FuncEnv.FTS_IDX.getEnv();
         if (StringUtils.isNotBlank(esIdxEnv)) {
-            configProperties.getBase().setFtsIndexName(esIdxEnv);
+            configProperties.getRuntime().setFtsIndexName(esIdxEnv);
         }
     }
 }

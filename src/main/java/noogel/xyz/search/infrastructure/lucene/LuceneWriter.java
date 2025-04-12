@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
+import noogel.xyz.search.infrastructure.model.FtsDocument;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -114,7 +115,7 @@ public class LuceneWriter {
         }
     }
 
-    public boolean update(LuceneDocument data) {
+    public boolean update(FtsDocument data) {
         try {
             IndexWriter writer = getWriter();
             Document doc = new Document();
@@ -138,7 +139,7 @@ public class LuceneWriter {
         }
     }
 
-    public boolean delete(LuceneDocument data) {
+    public boolean delete(FtsDocument data) {
         try {
             IndexWriter writer = getWriter();
             Term term = null;

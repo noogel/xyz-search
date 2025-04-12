@@ -2,12 +2,15 @@ package noogel.xyz.search.service.impl;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.client.VectorClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
 import noogel.xyz.search.infrastructure.consts.CommonsConsts;
 import noogel.xyz.search.infrastructure.consts.FileStateEnum;
+import noogel.xyz.search.infrastructure.consts.JobTypeEnum;
 import noogel.xyz.search.infrastructure.dto.dao.FileResWriteDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileViewDto;
-import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
+import noogel.xyz.search.infrastructure.queue.WorkQueueService;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchService;
 import noogel.xyz.search.infrastructure.utils.FileResHelper;
 import noogel.xyz.search.service.FileDbService;
 import noogel.xyz.search.service.SynchronizeService;
@@ -29,9 +32,13 @@ public class SynchronizeServiceImpl implements SynchronizeService {
     @Resource
     private ExtensionService extensionService;
     @Resource
-    private FullTextSearchRepo fullTextSearchRepo;
+    private FullTextSearchService fullTextSearchService;
     @Resource
     private FileDbService fileDbService;
+    @Resource
+    private VectorClient vectorClient;
+    @Resource
+    private WorkQueueService workQueueService;
     @Resource
     private ConfigProperties configProperties;
 
@@ -104,11 +111,19 @@ public class SynchronizeServiceImpl implements SynchronizeService {
 
     @Override
     public void resetIndex() {
-        fullTextSearchRepo.reset();
+        log.info("重置索引 start.");
+        // 队列重置
+        workQueueService.resetJobs(JobTypeEnum.INDEXED_CONTENT.name());
+        // 向量重置
+        vectorClient.reset();
+        // 索引重置
+        fullTextSearchService.getBean().reset();
         configProperties.getApp().getIndexDirectories().forEach(t -> {
+            // DB 重置
             int updateCount = fileDbService.updateDirectoryState(t.getDirectory(), FileStateEnum.VALID);
             log.info("重新索引 目录: {} 数量 {}", t, updateCount);
         });
+        log.info("重置索引 end.");
     }
 
     @Override
@@ -140,12 +155,8 @@ public class SynchronizeServiceImpl implements SynchronizeService {
         List<File> appendFiles = calculateAppendFiles(fsFiles, dbFiles);
         List<FileViewDto> removeFiles = calculateRemoveFiles(fsFiles, dbFiles);
         if (!(CollectionUtils.isEmpty(appendFiles) && CollectionUtils.isEmpty(removeFiles))) {
-            log.info("计划处理目录: {}\n添加目录:\n{}\n移除目录:\n{}",
-                    rootDir.getAbsolutePath(),
-                    String.join("\n  ", appendFiles.stream().filter(File::isDirectory)
-                            .map(File::getAbsolutePath).toList()),
-                    String.join("\n  ", removeFiles.stream().filter(FileViewDto::isDirectory)
-                            .map(FileViewDto::getPath).toList()));
+            // 打印日志
+            recordLog(rootDir, removeFiles, appendFiles);
         }
         // 按照文件和目录分别删除
         for (FileViewDto t : removeFiles) {
@@ -167,6 +178,31 @@ public class SynchronizeServiceImpl implements SynchronizeService {
                 CommonsConsts.SYNC_EXECUTOR_SERVICE.submit(() -> this.processDirectory(t, excludeDirectories));
             }
         }
+    }
+
+    /**
+     * 记录日志
+     *
+     * @param rootDir
+     * @param removeFiles
+     * @param appendFiles
+     */
+    private static void recordLog(File rootDir, List<FileViewDto> removeFiles, List<File> appendFiles) {
+        String removeDirs = String.join("\n  ", removeFiles.stream().filter(FileViewDto::isDirectory)
+                .map(FileViewDto::getPath).toList());
+        if (StringUtils.isEmpty(removeDirs)) {
+            removeDirs = "无";
+        } else {
+            removeDirs = "\n" + removeDirs;
+        }
+        String appendDirs = String.join("\n  ", appendFiles.stream().filter(File::isDirectory)
+                .map(File::getAbsolutePath).toList());
+        if (StringUtils.isEmpty(appendDirs)) {
+            appendDirs = "无";
+        } else {
+            appendDirs = "\n" + appendDirs;
+        }
+        log.info("计划处理目录: {}\n添加目录:{}\n移除目录:{}", rootDir.getAbsolutePath(), appendDirs, removeDirs);
     }
 
     private List<File> parseValidSubFsFiles(File rootDir, List<String> excludeDirectories) {

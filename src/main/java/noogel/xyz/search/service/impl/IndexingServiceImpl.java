@@ -1,27 +1,30 @@
 package noogel.xyz.search.service.impl;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import noogel.xyz.search.infrastructure.client.ElasticClient;
+import noogel.xyz.search.infrastructure.client.VectorClient;
+import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.consts.CommonsConsts;
+import noogel.xyz.search.infrastructure.consts.FileStateEnum;
+import noogel.xyz.search.infrastructure.dto.IndexedContentDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
+import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
+import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchService;
+import noogel.xyz.search.infrastructure.utils.MD5Helper;
+import noogel.xyz.search.service.FileDbService;
+import noogel.xyz.search.service.IndexingService;
+import noogel.xyz.search.service.VectorProcessService;
+import noogel.xyz.search.service.extension.ExtensionService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-import noogel.xyz.search.infrastructure.config.ConfigProperties;
-import noogel.xyz.search.infrastructure.consts.CommonsConsts;
-import noogel.xyz.search.infrastructure.consts.FileStateEnum;
-import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
-import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
-import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
-import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
-import noogel.xyz.search.infrastructure.utils.MD5Helper;
-import noogel.xyz.search.service.FileDbService;
-import noogel.xyz.search.service.IndexingService;
-import noogel.xyz.search.service.extension.ExtensionService;
 
 @Service
 @Slf4j
@@ -32,9 +35,15 @@ public class IndexingServiceImpl implements IndexingService {
     @Resource
     private ExtensionService extensionService;
     @Resource
-    private FullTextSearchRepo fullTextSearchRepo;
+    private FullTextSearchService fullTextSearchService;
+    @Resource
+    private VectorProcessService vectorProcessService;
     @Resource
     private ConfigProperties configProperties;
+    @Resource
+    private ElasticClient elasticClient;
+    @Resource
+    private VectorClient vectorClient;
 
     @PostConstruct
     public void init() {
@@ -86,12 +95,16 @@ public class IndexingServiceImpl implements IndexingService {
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.ERROR, options);
                             return;
                         }
-                        FullTextSearchModel fullTextSearchModel = buildLuceneModel(t, contentDto);
-                        // 更新全文索引
-                        fullTextSearchRepo.upsert(fullTextSearchModel, () -> {
+                        // 更新索引
+                        fullTextSearchService.getBean().upsert(buildLuceneModel(t, contentDto), () -> {
                             // 更新状态
                             fileDbService.updateFileState(t.getFieldId(), FileStateEnum.INDEXED);
                         });
+                        // 异步处理向量
+                        if (vectorClient.isEnabled()) {
+                            IndexedContentDto indexedContentDto = IndexedContentDto.of(t.getResId(), contentDto);
+                            vectorProcessService.asyncUpsert(indexedContentDto);
+                        }
                     });
         } catch (Exception ex) {
             log.error("indexFileToEs error {}", t.calFilePath(), ex);
@@ -103,7 +116,7 @@ public class IndexingServiceImpl implements IndexingService {
 
     private FullTextSearchModel buildLuceneModel(FileResReadDto t, FileResContentDto dto) {
         String content = dto.genContent();
-        String title = Optional.ofNullable(dto.getMetadata()).map(l -> l.get("metaTitle"))
+        String title = Optional.ofNullable(dto.getMetadata()).map(l -> l.get("title"))
                 .filter(StringUtils::isNotBlank).orElse(t.getName());
         FullTextSearchModel es = new FullTextSearchModel();
         es.setResId(t.getResId());
@@ -152,11 +165,15 @@ public class IndexingServiceImpl implements IndexingService {
     private void removeIndexAndFile(FileResReadDto t) {
         log.info("移除全文索引和 db 记录 {}", t.calFilePath());
         try {
-            // 清理ES
-            fullTextSearchRepo.delete(t.getResId(), () -> {
+            // 清理索引
+            fullTextSearchService.getBean().delete(t.getResId(), () -> {
                 // 清理DB
                 fileDbService.deleteFile(t.getFieldId());
             });
+            if (vectorClient.isEnabled()) {
+                // 异步处理向量
+                vectorProcessService.asyncDelete(t.getResId());
+            }
         } catch (Exception ex) {
             log.error("removeEsAndFile error {}", t.calFilePath(), ex);
             Map<String, String> options = t.getOptions();

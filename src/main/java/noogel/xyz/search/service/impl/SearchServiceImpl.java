@@ -15,8 +15,8 @@ import noogel.xyz.search.infrastructure.dto.page.SearchResultShowDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
-import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
-import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
+import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.repo.FullTextSearchService;
 import noogel.xyz.search.infrastructure.utils.DateTimeHelper;
 import noogel.xyz.search.infrastructure.utils.FileHelper;
 import noogel.xyz.search.infrastructure.utils.HTMLTemplateHelper;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     @Resource
-    private FullTextSearchRepo fullTextSearchRepo;
+    private FullTextSearchService fullTextSearchService;
     @Resource
     private ConfigProperties configProperties;
 
@@ -64,7 +64,6 @@ public class SearchServiceImpl implements SearchService {
         CommonSearchDto searchDto = new CommonSearchDto();
         searchDto.setSearchQuery(query.getSearch());
         searchDto.setResId(query.getResId());
-        searchDto.setDirPrefix(query.getResDirPrefix());
         Optional.ofNullable(query.getResDirPrefix()).filter(StringUtils::isNotBlank)
                 .ifPresent(l -> {
                     searchDto.setDirPrefix(l);
@@ -80,14 +79,13 @@ public class SearchServiceImpl implements SearchService {
                 .ifPresent(searchDto::setPaging);
         Optional.ofNullable(query.getOrder()).map(l -> CommonSearchDto.OrderBy.of(l.getField(), l.isAscOrder()))
                 .ifPresent(searchDto::setOrder);
-        SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
-        return result;
+        return fullTextSearchService.getBean().commonSearch(searchDto);
     }
 
     private SearchResultDto randomSearch(SearchQueryDto query) {
         RandomSearchDto searchDto = new RandomSearchDto();
         searchDto.setLimit(query.getLimit());
-        SearchResultDto result = fullTextSearchRepo.randomSearch(searchDto);
+        SearchResultDto result = fullTextSearchService.getBean().randomSearch(searchDto);
         return result;
     }
 
@@ -95,7 +93,7 @@ public class SearchServiceImpl implements SearchService {
     public SearchResultApiDto apiSearch(SearchQueryApiDto query) {
         CommonSearchDto searchDto = new CommonSearchDto();
         searchDto.setSearchQuery(query.getSearch());
-        SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
+        SearchResultDto result = fullTextSearchService.getBean().commonSearch(searchDto);
         SearchResultApiDto showDto = new SearchResultApiDto();
         showDto.setQuery(query.getSearch());
         showDto.setResults(result.getData().stream().map(t -> {
@@ -114,7 +112,6 @@ public class SearchServiceImpl implements SearchService {
         CommonSearchDto searchDto = new CommonSearchDto();
         searchDto.setSearchQuery(query.getSearch());
         searchDto.setResId(query.getResId());
-        searchDto.setDirPrefix(query.getResDirPrefix());
         Optional.ofNullable(query.getResDirPrefix()).filter(StringUtils::isNotBlank)
                 .ifPresent(l -> {
                     searchDto.setDirPrefix(l);
@@ -130,7 +127,7 @@ public class SearchServiceImpl implements SearchService {
                 .ifPresent(searchDto::setPaging);
         Optional.ofNullable(query.getOrder()).map(l -> CommonSearchDto.OrderBy.of(l.getField(), l.isAscOrder()))
                 .ifPresent(searchDto::setOrder);
-        SearchResultDto result = fullTextSearchRepo.commonSearch(searchDto);
+        SearchResultDto result = fullTextSearchService.getBean().commonSearch(searchDto);
         OPDSResultShowDto showDto = new OPDSResultShowDto();
         showDto.setSize(Math.toIntExact(result.getSize()));
         showDto.setData(result.getData().stream().map(t -> {
@@ -145,7 +142,7 @@ public class SearchServiceImpl implements SearchService {
             dto.setResTitle(t.getResTitle());
             dto.setResSize(t.getResSize());
             dto.setModifiedAt(t.getModifiedAt());
-            dto.setSearchableText(t.getContent());
+            dto.setSearchQuery(t.getContent());
             dto.setResDir(t.getResDir());
             dto.setContentType(contentType);
             return dto;
@@ -155,7 +152,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public ResourcePageDto searchByResId(String resId, String search) {
-        ResourceHighlightHitsDto dto = fullTextSearchRepo.searchByResId(resId, search);
+        ResourceHighlightHitsDto dto = fullTextSearchService.getBean().searchByResId(resId, search);
         ExceptionCode.FILE_ACCESS_ERROR.throwOn(Objects.isNull(dto), "资源不存在");
         String highlightHtml = HTMLTemplateHelper.render("highlight.html",
                 Collections.singletonMap("highlight", dto.getHighlights()));
@@ -200,7 +197,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public ResourceDownloadDto getDownloadResource(String resId) {
         ResourceDownloadDto dto = new ResourceDownloadDto();
-        FullTextSearchModel res = fullTextSearchRepo.findByResId(resId);
+        FullTextSearchModel res = fullTextSearchService.getBean().findByResId(resId);
         dto.setResId(resId);
         dto.setResTitle(res.getResTitle());
         dto.setAbsolutePath(res.calculateAbsolutePath());
@@ -210,7 +207,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public String getResourceContent(String resId) {
-        FullTextSearchModel res = fullTextSearchRepo.findByResId(resId);
+        FullTextSearchModel res = fullTextSearchService.getBean().findByResId(resId);
         return res.getContent();
     }
 }

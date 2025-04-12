@@ -93,6 +93,15 @@ public class ConfigProperties {
     }
 
     @Data
+    public static class Notify {
+        @ConfigNote(desc = "notify:通知类型")
+        private String type = "email";
+        // 访问通知间隔
+        @ConfigNote(desc = "notify:访问通知间隔(小时)，null不通知")
+        private Integer accessIntervalHours;
+    }
+
+    @Data
     public static class PaddleOcr {
         @ConfigNote(desc = "paddleOcr:OCR服务地址")
         private String url;
@@ -120,29 +129,74 @@ public class ConfigProperties {
 
     @Data
     public static class Chat {
+        @ConfigNote(desc = "vector 向量配置")
+        private Vector vector;
+        @ConfigNote(desc = "ollama 支持 LLM 和 embedding")
+        private Ollama ollama;
+        @ConfigNote(desc = "elastic 全文索引")
+        private Elastic elastic;
+        @ConfigNote(desc = "qdrant 向量数据库")
+        private Qdrant qdrant;
+    }
+
+    @Data
+    public static class Vector {
+        @ConfigNote(desc = "相似度阈值")
+        private Double similarityThreshold;
+        @ConfigNote(desc = "topK")
+        private Integer topK;
+    }
+
+    @Data
+    public static class Elastic {
         @ConfigNote(desc = "是否开启")
         private boolean enable;
-        @ConfigNote(desc = "ollama")
-        private Ollama ollama;
+        @ConfigNote(desc = "host")
+        private String host;
+        @ConfigNote(desc = "username")
+        private String username;
+        @ConfigNote(desc = "password")
+        private String password;
+        @ConfigNote(desc = "caPath")
+        private String caPath;
+        @ConfigNote(desc = "connectionTimeout")
+        private Integer connectionTimeout;
+        @ConfigNote(desc = "socketTimeout")
+        private Integer socketTimeout;
+        @ConfigNote(desc = "highlightMaxAnalyzedOffset")
+        private Integer highlightMaxAnalyzedOffset;
     }
 
     @Data
     public static class Ollama {
-        /**
-         * #spring.ai.ollama.base-url=http://localhost:11434
-         * #spring.ai.ollama.chat.model=deepseek-r1:1.5b
-         * spring.ai.ollama.chat.options.temperature=0.7
-         * spring.ai.ollama.chat.options.num-predict=10000
-         * spring.ai.ollama.init.embedding.additional-models=jinaai/jina-embeddings-v2-base-zh
-         * spring.ai.ollama.init.pull-model-strategy=never
-         */
+        @ConfigNote(desc = "是否开启")
+        private boolean enable;
+        @ConfigNote(desc = "baseUrl")
         private String baseUrl;
+        @ConfigNote(desc = "chatModel")
         private String chatModel;
+        @ConfigNote(desc = "chatOptionNumCtx")
         private String chatOptionNumCtx;
+        @ConfigNote(desc = "chatOptionTemperature")
         private String chatOptionTemperature;
+        @ConfigNote(desc = "chatOptionNumPredict")
         private String chatOptionNumPredict;
+        @ConfigNote(desc = "embeddingAdditionalModels")
         private List<String> embeddingAdditionalModels;
+        @ConfigNote(desc = "pullModelStrategy")
         private String pullModelStrategy;
+    }
+
+    @Data
+    public static class Qdrant {
+        @ConfigNote(desc = "是否开启")
+        private boolean enable;
+        @ConfigNote(desc = "host")
+        private String host;
+        @ConfigNote(desc = "port")
+        private Integer port;
+        @ConfigNote(desc = "apiKey")
+        private String apiKey;
     }
 
     @Data
@@ -160,6 +214,8 @@ public class ConfigProperties {
         private String markDeleteDirectory;
         @ConfigNote(desc = "访问邮件通知")
         private NotifyEmail notifyEmail;
+        @ConfigNote(desc = "通知配置")
+        private Notify notify;
         @ConfigNote(desc = "外部 OCR 服务")
         private PaddleOcr paddleOcr;
         @ConfigNote(desc = "外链配置")
@@ -210,13 +266,33 @@ public class ConfigProperties {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Runtime {
         /**
-         * 是否已经初始化索引
+         * 默认睡眠时间
          */
         private Long defaultSleepMs;
+        /**
+         * 索引名称
+         */
+        private String ftsIndexName;
+        /**
+         * 是否已经初始化索引
+         */
+        private Boolean ftsInitIndex;
+        /**
+         * 向量索引名称
+         */
+        private String vectorIndexName;
+        /**
+         * 是否已经初始化向量索引
+         */
+        private Boolean vectorInitIndex;
 
         public static Runtime init() {
             Runtime rt = new Runtime();
             rt.setDefaultSleepMs(CommonsConsts.DEFAULT_SLEEP_MS);
+            rt.setFtsIndexName(CommonsConsts.DEFAULT_INDEX_NAME);
+            rt.setFtsInitIndex(false);
+            rt.setVectorIndexName(CommonsConsts.DEFAULT_VECTOR_INDEX_NAME);
+            rt.setVectorInitIndex(false);
             return rt;
         }
     }
@@ -244,10 +320,6 @@ public class ConfigProperties {
          * 临时数据子目录
          */
         private String tmpSubPath;
-        /**
-         * 索引名称
-         */
-        private String ftsIndexName;
         /**
          * 用户名
          */

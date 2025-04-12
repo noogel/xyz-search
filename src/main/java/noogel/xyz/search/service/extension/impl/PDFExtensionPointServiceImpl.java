@@ -1,5 +1,18 @@
 package noogel.xyz.search.service.extension.impl;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.stereotype.Service;
+
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,18 +24,6 @@ import noogel.xyz.search.infrastructure.dto.dao.FileResContentDto;
 import noogel.xyz.search.infrastructure.dto.dao.FileResReadDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.utils.CharStreamHelper;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @Getter
 @Service
@@ -79,10 +80,10 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
                 String metaContent = Optional.ofNullable(resRel)
                         .map(ResRelationInfoDto::getMetaContent)
                         .filter(StringUtils::isNotBlank).orElse(file.getName());
-                t.setChapterName(metaContent);
+                t.setName(metaContent);
             });
         }
-        return FileResContentDto.of(chapters).metaData("metaTitle", title);
+        return FileResContentDto.of(chapters).metaData(FileResContentDto.META_TITLE, title);
     }
 
 }

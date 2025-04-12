@@ -1,34 +1,5 @@
 package noogel.xyz.search.infrastructure.repo.impl.lucene;
 
-import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.DEFAULT_ANALYZER;
-import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.STOPWORDS;
-import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.generateAnalyzer;
-
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
-import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
-import org.apache.lucene.document.LongPoint;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.WildcardQuery;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -42,16 +13,32 @@ import noogel.xyz.search.infrastructure.dto.SearchResultDto;
 import noogel.xyz.search.infrastructure.dto.repo.CommonSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.LLMSearchDto;
 import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
-import noogel.xyz.search.infrastructure.lucene.HighlightOptions;
-import noogel.xyz.search.infrastructure.lucene.LuceneDocument;
-import noogel.xyz.search.infrastructure.lucene.LuceneSearcher;
-import noogel.xyz.search.infrastructure.lucene.LuceneWriter;
-import noogel.xyz.search.infrastructure.lucene.OrderBy;
-import noogel.xyz.search.infrastructure.lucene.Paging;
-import noogel.xyz.search.infrastructure.model.lucene.FullTextSearchModel;
+import noogel.xyz.search.infrastructure.lucene.*;
+import noogel.xyz.search.infrastructure.model.FtsDocument;
+import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessor;
 import noogel.xyz.search.infrastructure.utils.pool.BatchProcessorFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
+import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.*;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static noogel.xyz.search.infrastructure.lucene.LuceneAnalyzer.*;
 
 @Service
 @Slf4j
@@ -115,10 +102,10 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
         }
         if (Objects.nonNull(searchDto.getModifiedAt())) {
             CommonSearchDto.Field modifiedAt = searchDto.getModifiedAt();
-            int lowerPrice = Integer.parseInt(modifiedAt.getValue());
-            int upperPrice = Integer.parseInt(modifiedAt.getValue());
+            long lowerPrice = Long.parseLong(modifiedAt.getValue());
+            long upperPrice = Long.parseLong(modifiedAt.getValue());
             if (CommonSearchDto.CompareEnum.GT.equals(modifiedAt.getCompare())) {
-                upperPrice = Integer.MAX_VALUE;
+                upperPrice = Long.MAX_VALUE;
             } else {
                 lowerPrice = 0;
             }
@@ -262,7 +249,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
             Query query = genQueryBuilder(searchDto);
             HighlightOptions highlightOptions = HighlightOptions.of(
                     100, 10, "<em>", "</em>");
-            Pair<LuceneDocument, List<String>> resp = luceneSearcher.findFirstWithHighlight(query, highlightOptions);
+            Pair<FtsDocument, List<String>> resp = luceneSearcher.findFirstWithHighlight(query, highlightOptions);
             ResourceHighlightHitsDto dto = new ResourceHighlightHitsDto();
             dto.setResource((FullTextSearchModel) resp.getLeft());
             dto.setHighlights(resp.getRight());
@@ -297,7 +284,7 @@ public class LuceneSearchRepoImpl implements FullTextSearchRepo {
                         convertSortType(searchDto.getOrder().getField()), searchDto.getOrder().isAsc());
             }
 
-            Pair<Integer, List<LuceneDocument>> totalHitsListPair = luceneSearcher.pagingSearch(query, paging, order);
+            Pair<Integer, List<FtsDocument>> totalHitsListPair = luceneSearcher.pagingSearch(query, paging, order);
             SearchResultDto resultDto = new SearchResultDto();
             resultDto.setData(totalHitsListPair.getValue().stream().map(t -> (FullTextSearchModel) t).toList());
             resultDto.setSize(totalHitsListPair.getKey());

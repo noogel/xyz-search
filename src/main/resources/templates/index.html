@@ -21,7 +21,7 @@
             document.querySelector("#selectedResId").value = '';
             document.querySelector("#dirViewA").href = '';
             document.querySelector("#fileViewA").href = '';
-            document.querySelector("#imageThumbnail").src = '#';
+            document.querySelector("#imageThumbnail").src = '';
             document.querySelector("#resTextSnippet").textContent = '';
 
             fetch(href).then(function (r) {
@@ -382,7 +382,7 @@
                             <p id="resTextSnippet" class="text-start"></p>
                         </div>
                         <div class="col-12">
-                            <img id="imageThumbnail" src="#" class="img-thumbnail" alt="Image preview..."/>
+                            <img id="imageThumbnail" src="" class="img-thumbnail" alt="Image preview..."/>
                         </div>
 
                     </div>

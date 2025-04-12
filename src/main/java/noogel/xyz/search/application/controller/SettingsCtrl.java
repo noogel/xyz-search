@@ -28,7 +28,7 @@ public class SettingsCtrl {
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
     public ModelAndView getSettings() {
         ModelAndView mv = new ModelAndView("settings");
-        mv.addObject("env", EnvHelper.DEPLOY_ENV);
+        mv.addObject("env", EnvHelper.INIT_MODE);
         mv.addObject("configProperties", settingService.query());
         return mv;
     }
@@ -36,7 +36,7 @@ public class SettingsCtrl {
     @RequestMapping(value = "/settings", method = RequestMethod.POST)
     public ModelAndView postSettings(SearchSettingDto cfg) {
         ModelAndView mv = new ModelAndView("settings");
-        mv.addObject("env", EnvHelper.DEPLOY_ENV);
+        mv.addObject("env", EnvHelper.INIT_MODE);
         try {
             SearchSettingDto dto = settingService.update(cfg);
             mv.addObject("configProperties", dto);

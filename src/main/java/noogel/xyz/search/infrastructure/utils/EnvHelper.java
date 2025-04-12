@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class EnvHelper {
-    public static final String DEPLOY_ENV = Optional.ofNullable(System.getenv("DEPLOY_ENV"))
+    public static final String INIT_MODE = Optional.ofNullable(System.getenv("INIT_MODE"))
             .filter(StringUtils::isNoneBlank).orElse("dev").toLowerCase();
 
     @AllArgsConstructor
