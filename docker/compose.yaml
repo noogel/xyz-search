@@ -1,0 +1,50 @@
+services:
+  search:
+    container_name: search
+    environment:
+      - PUID=3000
+      - PGID=3000
+      - TZ=Asia/Shanghai
+      - INIT_MODE=full
+    image: noogel/xyz-search:latest
+    depends_on:
+      - elastic
+      - qdrant
+      - paddleocr
+    ports:
+      - '8081:8081'
+    restart: unless-stopped
+    volumes:
+      - ./docker/search/data:/data/share
+      - ./docker/search/config:/usr/share/xyz-search/data
+  elastic:
+    container_name: elastic
+    environment:
+      - PUID=3000
+      - PGID=3000
+      - TZ=Asia/Shanghai
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx2g
+    image: noogel/elasticsearch:8.17.4-alpha
+    restart: unless-stopped
+    volumes:
+      - ./docker/search/es:/usr/share/elasticsearch/data
+  qdrant:
+    container_name: qdrant
+    image: qdrant/qdrant:latest
+    volumes:
+      - ./docker/search/qdrant:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__API_KEY: "3Yptaw9Z8ELMEsqp"
+    restart: unless-stopped
+  paddleocr:
+    image: 'noogel/paddleocr:cpu-pp-ocrv4-server'
+    restart: unless-stopped
+    container_name: paddleocr
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: 500M

@@ -1,0 +1,82 @@
+.popout {
+    font-family: Futura, sans-serif;
+    font-weight: 900;
+    font-size: 30px;
+    padding: 30px;
+}
+
+@media (min-width: 768px) {
+    .popout {
+        font-family: Futura, sans-serif;
+        font-weight: 900;
+        font-size: 40px;
+        padding: 40px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .popout {
+        font-family: Futura, sans-serif;
+        font-weight: 900;
+        font-size: 60px;
+        padding: 60px;
+    }
+}
+
+@keyframes ani {
+    0% {
+        transform: translate3d(0, 0, 0);
+        text-shadow: 0em 0em 0 lightblue;
+        color: black;
+    }
+
+    30% {
+        transform: translate3d(0, 0, 0);
+        text-shadow: 0em 0em 0 lightblue;
+        color: black;
+    }
+
+    70% {
+        transform: translate3d(0.08em, -0.08em, 0);
+        text-shadow: -0.08em 0.08em lightblue;
+        color: black;
+    }
+
+    100% {
+        transform: translate3d(0.08em, -0.08em, 0);
+        text-shadow: -0.08em 0.08em lightblue;
+        color: black;
+    }
+}
+
+.popout span {
+    position: relative;
+    display: inline-block;
+    animation: ani 1s infinite alternate cubic-bezier(0.86, 0, 0.07, 1);
+}
+
+.popout span:nth-last-child(1n) {
+    animation-delay: -0.1666666667s;
+}
+
+.popout span:nth-last-child(2n) {
+    animation-delay: -0.3333333333s;
+}
+
+.popout span:nth-last-child(3n) {
+    animation-delay: -0.5s;
+}
+
+.custom-width-100 {
+    width: 100px;
+}
+
+.custom-mb-15 {
+    margin-bottom: 15px
+}
+
+.highlight-item em {
+    color: red;
+    font-weight:bold;
+    font-style: normal;
+}

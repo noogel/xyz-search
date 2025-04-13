@@ -1,0 +1,78 @@
+base:
+  dataPath: appData/
+  configSubPath: config/
+  indexerSubPath: indexer/
+  vectorSubPath: vector/
+  tmpSubPath: tmp/
+  username: xyz
+  password: search
+runtime:
+  defaultSleepMs: 1000
+  ftsIndexName: xyz_search
+  ftsInitIndex: false
+  vectorIndexName: xyz_search_vector
+  vectorInitIndex: false
+app:
+  indexDirectories:
+    - directory: /Users/xyz/MyDebug/XyzSearchTestData/test
+      excludesDirectories:
+        - /Users/xyz/MyDebug/XyzSearchTestData/test/exclude
+      excludeFileProcessClass: [ ]
+  collectDirectories:
+    - fromList:
+        - /Users/xyz/Downloads/collect
+      to: /Users/xyz/MyDebug/XyzSearchTestData/test/collect
+      filterRegex: \.(pdf|PDF|epub|EPUB|docx|DOCX)
+      autoDelete: true
+  opdsDirectory: /Users/xyz/MyDebug/XyzSearchTestData/test
+  uploadFileDirectory: /Users/xyz/MyDebug/XyzSearchTestData/test/upload
+  markDeleteDirectory: /Users/xyz/MyDebug/XyzSearchTestData/test/exclude/deleted
+  notify:
+    type: email
+    accessIntervalHours: 1
+  notifyEmail:
+    senderEmail:
+    emailHost:
+    emailPort:
+    emailPass:
+    receivers: [ ]
+  paddleOcr:
+    url:
+    timeout: 10000
+  linkItems:
+    - desc: 豆瓣
+      searchUrl: 'https://m.douban.com/search/?query={query}'
+    - desc: 京东
+      searchUrl: 'https://so.m.jd.com/ware/search.action?keyword={query}'
+    - desc: 谷歌
+      searchUrl: 'https://www.google.com/search?q={query}'
+    - desc: 百度
+      searchUrl: 'https://www.baidu.com?q={query}'
+  chat:
+    vector:
+      similarityThreshold: 0.5
+      topK: 10
+    ollama:
+      enable: true
+      baseUrl: "http://192.168.124.101:11434"
+      chatModel: "qwen2.5:14b"
+      chatOptionTemperature: 0.7
+      chatOptionNumCtx: 4096
+      chatOptionNumPredict: 10000
+      pullModelStrategy: when_missing
+      embeddingAdditionalModels:
+        - "jinaai/jina-embeddings-v2-base-zh"
+    elastic:
+      enable: true
+      host: "http://192.168.124.13:9200"
+      username:
+      password:
+      caPath:
+      connectionTimeout: 10000
+      socketTimeout: 30000
+      highlightMaxAnalyzedOffset: 10485760
+    qdrant:
+      enable: true
+      host: "192.168.124.13"
+      port: 6334
+      apiKey: "xEYepb9JSXjSauW2"

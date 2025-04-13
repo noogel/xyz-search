@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>设置</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <link href="css/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="js/jsoneditor.min.js"></script>
+    <script type="text/javascript">
+        window.onload=function(){
+            if (!judgeFalse([[${result?.show}]])) {
+                var resultModal = new bootstrap.Modal(document.getElementById('opResultModal'));
+                resultModal.show();
+            }
+        }
+        const judgeFalse = function (param) {
+            console.log(param)
+            return param === undefined || param === false;
+        }
+        const fetch_data_post = function (href, obj) {
+            fetch(href, {
+                method: 'POST',
+                body: new FormData(document.getElementById("searchSettingForm")),
+            }).then(r => r.json()).then(function (data) {
+                document.querySelector("#opResultModalBody").textContent = data.body;
+                document.querySelector("#opResultModalHeader").textContent = data.header;
+            }).catch(function (err) {
+                document.querySelector("#opResultModalBody").textContent = err.toString();
+                document.querySelector("#opResultModalHeader").textContent = '操作失败';
+            });
+            new bootstrap.Modal(document.getElementById('opResultModal')).show();
+        }
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="row text-center">
+                <p class="popout">
+                    <span>畅</span>
+                    <span>文</span>
+                    <span>全</span>
+                    <span>索</span>
+                </p>
+            </div>
+        </div>
+        <div class="col-12">
+            <form id="searchSettingForm" class="needs-validation" novalidate="" action="/settings" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label for="username" class="form-label">登录名
+                            <span class="text-muted">（只读）</span></label>
+                        <input type="text" class="form-control" id="username" name="username"
+                               placeholder="elastic" th:value="${configProperties.username}" disabled>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="password" class="form-label">密码</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="" th:value="${configProperties.password}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">应用配置</label>
+                        <div id="jsoneditor" style="width: auto; height: 600px;"></div>
+                        <input type="hidden" id="app" name="appConfig" th:value="${configProperties.appConfig}">
+                    </div>
+                </div>
+                <div class="row justify-content-end my-4">
+                    <div class="col-auto">
+                        <button class="btn btn-primary" type="submit">保存</button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-warning" onclick="fetch_data_post('/settings/sync/all', this)">全量更新</button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-success" onclick="fetch_data_post('/settings/sync/fast', this)">快速更新</button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-info" onclick="fetch_data_post('/settings/sync/collect', this)">收集文件</button>
+                    </div>
+                </div>
+                <div class="accordion" id="accordionExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                配置描述
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">[类型] 字段</th>
+                                            <th scope="col">描述</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="m:${configProperties.configDesc}">
+                                            <td th:text="${m.left}"></td>
+                                            <td th:text="${m.right}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-12">
+            <footer class="py-3 my-4">
+                <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+                    <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
+                    <li class="nav-item"><a href="/chat/page" class="nav-link px-2 text-muted">AI 对话</a></li>
+                    <li class="nav-item"><a href="/upload" class="nav-link px-2 text-muted">上传</a></li>
+                    <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
+                    <li class="nav-item"><a href="/logout" class="nav-link px-2 text-muted">登出</a></li>
+                </ul>
+                <p class="text-center text-muted">© 2015 – 2025 <span style="font-size: 0.8rem">❤</span> noogel</p>
+            </footer>
+        </div>
+
+        <!-- The Modal -->
+        <div class="modal" id="opResultModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="opResultModalHeader" th:text="${result?.header}"></h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body" id="opResultModalBody" th:text="${result?.body}">
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // create the editor
+    const container = document.getElementById("jsoneditor")
+    const options = {
+        "mode": "code",
+        "indentation": 2,
+        "enableSort": false,
+        "enableTransform": false,
+        "onChange": () => {
+            document.querySelector("#app").value = JSON.stringify(editor.get());
+        }
+    }
+    const editor = new JSONEditor(container, options)
+    editor.set(JSON.parse(document.querySelector("#app").value));
+
+</script>
+</body>
+</html>
