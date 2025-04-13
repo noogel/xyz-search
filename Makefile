@@ -25,10 +25,10 @@ push-hub:
 	docker push noogel/$(project)\:$(version)
 	docker push noogel/$(project)\:latest
 
-git-push-master:
+git-push-main:
 	git add . \
  && git commit -am "auto update" \
- && git push origin master
+ && git push origin main
 
 gph:
 	git add . \
@@ -39,4 +39,4 @@ gpl:
 	git pull origin dev
 
 grs:
-	git checkout master && git fetch origin && git pull && git branch -D dev && git checkout -b dev && git push origin dev -f
+	git checkout main && git fetch origin && git pull && git branch -D dev && git checkout -b dev && git push origin dev -f
