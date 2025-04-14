@@ -1,7 +1,10 @@
 package noogel.xyz.search.infrastructure.config;
 
 import jakarta.annotation.Resource;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,5 +24,11 @@ public class DataSourceConfiguration {
                 .driverClassName("org.sqlite.JDBC")
                 .url("jdbc:sqlite:" + dbPath)
                 .build();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ChatMemory chatMemory() {
+        return new InMemoryChatMemory();
     }
 }

@@ -5,17 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import noogel.xyz.search.infrastructure.client.OllamaClient;
 import noogel.xyz.search.infrastructure.client.VectorClient;
 import noogel.xyz.search.infrastructure.config.ConfigProperties;
+import noogel.xyz.search.infrastructure.consts.PromptConsts;
 import noogel.xyz.search.infrastructure.dto.api.ChatRequestDto;
 import noogel.xyz.search.infrastructure.dto.api.ChatResponseDto;
 import noogel.xyz.search.service.ChatService;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.RetrievalAugmentationAdvisor;
-import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
-import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
@@ -24,6 +26,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
+import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
 
 @Service
 @Slf4j
@@ -35,6 +40,33 @@ public class ChatServiceImpl implements ChatService {
     private VectorClient vectorClient;
     @Resource
     private ConfigProperties configProperties;
+    @Resource
+    private ChatMemory chatMemory;
+
+    private ChatClient chatClient;
+
+    private ChatClient getChatClient() {
+        if (chatClient == null) {
+            ConfigProperties.Chat chat = configProperties.getApp().getChat();
+            var qaAdvisor = new QuestionAnswerAdvisor(vectorClient.getVectorStore(),
+                    SearchRequest.builder()
+                            .similarityThreshold(Optional.ofNullable(chat.getVector())
+                                    .map(ConfigProperties.Vector::getSimilarityThreshold).orElse(0.50))
+                            .topK(Optional.ofNullable(chat.getVector())
+                                    .map(ConfigProperties.Vector::getTopK).orElse(10)) // 限制返回的文档数量
+                            .build());
+            var mcmAdvisor = new MessageChatMemoryAdvisor(chatMemory);
+            chatClient = ChatClient.builder(ollamaClient.getChatModel())
+                    .defaultSystem(PromptConsts.RAG_SYSTEM_PROMPT)
+                    .defaultAdvisors(
+                            mcmAdvisor, // CHAT MEMORY
+                            qaAdvisor, // RAG
+                            new SimpleLoggerAdvisor())
+                    .build();
+        }
+        return chatClient;
+    }
+
 
     @Override
     public SseEmitter sseEmitterChatStream(ChatRequestDto dto) {
@@ -67,33 +99,13 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        // https://docs.spring.io/spring-ai/reference/1.0/api/retrieval-augmented-generation.html
-        ChatClient.Builder chatClientBuilder = ChatClient.builder(ollamaClient.getChatModel());
-        ChatClient chatClient = chatClientBuilder.build();
-
-        // 构建查询转换器
-        RewriteQueryTransformer queryTransformer = RewriteQueryTransformer.builder()
-                .chatClientBuilder(chatClientBuilder.build().mutate())
-                .build();
-
-        // 构建文档检索器
-        VectorStoreDocumentRetriever documentRetriever = VectorStoreDocumentRetriever.builder()
-                .similarityThreshold(Optional.ofNullable(chat.getVector())
-                        .map(ConfigProperties.Vector::getSimilarityThreshold).orElse(0.50))
-                .topK(Optional.ofNullable(chat.getVector())
-                        .map(ConfigProperties.Vector::getTopK).orElse(10)) // 限制返回的文档数量
-                .vectorStore(vectorClient.getVectorStore())
-                .build();
-
-        // 构建RAG顾问
-        Advisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor.builder()
-                .queryTransformers(queryTransformer)
-                .documentRetriever(documentRetriever)
-                .build();
+        ChatClient chatClient = getChatClient();
 
         // 添加错误处理
         chatClient.prompt()
-                .advisors(retrievalAugmentationAdvisor)
+                .advisors(a -> a
+                        .param(CHAT_MEMORY_CONVERSATION_ID_KEY, dto.getChatId())
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 100))
                 .user(dto.getMessage())
                 .stream()
                 .chatResponse()
@@ -102,6 +114,7 @@ public class ChatServiceImpl implements ChatService {
                     try {
                         emitter.send(new ChatResponseDto(UUID.randomUUID().toString(),
                                 "抱歉，处理您的请求时发生错误，请稍后重试。"));
+                        emitter.send(new ChatResponseDto(UUID.randomUUID().toString(), ""));
                         emitter.complete();
                     } catch (IOException e) {
                         emitter.completeWithError(e);
