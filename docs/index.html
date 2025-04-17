@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI文档检索 - 首页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-book-open text-2xl text-blue-600"></i>
+                        <span class="ml-2 text-xl font-semibold text-gray-800">AI文档检索</span>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button class="p-2 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i class="fas fa-bell text-xl"></i>
+                    </button>
+                    <div class="ml-4 relative">
+                        <button class="flex items-center text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <img class="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像">
+                            <span class="ml-2">张三</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 搜索区域 -->
+        <div class="max-w-3xl mx-auto mb-8">
+            <div class="relative">
+                <input type="text" class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="输入关键词或问题...">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <button class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    搜索
+                </button>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <span class="text-sm text-gray-600">热门搜索：</span>
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-500">年度报告</a>
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-500">技术文档</a>
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-500">产品手册</a>
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-500">会议纪要</a>
+            </div>
+        </div>
+
+        <!-- 功能卡片区 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- 文档上传 -->
+            <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-upload text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="ml-3 text-lg font-medium text-gray-900">上传文档</h3>
+                </div>
+                <p class="text-gray-600 mb-4">支持PDF、Word、Excel等多种格式文档上传</p>
+                <button class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    上传文档
+                </button>
+            </div>
+
+            <!-- 智能分析 -->
+            <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <i class="fas fa-brain text-green-600 text-xl"></i>
+                    </div>
+                    <h3 class="ml-3 text-lg font-medium text-gray-900">智能分析</h3>
+                </div>
+                <p class="text-gray-600 mb-4">AI智能分析文档内容，提取关键信息</p>
+                <button class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    开始分析
+                </button>
+            </div>
+
+            <!-- 知识图谱 -->
+            <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center mb-4">
+                    <div class="bg-purple-100 p-3 rounded-full">
+                        <i class="fas fa-project-diagram text-purple-600 text-xl"></i>
+                    </div>
+                    <h3 class="ml-3 text-lg font-medium text-gray-900">知识图谱</h3>
+                </div>
+                <p class="text-gray-600 mb-4">可视化展示文档间的关联关系</p>
+                <button class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                    查看图谱
+                </button>
+            </div>
+        </div>
+
+        <!-- 最近文档 -->
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">最近文档</h2>
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">文档名称</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">上传时间</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                                    <span class="text-sm font-medium text-gray-900">2023年度报告.pdf</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">PDF</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-12-15</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="#" class="text-blue-600 hover:text-blue-900 mr-3">查看</a>
+                                <a href="#" class="text-gray-600 hover:text-gray-900">下载</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <i class="fas fa-file-word text-blue-500 mr-2"></i>
+                                    <span class="text-sm font-medium text-gray-900">产品需求文档.docx</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Word</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-12-14</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="#" class="text-blue-600 hover:text-blue-900 mr-3">查看</a>
+                                <a href="#" class="text-gray-600 hover:text-gray-900">下载</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html> 
