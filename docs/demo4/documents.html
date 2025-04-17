@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能检索平台 - 文档管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- 侧边栏 -->
+    <div class="flex">
+        <div class="fixed inset-y-0 left-0 w-64 bg-indigo-800 text-white shadow-lg z-10">
+            <div class="flex items-center justify-center h-16 bg-indigo-900">
+                <i class="fas fa-robot text-2xl mr-2"></i>
+                <span class="text-xl font-semibold">智能检索平台</span>
+            </div>
+            <nav class="mt-5">
+                <a href="dashboard.html" class="flex items-center px-6 py-3 text-white hover:bg-indigo-700">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    <span>控制台</span>
+                </a>
+                <a href="knowledge-base.html" class="flex items-center px-6 py-3 text-white hover:bg-indigo-700">
+                    <i class="fas fa-database mr-3"></i>
+                    <span>知识库管理</span>
+                </a>
+                <a href="documents.html" class="flex items-center px-6 py-3 bg-indigo-900 text-white">
+                    <i class="fas fa-file-alt mr-3"></i>
+                    <span>文档管理</span>
+                </a>
+                <a href="chat.html" class="flex items-center px-6 py-3 text-white hover:bg-indigo-700">
+                    <i class="fas fa-comments mr-3"></i>
+                    <span>智能问答</span>
+                </a>
+                <a href="history.html" class="flex items-center px-6 py-3 text-white hover:bg-indigo-700">
+                    <i class="fas fa-history mr-3"></i>
+                    <span>对话历史</span>
+                </a>
+                <a href="settings.html" class="flex items-center px-6 py-3 text-white hover:bg-indigo-700">
+                    <i class="fas fa-cog mr-3"></i>
+                    <span>系统设置</span>
+                </a>
+                <a href="users.html" class="flex items-center px-6 py-3 text-white hover:bg-indigo-700">
+                    <i class="fas fa-users mr-3"></i>
+                    <span>用户管理</span>
+                </a>
+            </nav>
+            <div class="absolute bottom-0 w-full">
+                <div class="flex items-center px-6 py-3 hover:bg-indigo-700">
+                    <i class="fas fa-question-circle mr-3"></i>
+                    <span>帮助中心</span>
+                </div>
+                <a href="index.html" class="flex items-center px-6 py-3 hover:bg-indigo-700">
+                    <i class="fas fa-sign-out-alt mr-3"></i>
+                    <span>退出登录</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="ml-64 flex-1">
+            <!-- 顶部导航栏 -->
+            <header class="bg-white shadow-sm">
+                <div class="flex items-center justify-between h-16 px-8">
+                    <h1 class="text-xl font-semibold text-gray-800">文档管理</h1>
+                    <div class="flex items-center">
+                        <div class="relative mr-4">
+                            <input type="text" placeholder="搜索文档..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <div class="relative mr-4">
+                            <i class="fas fa-bell text-gray-600 text-xl cursor-pointer"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">3</span>
+                        </div>
+                        <div class="flex items-center">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-8 h-8 rounded-full mr-2">
+                            <span class="text-gray-700">管理员</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 主要内容 -->
+            <main class="p-8">
+                <!-- 操作栏 -->
+                <div class="flex flex-wrap justify-between items-center mb-6">
+                    <div class="flex space-x-2 mb-4 sm:mb-0">
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" onclick="location.href='add-document.html'">
+                            <i class="fas fa-plus mr-2"></i>
+                            <span>上传文档</span>
+                        </button>
+                        <div class="relative">
+                            <button class="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border border-gray-300 flex items-center">
+                                <i class="fas fa-filter mr-2"></i>
+                                <span>筛选</span>
+                                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                            </button>
+                            <!-- 下拉菜单可以在这里添加 -->
+                        </div>
+                        <div class="relative">
+                            <button class="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border border-gray-300 flex items-center">
+                                <i class="fas fa-sort mr-2"></i>
+                                <span>排序方式</span>
+                                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                            </button>
+                            <!-- 下拉菜单可以在这里添加 -->
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-600 mr-2">知识库:</span>
+                        <select class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option>全部知识库</option>
+                            <option>产品技术文档库</option>
+                            <option>企业培训资料库</option>
+                            <option>市场营销资料库</option>
+                            <option>客户支持知识库</option>
+                            <option>研发项目文档</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 文档列表 -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="flex bg-gray-50 text-gray-500 text-sm font-medium">
+                        <div class="w-12 py-4 px-4 text-center">
+                            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </div>
+                        <div class="flex-1 py-4 px-4">文档名称</div>
+                        <div class="w-48 py-4 px-4">所属知识库</div>
+                        <div class="w-32 py-4 px-4">文件类型</div>
+                        <div class="w-32 py-4 px-4">文件大小</div>
+                        <div class="w-40 py-4 px-4">上传日期</div>
+                        <div class="w-32 py-4 px-4">状态</div>
+                        <div class="w-24 py-4 px-4 text-center">操作</div>
+                    </div>
+
+                    <!-- 文档项 1 -->
+                    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+                        <div class="w-12 py-4 px-4 flex items-center justify-center">
+                            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </div>
+                        <div class="flex-1 py-4 px-4 flex items-center">
+                            <i class="fas fa-file-pdf text-red-500 text-lg mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-800">企业知识库构建指南.pdf</p>
+                                <p class="text-xs text-gray-500">上传者: 张小明</p>
+                            </div>
+                        </div>
+                        <div class="w-48 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600 truncate">产品技术文档库</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">PDF</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">2.1 MB</span>
+                        </div>
+                        <div class="w-40 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">2023-07-15 10:30</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                已索引
+                            </span>
+                        </div>
+                        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+                            <button class="text-gray-500 hover:text-indigo-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-yellow-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 文档项 2 -->
+                    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+                        <div class="w-12 py-4 px-4 flex items-center justify-center">
+                            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </div>
+                        <div class="flex-1 py-4 px-4 flex items-center">
+                            <i class="fas fa-file-word text-blue-500 text-lg mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-800">RAG技术白皮书.docx</p>
+                                <p class="text-xs text-gray-500">上传者: 李伟</p>
+                            </div>
+                        </div>
+                        <div class="w-48 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600 truncate">研发项目文档</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">DOCX</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">1.5 MB</span>
+                        </div>
+                        <div class="w-40 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">2023-07-14 16:45</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                已索引
+                            </span>
+                        </div>
+                        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+                            <button class="text-gray-500 hover:text-indigo-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-yellow-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 文档项 3 -->
+                    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+                        <div class="w-12 py-4 px-4 flex items-center justify-center">
+                            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </div>
+                        <div class="flex-1 py-4 px-4 flex items-center">
+                            <i class="fas fa-file-excel text-green-500 text-lg mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-800">数据统计分析.xlsx</p>
+                                <p class="text-xs text-gray-500">上传者: 王海</p>
+                            </div>
+                        </div>
+                        <div class="w-48 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600 truncate">市场营销资料库</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">XLSX</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">520 KB</span>
+                        </div>
+                        <div class="w-40 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">2023-07-13 09:15</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                已索引
+                            </span>
+                        </div>
+                        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+                            <button class="text-gray-500 hover:text-indigo-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-yellow-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 文档项 4 -->
+                    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+                        <div class="w-12 py-4 px-4 flex items-center justify-center">
+                            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </div>
+                        <div class="flex-1 py-4 px-4 flex items-center">
+                            <i class="fas fa-file-powerpoint text-orange-500 text-lg mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-800">项目演示文稿.pptx</p>
+                                <p class="text-xs text-gray-500">上传者: 赵薇</p>
+                            </div>
+                        </div>
+                        <div class="w-48 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600 truncate">企业培训资料库</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">PPTX</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">3.2 MB</span>
+                        </div>
+                        <div class="w-40 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">2023-07-12 14:20</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                已索引
+                            </span>
+                        </div>
+                        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+                            <button class="text-gray-500 hover:text-indigo-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-yellow-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 文档项 5 -->
+                    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+                        <div class="w-12 py-4 px-4 flex items-center justify-center">
+                            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </div>
+                        <div class="flex-1 py-4 px-4 flex items-center">
+                            <i class="fas fa-file-alt text-gray-500 text-lg mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-800">客户服务手册.txt</p>
+                                <p class="text-xs text-gray-500">上传者: 陈明</p>
+                            </div>
+                        </div>
+                        <div class="w-48 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600 truncate">客户支持知识库</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">TXT</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">120 KB</span>
+                        </div>
+                        <div class="w-40 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">2023-07-11 11:05</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                索引中
+                            </span>
+                        </div>
+                        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+                            <button class="text-gray-500 hover:text-indigo-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-yellow-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 文档项 6 -->
+                    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+                        <div class="w-12 py-4 px-4 flex items-center justify-center">
+                            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        </div>
+                        <div class="flex-1 py-4 px-4 flex items-center">
+                            <i class="fas fa-file-code text-indigo-500 text-lg mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-800">API文档说明.md</p>
+                                <p class="text-xs text-gray-500">上传者: 刘强</p>
+                            </div>
+                        </div>
+                        <div class="w-48 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600 truncate">产品技术文档库</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">MD</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">350 KB</span>
+                        </div>
+                        <div class="w-40 py-4 px-4 flex items-center">
+                            <span class="text-sm text-gray-600">2023-07-10 16:30</span>
+                        </div>
+                        <div class="w-32 py-4 px-4 flex items-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                索引失败
+                            </span>
+                        </div>
+                        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+                            <button class="text-gray-500 hover:text-indigo-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-yellow-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分页 -->
+                <div class="mt-5 flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        显示 1-6 的 234 条结果
+                    </div>
+                    <div class="flex space-x-1">
+                        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 rounded border border-indigo-600 bg-indigo-600 text-white">
+                            1
+                        </button>
+                        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+                            2
+                        </button>
+                        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+                            3
+                        </button>
+                        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+                            ...
+                        </button>
+                        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+                            39
+                        </button>
+                        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 可以在这里添加Javascript -->
+</body>
+</html> 
