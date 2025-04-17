@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页 - AI智能检索平台</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <!-- 导入页头 -->
+  <div id="header-container"></div>
+  
+  <!-- 主要内容 -->
+  <main class="flex-grow pt-20 pb-8">
+    <!-- 欢迎横幅 -->
+    <div class="bg-blue-600 text-white">
+      <div class="rag-container px-4 py-12 md:py-20">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+          <div class="mb-8 md:mb-0 md:mr-8">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">欢迎来到智能检索平台</h1>
+            <p class="text-blue-100 text-lg mb-6">利用人工智能的力量，轻松管理和检索您的文档知识库</p>
+            <div class="flex flex-wrap gap-3">
+              <a href="files.html" class="px-6 py-3 bg-white text-blue-600 font-medium rounded-lg shadow-md hover:bg-gray-100 transition flex items-center">
+                <i class="fas fa-file-upload mr-2"></i> 上传文档
+              </a>
+              <a href="chat.html" class="px-6 py-3 bg-blue-700 text-white font-medium rounded-lg shadow-md hover:bg-blue-800 transition flex items-center">
+                <i class="fas fa-comment-alt mr-2"></i> 开始对话
+              </a>
+            </div>
+          </div>
+          <div class="w-full md:w-2/5">
+            <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="AI文档检索" class="rounded-lg shadow-xl">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 统计信息 -->
+    <div class="bg-white py-10 border-b border-gray-200">
+      <div class="rag-container px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-blue-50 rounded-lg p-6 flex items-center shadow-sm">
+            <div class="bg-blue-100 rounded-full p-3 mr-4">
+              <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-gray-600 text-sm">上传文档</p>
+              <p class="text-2xl font-bold text-gray-800">24</p>
+            </div>
+          </div>
+          
+          <div class="bg-green-50 rounded-lg p-6 flex items-center shadow-sm">
+            <div class="bg-green-100 rounded-full p-3 mr-4">
+              <i class="fas fa-search text-green-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-gray-600 text-sm">执行检索</p>
+              <p class="text-2xl font-bold text-gray-800">137</p>
+            </div>
+          </div>
+          
+          <div class="bg-purple-50 rounded-lg p-6 flex items-center shadow-sm">
+            <div class="bg-purple-100 rounded-full p-3 mr-4">
+              <i class="fas fa-comment-dots text-purple-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-gray-600 text-sm">AI对话次数</p>
+              <p class="text-2xl font-bold text-gray-800">56</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 快速搜索和最近文件 -->
+    <div class="rag-container px-4 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 快速搜索 -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">快速检索</h2>
+            
+            <div class="mb-6">
+              <div class="relative">
+                <input type="text" placeholder="输入关键词搜索您的文档..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div class="absolute left-3 top-3 text-gray-400">
+                  <i class="fas fa-search"></i>
+                </div>
+                <button class="absolute right-3 top-2 bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
+                  搜索
+                </button>
+              </div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-4">
+              <h3 class="text-sm font-medium text-gray-500 mb-3">热门搜索</h3>
+              <div class="flex flex-wrap gap-2">
+                <a href="#" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200">财务报表</a>
+                <a href="#" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200">项目计划</a>
+                <a href="#" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200">产品规格</a>
+                <a href="#" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200">会议记录</a>
+                <a href="#" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200">研究报告</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 最近活动 -->
+          <div class="bg-white rounded-lg shadow p-6 mt-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-800">最近活动</h2>
+              <a href="#" class="text-blue-600 hover:text-blue-800 text-sm">查看全部</a>
+            </div>
+            
+            <div class="space-y-4">
+              <div class="flex items-start p-3 hover:bg-gray-50 rounded-lg">
+                <div class="bg-blue-100 p-2 rounded text-blue-600 mr-3">
+                  <i class="fas fa-file-upload"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-gray-800 font-medium">上传了文档 <span class="text-blue-600">季度财务报表.pdf</span></p>
+                  <p class="text-sm text-gray-500">3小时前</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start p-3 hover:bg-gray-50 rounded-lg">
+                <div class="bg-green-100 p-2 rounded text-green-600 mr-3">
+                  <i class="fas fa-search"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-gray-800 font-medium">搜索了 <span class="text-blue-600">"2023年第二季度销售数据"</span></p>
+                  <p class="text-sm text-gray-500">昨天</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start p-3 hover:bg-gray-50 rounded-lg">
+                <div class="bg-purple-100 p-2 rounded text-purple-600 mr-3">
+                  <i class="fas fa-comment-dots"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-gray-800 font-medium">与AI助手进行了对话</p>
+                  <p class="text-sm text-gray-500">2天前</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 最近文件 -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-800">最近文件</h2>
+              <a href="files.html" class="text-blue-600 hover:text-blue-800 text-sm">查看全部</a>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                <div class="flex items-center">
+                  <div class="text-red-500 mr-3">
+                    <i class="far fa-file-pdf text-xl"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-gray-800 font-medium truncate">2023年Q2季度财务报表.pdf</p>
+                    <p class="text-xs text-gray-500">2.4 MB · 3小时前</p>
+                  </div>
+                  <div class="flex space-x-1">
+                    <button class="p-1 text-gray-400 hover:text-blue-600" title="预览">
+                      <i class="far fa-eye"></i>
+                    </button>
+                    <button class="p-1 text-gray-400 hover:text-blue-600" title="下载">
+                      <i class="fas fa-download"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                <div class="flex items-center">
+                  <div class="text-blue-500 mr-3">
+                    <i class="far fa-file-word text-xl"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-gray-800 font-medium truncate">项目进度报告-2023年7月.docx</p>
+                    <p class="text-xs text-gray-500">845 KB · 昨天</p>
+                  </div>
+                  <div class="flex space-x-1">
+                    <button class="p-1 text-gray-400 hover:text-blue-600" title="预览">
+                      <i class="far fa-eye"></i>
+                    </button>
+                    <button class="p-1 text-gray-400 hover:text-blue-600" title="下载">
+                      <i class="fas fa-download"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                <div class="flex items-center">
+                  <div class="text-green-500 mr-3">
+                    <i class="far fa-file-excel text-xl"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-gray-800 font-medium truncate">销售数据分析-2023上半年.xlsx</p>
+                    <p class="text-xs text-gray-500">1.2 MB · 2天前</p>
+                  </div>
+                  <div class="flex space-x-1">
+                    <button class="p-1 text-gray-400 hover:text-blue-600" title="预览">
+                      <i class="far fa-eye"></i>
+                    </button>
+                    <button class="p-1 text-gray-400 hover:text-blue-600" title="下载">
+                      <i class="fas fa-download"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="border border-gray-200 rounded-lg p-3 hover:shadow-md transition">
+                <div class="flex items-center">
+                  <div class="text-gray-500 mr-3">
+                    <i class="far fa-file-alt text-xl"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-gray-800 font-medium truncate">会议记录-产品规划.txt</p>
+                    <p class="text-xs text-gray-500">28 KB · 3天前</p>
+                  </div>
+                  <div class="flex space-x-1">
+                    <button class="p-1 text-gray-400 hover:text-blue-600" title="预览">
+                      <i class="far fa-eye"></i>
+                    </button>
+                    <button class="p-1 text-gray-400 hover:text-blue-600" title="下载">
+                      <i class="fas fa-download"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+              <a href="files.html" class="inline-flex items-center justify-center text-blue-600 hover:text-blue-800">
+                <span>上传新文件</span>
+                <i class="fas fa-arrow-right ml-1 text-sm"></i>
+              </a>
+            </div>
+          </div>
+          
+          <!-- 功能卡片 -->
+          <div class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg shadow p-6 mt-6 text-white">
+            <h2 class="text-xl font-semibold mb-3">试试AI摘要</h2>
+            <p class="mb-4 text-blue-100">使用AI技术，自动为您的文档生成简洁明了的摘要内容。</p>
+            <a href="summary.html" class="inline-block bg-white text-blue-700 px-4 py-2 rounded font-medium hover:bg-blue-50 transition">
+              开始使用
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 功能介绍 -->
+    <div class="bg-gray-100 py-12">
+      <div class="rag-container px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-bold text-gray-900 mb-4">强大的AI检索与分析能力</h2>
+          <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+            我们的平台融合了最先进的人工智能技术，帮助您高效管理文档，快速获取关键信息。
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-5">
+              <i class="fas fa-search text-blue-600 text-xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-gray-800">智能检索</h3>
+            <p class="text-gray-600">
+              采用语义检索技术，无需精确关键词，理解您的查询意图，找到最相关内容。
+            </p>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-5">
+              <i class="fas fa-comment-alt text-green-600 text-xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-gray-800">AI对话</h3>
+            <p class="text-gray-600">
+              与AI助手进行自然对话，询问文档内容，获取解答，就像与专家交流一样简单。
+            </p>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-5">
+              <i class="fas fa-file-alt text-purple-600 text-xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-gray-800">摘要生成</h3>
+            <p class="text-gray-600">
+              自动提取文档核心内容，生成简洁摘要，帮助您快速了解文档主要信息。
+            </p>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-5">
+              <i class="fas fa-bolt text-yellow-600 text-xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-gray-800">高效处理</h3>
+            <p class="text-gray-600">
+              支持多种文档格式，快速处理大量文件，节省您的时间和精力。
+            </p>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-5">
+              <i class="fas fa-chart-pie text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-gray-800">数据分析</h3>
+            <p class="text-gray-600">
+              从文档中提取关键数据，生成可视化图表，辅助决策分析。
+            </p>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-5">
+              <i class="fas fa-shield-alt text-indigo-600 text-xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-gray-800">安全可靠</h3>
+            <p class="text-gray-600">
+              严格的数据保护机制，确保您的文档安全无忧，隐私得到充分保障。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 号召性用语 -->
+    <div class="bg-blue-600 text-white py-16">
+      <div class="rag-container px-4 text-center">
+        <h2 class="text-3xl font-bold mb-6">开始智能文档管理之旅</h2>
+        <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+          立即体验AI智能检索平台的强大功能，让文档管理变得更简单、更高效、更智能。
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <a href="files.html" class="px-8 py-3 bg-white text-blue-600 font-medium rounded-lg shadow-lg hover:bg-gray-100 transition">
+            上传文档
+          </a>
+          <a href="chat.html" class="px-8 py-3 bg-blue-800 text-white font-medium rounded-lg shadow-lg hover:bg-blue-900 transition">
+            开始对话
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- 导入页脚 -->
+  <div id="footer-container"></div>
+  
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 加载页头
+      fetch('components/header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-container').innerHTML = data;
+          
+          // 重新初始化页头JS
+          const headerScript = document.createElement('script');
+          headerScript.innerHTML = document.getElementById('header-container').querySelector('script').innerHTML;
+          document.body.appendChild(headerScript);
+        });
+      
+      // 加载页脚
+      fetch('components/footer.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('footer-container').innerHTML = data;
+        });
+    });
+  </script>
+</body>
+</html> 

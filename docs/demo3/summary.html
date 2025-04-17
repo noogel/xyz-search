@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摘要生成 - AI智能检索平台</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <!-- 导入页头 -->
+  <div id="header-container"></div>
+  
+  <!-- 主要内容 -->
+  <main class="flex-grow pt-20 pb-8">
+    <div class="rag-container px-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">AI摘要生成</h1>
+          <p class="text-gray-600">上传文档或输入文本，自动生成简洁明了的内容摘要</p>
+        </div>
+      </div>
+      
+      <!-- 摘要生成表单 -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">选择摘要来源</h2>
+          
+          <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+              <div class="mb-3">
+                <div class="flex items-center">
+                  <input id="source-file" name="source-type" type="radio" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                  <label for="source-file" class="ml-2 block text-md font-medium text-gray-700">上传文件</label>
+                </div>
+              </div>
+              
+              <div id="file-upload-section" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <div class="mb-3 text-gray-400">
+                  <i class="fas fa-cloud-upload-alt text-4xl"></i>
+                </div>
+                <p class="text-gray-700 mb-2">拖放文件到此处或</p>
+                <label class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 cursor-pointer">
+                  <span>浏览文件</span>
+                  <input type="file" id="file-input" class="hidden">
+                </label>
+                <p class="text-sm text-gray-500 mt-2">支持格式: PDF, Word, Excel, PPT, TXT (最大50MB)</p>
+                
+                <div id="file-preview" class="hidden mt-4 text-left bg-blue-50 rounded-lg p-3 flex items-center">
+                  <div class="mr-3 text-blue-500">
+                    <i class="far fa-file-pdf"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate" id="file-name"></p>
+                    <p class="text-xs text-gray-500" id="file-size"></p>
+                  </div>
+                  <button id="remove-file" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex-1">
+              <div class="mb-3">
+                <div class="flex items-center">
+                  <input id="source-text" name="source-type" type="radio" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                  <label for="source-text" class="ml-2 block text-md font-medium text-gray-700">输入文本</label>
+                </div>
+              </div>
+              
+              <div id="text-input-section" class="opacity-50 pointer-events-none">
+                <textarea id="text-input" rows="7" placeholder="请输入需要生成摘要的文本内容..." class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                  <span id="text-counter">0/10000</span>
+                  <button class="text-blue-600 hover:text-blue-800 hidden" id="clear-text">清空文本</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-6 border-t border-gray-200 pt-6">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">设置选项</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="summary-length" class="block text-sm font-medium text-gray-700 mb-1">摘要长度</label>
+              <select id="summary-length" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="short">简短 (约100字)</option>
+                <option value="medium" selected>中等 (约300字)</option>
+                <option value="long">详细 (约500字)</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="summary-style" class="block text-sm font-medium text-gray-700 mb-1">摘要风格</label>
+              <select id="summary-style" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="informative" selected>信息型 (客观陈述)</option>
+                <option value="descriptive">描述型 (重点描述)</option>
+                <option value="analytical">分析型 (深入分析)</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="summary-language" class="block text-sm font-medium text-gray-700 mb-1">输出语言</label>
+              <select id="summary-language" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="zh" selected>中文</option>
+                <option value="en">英文</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="summary-focus" class="block text-sm font-medium text-gray-700 mb-1">重点关注</label>
+              <select id="summary-focus" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="all" selected>全面概括</option>
+                <option value="key-points">关键点</option>
+                <option value="conclusions">结论与建议</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <label class="inline-flex items-center">
+              <input type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+              <span class="ml-2 text-sm text-gray-700">包含引用来源</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="text-center">
+          <button id="generate-summary-btn" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition">
+            生成摘要
+          </button>
+        </div>
+      </div>
+      
+      <!-- 摘要结果（默认隐藏） -->
+      <div id="summary-result" class="hidden">
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-800">摘要结果</h2>
+            <div class="flex space-x-2">
+              <button class="text-gray-500 hover:text-blue-600" title="复制">
+                <i class="far fa-copy"></i>
+              </button>
+              <button class="text-gray-500 hover:text-blue-600" title="下载">
+                <i class="fas fa-download"></i>
+              </button>
+              <button class="text-gray-500 hover:text-blue-600" title="分享">
+                <i class="fas fa-share-alt"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="border-b border-gray-200 pb-4 mb-4">
+            <div class="flex items-center text-sm text-gray-500 space-x-4">
+              <div class="flex items-center">
+                <i class="far fa-file-alt mr-1"></i>
+                <span>2023年Q2季度财务报表.pdf</span>
+              </div>
+              <div>
+                <i class="far fa-clock mr-1"></i>
+                <span>生成于 2023/07/25</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="prose max-w-none">
+            <h3 class="text-lg font-semibold text-gray-800">财务报表摘要</h3>
+            
+            <p class="mt-3 text-gray-700">
+              本报表记录了公司2023年第二季度的财务表现。总体而言，销售额达到￥3,240万元，较上一季度增长15.3%，较去年同期增长8.2%。新产品线贡献了约22%的季度收入，线上渠道销售额首次超过线下渠道，增长27%。
+            </p>
+            
+            <p class="mt-3 text-gray-700">
+              然而，也存在一些问题：传统产品线销售下滑5.7%，华南地区销售额环比下降3.2%，毛利率从42.8%下降到41.5%。成本构成分析显示，原材料成本上升12.3%，物流成本上升7.8%，是导致整体毛利率下降的主要因素。
+            </p>
+            
+            <p class="mt-3 text-gray-700">
+              报表建议优化供应链以应对原材料价格上涨，同时加强华南地区的市场推广。此外，还需为传统产品线制定更新计划，以保持整体产品组合的竞争力。如能有效实施这些建议，预计下一季度毛利率可提升1-1.5个百分点。
+            </p>
+            
+            <div class="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+              <p class="font-medium">关键数据：</p>
+              <ul class="list-disc pl-5 mt-1 space-y-1">
+                <li>销售总额：￥3,240万元 (+15.3% 环比)</li>
+                <li>新产品收入占比：22%</li>
+                <li>线上渠道增长：27%</li>
+                <li>毛利率：41.5% (-1.3% 环比)</li>
+                <li>原材料成本上升：12.3%</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="mt-6 border-t border-gray-200 pt-4 text-center">
+            <p class="text-sm text-gray-600 mb-3">对生成的摘要结果满意吗？</p>
+            <div class="flex justify-center space-x-3">
+              <button class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">
+                <i class="far fa-thumbs-up mr-1"></i> 满意
+              </button>
+              <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                <i class="far fa-thumbs-down mr-1"></i> 不满意
+              </button>
+              <button class="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100">
+                <i class="fas fa-redo mr-1"></i> 重新生成
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 使用指南卡片 -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">摘要生成使用指南</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-blue-50 rounded-lg p-4">
+            <div class="flex items-center mb-3">
+              <div class="bg-blue-100 rounded-full p-2 mr-3">
+                <i class="fas fa-file-upload text-blue-600"></i>
+              </div>
+              <h3 class="text-lg font-medium text-gray-800">上传文件</h3>
+            </div>
+            <p class="text-gray-600 text-sm">
+              支持多种文档格式，如PDF、Word、Excel等。系统会自动处理文件内容，提取重要信息生成摘要。
+            </p>
+          </div>
+          
+          <div class="bg-green-50 rounded-lg p-4">
+            <div class="flex items-center mb-3">
+              <div class="bg-green-100 rounded-full p-2 mr-3">
+                <i class="fas fa-cog text-green-600"></i>
+              </div>
+              <h3 class="text-lg font-medium text-gray-800">调整设置</h3>
+            </div>
+            <p class="text-gray-600 text-sm">
+              根据需要选择摘要长度、风格和关注点，自定义生成结果以满足不同场景的需求。
+            </p>
+          </div>
+          
+          <div class="bg-purple-50 rounded-lg p-4">
+            <div class="flex items-center mb-3">
+              <div class="bg-purple-100 rounded-full p-2 mr-3">
+                <i class="fas fa-magic text-purple-600"></i>
+              </div>
+              <h3 class="text-lg font-medium text-gray-800">获取摘要</h3>
+            </div>
+            <p class="text-gray-600 text-sm">
+              AI将自动分析内容，生成结构化摘要。您可以复制、下载或分享生成的摘要内容。
+            </p>
+          </div>
+        </div>
+        
+        <div class="mt-6 text-sm text-gray-600">
+          <p class="font-medium mb-2">提示：</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>对于长文档，建议选择"关键点"模式以获取核心内容</li>
+            <li>可以使用"分析型"风格获取更加深入的内容解读</li>
+            <li>如果摘要结果不理想，可以尝试不同的设置组合重新生成</li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 最近生成的摘要 -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-gray-800">最近生成的摘要</h2>
+          <a href="#" class="text-blue-600 hover:text-blue-800 text-sm">查看所有</a>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  文件名
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  生成时间
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  摘要长度
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  操作
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <i class="far fa-file-pdf text-red-500 mr-2"></i>
+                    <div class="text-sm font-medium text-gray-900">2023年Q2季度财务报表.pdf</div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-500">2023/07/25 14:30</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-500">中等 (324字)</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex space-x-2">
+                    <button class="text-blue-600 hover:text-blue-900">查看</button>
+                    <button class="text-green-600 hover:text-green-900">下载</button>
+                    <button class="text-red-600 hover:text-red-900">删除</button>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <i class="far fa-file-word text-blue-500 mr-2"></i>
+                    <div class="text-sm font-medium text-gray-900">产品规划方案.docx</div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-500">2023/07/23 10:15</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-500">详细 (512字)</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex space-x-2">
+                    <button class="text-blue-600 hover:text-blue-900">查看</button>
+                    <button class="text-green-600 hover:text-green-900">下载</button>
+                    <button class="text-red-600 hover:text-red-900">删除</button>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <i class="far fa-file-alt text-gray-500 mr-2"></i>
+                    <div class="text-sm font-medium text-gray-900">市场调研报告.txt</div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-500">2023/07/20 16:45</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-500">简短 (98字)</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex space-x-2">
+                    <button class="text-blue-600 hover:text-blue-900">查看</button>
+                    <button class="text-green-600 hover:text-green-900">下载</button>
+                    <button class="text-red-600 hover:text-red-900">删除</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- 导入页脚 -->
+  <div id="footer-container"></div>
+  
+  <!-- 加载中状态 (默认隐藏) -->
+  <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 shadow-xl max-w-md w-full mx-4 text-center">
+      <div class="mb-4">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">正在生成摘要</h3>
+      <p class="text-gray-600 mb-4">AI正在分析文档内容，这可能需要几秒钟时间...</p>
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 45%" id="progress-bar"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 加载页头和页脚
+      fetch('components/header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-container').innerHTML = data;
+          const headerScript = document.createElement('script');
+          headerScript.innerHTML = document.getElementById('header-container').querySelector('script').innerHTML;
+          document.body.appendChild(headerScript);
+        });
+      
+      fetch('components/footer.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('footer-container').innerHTML = data;
+        });
+      
+      // 文件上传处理
+      const fileInput = document.getElementById('file-input');
+      const filePreview = document.getElementById('file-preview');
+      const fileName = document.getElementById('file-name');
+      const fileSize = document.getElementById('file-size');
+      const removeFile = document.getElementById('remove-file');
+      
+      fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          const file = this.files[0];
+          fileName.textContent = file.name;
+          fileSize.textContent = RAGApp.formatFileSize(file.size);
+          filePreview.classList.remove('hidden');
+        }
+      });
+      
+      removeFile.addEventListener('click', function() {
+        fileInput.value = '';
+        filePreview.classList.add('hidden');
+      });
+      
+      // 输入来源切换
+      const sourceFile = document.getElementById('source-file');
+      const sourceText = document.getElementById('source-text');
+      const fileUploadSection = document.getElementById('file-upload-section');
+      const textInputSection = document.getElementById('text-input-section');
+      
+      sourceFile.addEventListener('change', function() {
+        if (this.checked) {
+          fileUploadSection.classList.remove('opacity-50', 'pointer-events-none');
+          textInputSection.classList.add('opacity-50', 'pointer-events-none');
+        }
+      });
+      
+      sourceText.addEventListener('change', function() {
+        if (this.checked) {
+          fileUploadSection.classList.add('opacity-50', 'pointer-events-none');
+          textInputSection.classList.remove('opacity-50', 'pointer-events-none');
+        }
+      });
+      
+      // 文本输入计数
+      const textInput = document.getElementById('text-input');
+      const textCounter = document.getElementById('text-counter');
+      const clearText = document.getElementById('clear-text');
+      
+      textInput.addEventListener('input', function() {
+        const count = this.value.length;
+        textCounter.textContent = `${count}/10000`;
+        
+        if (count > 0) {
+          clearText.classList.remove('hidden');
+        } else {
+          clearText.classList.add('hidden');
+        }
+      });
+      
+      clearText.addEventListener('click', function() {
+        textInput.value = '';
+        textCounter.textContent = '0/10000';
+        this.classList.add('hidden');
+      });
+      
+      // 生成摘要按钮处理
+      const generateSummaryBtn = document.getElementById('generate-summary-btn');
+      const loadingOverlay = document.getElementById('loading-overlay');
+      const progressBar = document.getElementById('progress-bar');
+      const summaryResult = document.getElementById('summary-result');
+      
+      generateSummaryBtn.addEventListener('click', function() {
+        // 验证输入
+        let isValid = false;
+        
+        if (sourceFile.checked) {
+          isValid = fileInput.files.length > 0;
+          if (!isValid) {
+            RAGApp.showNotification('请先上传一个文件', 'error');
+          }
+        } else if (sourceText.checked) {
+          isValid = textInput.value.trim().length > 0;
+          if (!isValid) {
+            RAGApp.showNotification('请输入文本内容', 'error');
+          }
+        }
+        
+        if (isValid) {
+          // 显示加载状态
+          loadingOverlay.classList.remove('hidden');
+          
+          // 模拟进度条
+          let progress = 0;
+          const interval = setInterval(() => {
+            progress += 5;
+            if (progress > 100) {
+              clearInterval(interval);
+              
+              // 隐藏加载状态，显示结果
+              setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+                summaryResult.classList.remove('hidden');
+                
+                // 滚动到结果区域
+                summaryResult.scrollIntoView({ behavior: 'smooth' });
+              }, 500);
+            } else {
+              progressBar.style.width = `${progress}%`;
+            }
+          }, 200);
+        }
+      });
+    });
+  </script>
+</body>
+</html> 
