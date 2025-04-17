@@ -81,28 +81,28 @@
                 <div class="bg-white rounded-lg shadow overflow-hidden">
                     <!-- 标签页导航 -->
                     <nav class="flex border-b border-gray-200">
-                        <button class="px-6 py-4 text-indigo-600 border-b-2 border-indigo-600 font-medium text-sm">
+                        <button id="tab-general" class="px-6 py-4 text-indigo-600 border-b-2 border-indigo-600 font-medium text-sm">
                             通用设置
                         </button>
-                        <button class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
+                        <button id="tab-model" class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
                             模型配置
                         </button>
-                        <button class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
+                        <button id="tab-vector" class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
                             向量数据库
                         </button>
-                        <button class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
+                        <button id="tab-api" class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
                             API设置
                         </button>
-                        <button class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
+                        <button id="tab-security" class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
                             安全与权限
                         </button>
-                        <button class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
+                        <button id="tab-logs" class="px-6 py-4 text-gray-600 hover:text-gray-800 font-medium text-sm">
                             系统日志
                         </button>
                     </nav>
 
                     <!-- 通用设置面板 -->
-                    <div class="p-6">
+                    <div id="panel-general" class="p-6">
                         <form>
                             <!-- 系统信息 -->
                             <div class="mb-8">
@@ -259,6 +259,1317 @@
                             </div>
                         </form>
                     </div>
+                    
+                    <!-- 模型配置标签页 -->
+                    <div id="panel-model" class="p-6 hidden">
+                        <form>
+                            <!-- 大语言模型配置 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">大语言模型配置</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">模型提供商</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option selected>OpenAI</option>
+                                            <option>百度文心</option>
+                                            <option>阿里通义</option>
+                                            <option>讯飞星火</option>
+                                            <option>智谱AI</option>
+                                            <option>自定义</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">模型版本</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option>GPT-3.5-turbo</option>
+                                            <option selected>GPT-4o</option>
+                                            <option>GPT-4o-mini</option>
+                                            <option>Claude 3 Opus</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">API密钥</label>
+                                        <div class="relative">
+                                            <input type="password" value="sk-***************************" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <button type="button" class="absolute inset-y-0 right-0 px-3 py-1.5 text-gray-600 hover:text-gray-900">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">API地址</label>
+                                        <input type="text" value="https://api.openai.com/v1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 推理参数 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">推理参数</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">温度</label>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="range" min="0" max="100" value="70" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                            <span class="text-sm text-gray-700">0.7</span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">较高的值使输出更随机，较低的值使输出更确定</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">最大回复长度</label>
+                                        <input type="number" value="4000" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">模型生成回复的最大字符数</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Top P</label>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="range" min="0" max="100" value="90" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                            <span class="text-sm text-gray-700">0.9</span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">控制模型在选择下一个词时考虑的可能性集合</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">存在惩罚</label>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="range" min="-200" max="200" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                            <span class="text-sm text-gray-700">0.0</span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">降低模型重复同一内容的倾向</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 嵌入模型配置 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">嵌入模型配置</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">嵌入模型</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option>text-embedding-3-small</option>
+                                            <option selected>text-embedding-3-large</option>
+                                            <option>text-embedding-ada-002</option>
+                                            <option>百度文心嵌入</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">向量维度</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option>512</option>
+                                            <option>768</option>
+                                            <option selected>1024</option>
+                                            <option>1536</option>
+                                            <option>3072</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">批处理大小</label>
+                                        <input type="number" value="32" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">每次处理的文本块数量</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">本地缓存</label>
+                                        <div class="flex items-center mt-2">
+                                            <input id="cache_embeddings" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                            <label for="cache_embeddings" class="ml-2 block text-sm text-gray-700">启用嵌入缓存</label>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">存储已计算的嵌入向量以提高性能</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 系统提示词配置 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">系统提示词配置</h2>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">默认系统提示词</label>
+                                    <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">你是一个智能助手，基于检索增强生成（RAG）技术，可以回答用户的问题。你应该始终基于检索到的文档内容提供回答，并引用相关来源。如果无法从检索到的文档中找到答案，请明确说明并建议用户重新表述问题。回答应该简洁、准确、有帮助。</textarea>
+                                </div>
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">引用格式</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option>无引用</option>
+                                        <option selected>行内引用 [1]</option>
+                                        <option>尾部引用列表</option>
+                                        <option>超链接</option>
+                                    </select>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="flex items-center">
+                                        <input id="enforce_citation" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                        <label for="enforce_citation" class="ml-2 block text-sm text-gray-700">强制引用文档</label>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">要求模型为所有回答提供引用源</p>
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    测试连接
+                                </button>
+                                <button type="button" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    重置
+                                </button>
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    保存设置
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 向量数据库标签页 -->
+                    <div id="panel-vector" class="p-6 hidden">
+                        <form>
+                            <!-- 数据库配置 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">数据库配置</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">向量数据库类型</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option>Milvus</option>
+                                            <option selected>PgVector</option>
+                                            <option>Faiss</option>
+                                            <option>Pinecone</option>
+                                            <option>Chroma</option>
+                                            <option>Qdrant</option>
+                                            <option>Weaviate</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">连接模式</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option selected>直接连接</option>
+                                            <option>HTTP API</option>
+                                            <option>代理连接</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">主机地址</label>
+                                        <input type="text" value="localhost" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">端口</label>
+                                        <input type="number" value="5432" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                                        <input type="text" value="postgres" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                                        <div class="relative">
+                                            <input type="password" value="********" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <button type="button" class="absolute inset-y-0 right-0 px-3 py-1.5 text-gray-600 hover:text-gray-900">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">数据库名</label>
+                                        <input type="text" value="vector_db" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">表前缀</label>
+                                        <input type="text" value="rag_" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 索引配置 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">索引配置</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">索引类型</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option>HNSW</option>
+                                            <option selected>IVFFlat</option>
+                                            <option>Flat</option>
+                                            <option>IVFPQ</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">距离度量</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option selected>余弦相似度</option>
+                                            <option>欧几里得距离</option>
+                                            <option>点积</option>
+                                            <option>汉明距离</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">索引构建参数</label>
+                                        <input type="text" value="lists=100,nprobe=10" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">特定于索引类型的参数</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">存储元数据</label>
+                                        <div class="flex items-center mt-2">
+                                            <input id="store_metadata" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                            <label for="store_metadata" class="ml-2 block text-sm text-gray-700">在向量数据库中存储元数据</label>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">可加快检索速度，但增加存储空间</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 性能参数 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">性能参数</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">连接池大小</label>
+                                        <input type="number" value="20" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">与数据库的最大连接数</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">超时时间(秒)</label>
+                                        <input type="number" value="30" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">数据库操作超时设置</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">查询限制</label>
+                                        <input type="number" value="10" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">每次检索的默认结果数量</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">批量操作大小</label>
+                                        <input type="number" value="100" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">批量插入/更新的向量数</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="flex items-center">
+                                        <input id="enable_caching" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                        <label for="enable_caching" class="ml-2 block text-sm text-gray-700">启用查询缓存</label>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">缓存频繁查询结果以提高性能</p>
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    测试连接
+                                </button>
+                                <button type="button" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    重置
+                                </button>
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    保存设置
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- API设置标签页 -->
+                    <div id="panel-api" class="p-6 hidden">
+                        <form>
+                            <!-- API密钥管理 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">API密钥管理</h2>
+                                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg mb-6">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    密钥名称
+                                                </th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    密钥ID
+                                                </th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    创建时间
+                                                </th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    上次使用
+                                                </th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    状态
+                                                </th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    操作
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                    主应用密钥
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    sk_prod_••••••••••
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    2023-06-15
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    2023-07-25
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        <span class="w-1 h-1 mr-1.5 bg-green-500 rounded-full"></span>
+                                                        活跃
+                                                    </span>
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <div class="flex space-x-2">
+                                                        <button class="text-indigo-600 hover:text-indigo-900">查看</button>
+                                                        <button class="text-red-600 hover:text-red-900">撤销</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                    开发环境密钥
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    sk_dev_••••••••••
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    2023-06-20
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    2023-07-24
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        <span class="w-1 h-1 mr-1.5 bg-green-500 rounded-full"></span>
+                                                        活跃
+                                                    </span>
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <div class="flex space-x-2">
+                                                        <button class="text-indigo-600 hover:text-indigo-900">查看</button>
+                                                        <button class="text-red-600 hover:text-red-900">撤销</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                    测试密钥
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    sk_test_••••••••••
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    2023-07-01
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    2023-07-15
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                        <span class="w-1 h-1 mr-1.5 bg-yellow-500 rounded-full"></span>
+                                                        即将过期
+                                                    </span>
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <div class="flex space-x-2">
+                                                        <button class="text-indigo-600 hover:text-indigo-900">查看</button>
+                                                        <button class="text-green-600 hover:text-green-900">续期</button>
+                                                        <button class="text-red-600 hover:text-red-900">撤销</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i class="fas fa-plus mr-2"></i>创建新密钥
+                                </button>
+                            </div>
+
+                            <!-- API限制设置 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">API限制设置</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">API请求限制(每分钟)</label>
+                                        <input type="number" value="60" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">每分钟允许的最大API请求数</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">单IP并发请求限制</label>
+                                        <input type="number" value="5" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">同一IP地址的最大并发请求数</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">单次请求大小限制(KB)</label>
+                                        <input type="number" value="1024" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">单个API请求的最大大小</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">API超时时间(秒)</label>
+                                        <input type="number" value="30" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">API请求的最大等待时间</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">IP白名单</label>
+                                        <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">192.168.1.1, 10.0.0.1, 203.0.113.0/24</textarea>
+                                        <p class="mt-1 text-sm text-gray-500">允许访问的IP地址列表，用逗号分隔</p>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center mt-4">
+                                            <input id="enable_ip_whitelist" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                            <label for="enable_ip_whitelist" class="ml-2 block text-sm text-gray-700">启用IP白名单</label>
+                                        </div>
+                                        <div class="flex items-center mt-2">
+                                            <input id="enable_api_logs" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                            <label for="enable_api_logs" class="ml-2 block text-sm text-gray-700">启用API访问日志</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Webhook设置 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">Webhook设置</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Webhook URL</label>
+                                        <input type="text" value="https://example.com/api/webhook" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <p class="mt-1 text-sm text-gray-500">系统事件通知的目标URL</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">密钥</label>
+                                        <div class="relative">
+                                            <input type="password" value="••••••••••••••••••••••••••••••••••••••••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <button type="button" class="absolute inset-y-0 right-0 px-3 py-1.5 text-gray-600 hover:text-gray-900">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">用于验证Webhook请求的密钥</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">事件类型</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option selected>所有事件</option>
+                                            <option>知识库更新事件</option>
+                                            <option>文档处理事件</option>
+                                            <option>查询事件</option>
+                                            <option>用户活动事件</option>
+                                        </select>
+                                        <p class="mt-1 text-sm text-gray-500">选择需要触发Webhook的事件类型</p>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <div class="flex items-center mt-4">
+                                            <input id="enable_webhook" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                            <label for="enable_webhook" class="ml-2 block text-sm text-gray-700">启用Webhook</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- API文档链接 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">API文档</h2>
+                                <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                    <div class="flex items-start">
+                                        <i class="fas fa-file-alt text-gray-400 mt-1"></i>
+                                        <div class="ml-3">
+                                            <h3 class="text-sm font-medium text-gray-900">API文档链接</h3>
+                                            <div class="mt-2 text-sm text-gray-500">
+                                                <p>查看我们的API文档来了解如何集成和使用RAG平台的API:</p>
+                                                <ul class="list-disc pl-5 mt-2 space-y-1">
+                                                    <li><a href="#" class="text-indigo-600 hover:text-indigo-900">入门指南</a></li>
+                                                    <li><a href="#" class="text-indigo-600 hover:text-indigo-900">API参考</a></li>
+                                                    <li><a href="#" class="text-indigo-600 hover:text-indigo-900">示例代码</a></li>
+                                                    <li><a href="#" class="text-indigo-600 hover:text-indigo-900">SDK下载</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    重置
+                                </button>
+                                <button type="button" class="px-4 py-2 border border-indigo-300 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    测试API连接
+                                </button>
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    保存设置
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 安全与权限标签页 -->
+                    <div id="panel-security" class="p-6 hidden">
+                        <form>
+                            <!-- 安全配置 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">安全配置</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">密码策略</label>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center">
+                                                <input id="require_uppercase" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                <label for="require_uppercase" class="ml-2 block text-sm text-gray-700">
+                                                    要求包含大写字母
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input id="require_lowercase" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                <label for="require_lowercase" class="ml-2 block text-sm text-gray-700">
+                                                    要求包含小写字母
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input id="require_number" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                <label for="require_number" class="ml-2 block text-sm text-gray-700">
+                                                    要求包含数字
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input id="require_special" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                <label for="require_special" class="ml-2 block text-sm text-gray-700">
+                                                    要求包含特殊字符
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">密码最小长度</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="12" min="8" max="32" class="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <span class="ml-2 text-sm text-gray-600">字符</span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">建议至少12个字符以保证安全性</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">密码过期时间</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="90" min="0" class="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <span class="ml-2 text-sm text-gray-600">天</span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">设置为0表示密码永不过期</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">会话超时时间</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="30" min="5" class="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <span class="ml-2 text-sm text-gray-600">分钟</span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">用户无操作后自动退出登录</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">登录失败尝试限制</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="5" min="3" class="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <span class="ml-2 text-sm text-gray-600">次</span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">达到限制后账户将被锁定</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">账户锁定时间</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="30" min="5" class="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <span class="ml-2 text-sm text-gray-600">分钟</span>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">账户被锁定的持续时间</p>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <div class="flex items-center mt-4">
+                                            <input id="enable_2fa" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                            <label for="enable_2fa" class="ml-2 block text-sm text-gray-700">启用双因素认证</label>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500 ml-6">要求用户使用移动应用或短信验证码进行二次验证</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 角色权限管理 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">角色权限管理</h2>
+                                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg mb-6">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    角色名称
+                                                </th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    用户数量
+                                                </th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    权限描述
+                                                </th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    操作
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                    系统管理员
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    2
+                                                </td>
+                                                <td class="px-3 py-4 text-sm text-gray-500">
+                                                    拥有系统所有功能的完全访问权限，包括用户管理、系统设置、知识库管理等
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <button class="text-indigo-600 hover:text-indigo-900">编辑权限</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                    知识库管理员
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    5
+                                                </td>
+                                                <td class="px-3 py-4 text-sm text-gray-500">
+                                                    可以创建和管理知识库，上传文档，但无法访问系统设置和用户管理
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <button class="text-indigo-600 hover:text-indigo-900">编辑权限</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                    普通用户
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    18
+                                                </td>
+                                                <td class="px-3 py-4 text-sm text-gray-500">
+                                                    可以进行智能问答，查看已授权的知识库内容，无法管理知识库或上传文档
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <button class="text-indigo-600 hover:text-indigo-900">编辑权限</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                    只读用户
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    7
+                                                </td>
+                                                <td class="px-3 py-4 text-sm text-gray-500">
+                                                    只能访问特定知识库的内容，无法进行智能问答
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <button class="text-indigo-600 hover:text-indigo-900">编辑权限</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i class="fas fa-plus mr-2"></i>创建新角色
+                                </button>
+                            </div>
+
+                            <!-- 数据访问控制 -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-medium text-gray-900 mb-4">数据访问控制</h2>
+                                <div class="bg-white p-4 shadow rounded-lg mb-6">
+                                    <h3 class="text-md font-medium text-gray-800 mb-3">知识库访问权限</h3>
+                                    <p class="text-sm text-gray-600 mb-4">配置不同角色对不同知识库的访问级别</p>
+                                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        知识库名称
+                                                    </th>
+                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        系统管理员
+                                                    </th>
+                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        知识库管理员
+                                                    </th>
+                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        普通用户
+                                                    </th>
+                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        只读用户
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        产品知识库
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option selected>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option selected>编辑</option>
+                                                            <option>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option selected>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option selected>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        技术文档库
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option selected>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option selected>编辑</option>
+                                                            <option>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option selected>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option>只读</option>
+                                                            <option selected>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        内部管理文档
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option selected>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option selected>只读</option>
+                                                            <option>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option>只读</option>
+                                                            <option selected>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <select class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                            <option>完全控制</option>
+                                                            <option>编辑</option>
+                                                            <option>只读</option>
+                                                            <option selected>无权限</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-4 shadow rounded-lg">
+                                    <h3 class="text-md font-medium text-gray-800 mb-3">功能权限控制</h3>
+                                    <p class="text-sm text-gray-600 mb-4">配置不同角色对系统功能的访问权限</p>
+
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        功能模块
+                                                    </th>
+                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        系统管理员
+                                                    </th>
+                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        知识库管理员
+                                                    </th>
+                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        普通用户
+                                                    </th>
+                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        只读用户
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        系统设置
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        用户管理
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        知识库创建
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        文档上传
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        智能问答
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                                                        对话导出
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    重置
+                                </button>
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    保存设置
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 系统日志标签页 -->
+                    <div id="panel-logs" class="p-6 hidden">
+                        <!-- 日志筛选工具栏 -->
+                        <div class="mb-6 bg-white p-4 shadow rounded-lg">
+                            <div class="flex flex-wrap items-center gap-4">
+                                <div class="flex-1 min-w-[200px]">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">日志级别</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option>全部</option>
+                                        <option>错误</option>
+                                        <option selected>警告</option>
+                                        <option>信息</option>
+                                        <option>调试</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1 min-w-[200px]">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">模块</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option selected>全部</option>
+                                        <option>API服务</option>
+                                        <option>向量数据库</option>
+                                        <option>文档处理</option>
+                                        <option>模型服务</option>
+                                        <option>定时任务</option>
+                                        <option>用户认证</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1 min-w-[200px]">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">时间范围</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option>今天</option>
+                                        <option selected>最近7天</option>
+                                        <option>最近30天</option>
+                                        <option>本月</option>
+                                        <option>自定义范围</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1 min-w-[200px]">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">关键词搜索</label>
+                                    <div class="relative">
+                                        <input type="text" placeholder="搜索日志内容..." class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <i class="fas fa-search text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex mt-6 ml-auto">
+                                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-filter mr-2"></i> 应用筛选
+                                    </button>
+                                    <button type="button" class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-download mr-2"></i> 导出日志
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 日志配置 -->
+                        <div class="mb-6 bg-white p-4 shadow rounded-lg">
+                            <h2 class="text-lg font-medium text-gray-900 mb-4">日志配置</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">日志保留期限</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option>7天</option>
+                                        <option>14天</option>
+                                        <option selected>30天</option>
+                                        <option>90天</option>
+                                        <option>180天</option>
+                                        <option>365天</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">默认日志级别</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option>错误</option>
+                                        <option selected>警告</option>
+                                        <option>信息</option>
+                                        <option>调试</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">日志文件路径</label>
+                                    <input type="text" value="/var/log/rag-platform/" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">日志文件大小限制</label>
+                                    <div class="flex items-center">
+                                        <input type="number" value="100" class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <span class="ml-2">MB</span>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <div class="flex items-center mt-2">
+                                        <input id="enable_rotation" type="checkbox" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                        <label for="enable_rotation" class="ml-2 block text-sm text-gray-700">启用日志轮转</label>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        保存日志配置
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 日志表格 -->
+                        <div class="bg-white shadow overflow-hidden rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            时间
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            级别
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            模块
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            消息
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            操作
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2023-08-12 15:42:32
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                错误
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            文档处理
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate">
+                                            文档处理失败: 无法解析PDF文件 "financial_report_2023.pdf", 错误代码: E1042
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900">查看详情</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2023-08-12 15:23:10
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                警告
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            向量数据库
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate">
+                                            索引性能下降: 查询响应时间超过阈值 (实际: 1.25s, 阈值: 0.8s)
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900">查看详情</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2023-08-12 14:57:22
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                信息
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            API服务
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate">
+                                            用户 "zhang.wei@example.com" 进行了 25 次成功的API调用
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900">查看详情</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2023-08-12 14:32:01
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                警告
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            模型服务
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate">
+                                            GPT模型API调用超时，已重试 (重试次数: 2/3)
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900">查看详情</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2023-08-12 14:01:45
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                调试
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            文档处理
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate">
+                                            文档分块完成: "product_specification.docx", 共生成 45 个文本块
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900">查看详情</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 分页 -->
+                        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    上一页
+                                </a>
+                                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    下一页
+                                </a>
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        显示第 <span class="font-medium">1</span> 至 <span class="font-medium">5</span> 条，共 <span class="font-medium">45</span> 条记录
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">上一页</span>
+                                            <i class="fas fa-chevron-left h-5 w-5"></i>
+                                        </a>
+                                        <a href="#" aria-current="page" class="z-10 bg-indigo-50 border-indigo-500 text-indigo-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            1
+                                        </a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            2
+                                        </a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            3
+                                        </a>
+                                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                            ...
+                                        </span>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            9
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">下一页</span>
+                                            <i class="fas fa-chevron-right h-5 w-5"></i>
+                                        </a>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 添加标签页切换功能 -->
+                    <script>
+                        // 获取所有标签页按钮和面板
+                        const tabButtons = document.querySelectorAll('[id^="tab-"]');
+                        const panels = document.querySelectorAll('[id^="panel-"]');
+                        
+                        // 为每个标签按钮添加点击事件
+                        tabButtons.forEach(button => {
+                            button.addEventListener('click', () => {
+                                // 获取当前标签页ID
+                                const tabId = button.id;
+                                const panelId = tabId.replace('tab-', 'panel-');
+                                
+                                // 隐藏所有面板
+                                panels.forEach(panel => {
+                                    panel.classList.add('hidden');
+                                });
+                                
+                                // 移除所有标签页的激活状态
+                                tabButtons.forEach(btn => {
+                                    btn.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
+                                    btn.classList.add('text-gray-600', 'hover:text-gray-800');
+                                });
+                                
+                                // 显示当前选中的面板
+                                document.getElementById(panelId).classList.remove('hidden');
+                                
+                                // 激活当前标签页
+                                button.classList.remove('text-gray-600', 'hover:text-gray-800');
+                                button.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+                            });
+                        });
+                    </script>
                 </div>
 
                 <!-- 系统状态 -->
