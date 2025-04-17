@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能文档检索 - 文档详情</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- 顶部导航栏 -->
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <a href="home.html" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-arrow-left text-lg"></i>
+                        </a>
+                        <i class="fas fa-brain text-blue-500 text-2xl ml-4"></i>
+                        <h1 class="ml-2 text-xl font-bold text-gray-800">智能文档检索</h1>
+                    </div>
+                    <div class="flex items-center">
+                        <!-- 搜索框 -->
+                        <div class="relative mx-4 lg:mx-0 w-64">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                            <input class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" type="text" placeholder="搜索文档...">
+                        </div>
+                        
+                        <!-- 用户菜单 -->
+                        <div class="ml-4 flex items-center">
+                            <div class="relative">
+                                <button type="button" class="flex items-center max-w-xs rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <img class="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.2&w=160&h=160&q=80" alt="用户头像">
+                                    <span class="ml-2 text-gray-700">张小明</span>
+                                    <i class="fas fa-chevron-down ml-1 text-gray-400"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="flex-grow flex">
+            <!-- 主内容区 -->
+            <main class="flex-1 overflow-y-auto focus:outline-none">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                        <!-- 文档头部信息 -->
+                        <div class="mb-6">
+                            <div class="flex items-center">
+                                <i class="far fa-file-pdf text-red-500 text-4xl"></i>
+                                <div class="ml-4">
+                                    <h1 class="text-2xl font-semibold text-gray-900">财务报表Q2-2023.pdf</h1>
+                                    <p class="text-sm text-gray-500 mt-1">上传于 2023-06-15 · 2.5 MB · PDF文档</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 操作按钮 -->
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-download mr-2"></i>
+                                    下载
+                                </button>
+                                <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-share-alt mr-2"></i>
+                                    分享
+                                </button>
+                                <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-star mr-2"></i>
+                                    收藏
+                                </button>
+                                <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-edit mr-2"></i>
+                                    编辑
+                                </button>
+                                <div class="relative">
+                                    <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i class="fas fa-ellipsis-h mr-2"></i>
+                                        更多
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 标签 -->
+                            <div class="mt-4">
+                                <div class="flex items-center flex-wrap gap-2">
+                                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        财务
+                                        <button class="ml-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:outline-none">
+                                            <i class="fas fa-times text-xs"></i>
+                                        </button>
+                                    </span>
+                                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        季度报告
+                                        <button class="ml-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full text-green-400 hover:bg-green-200 hover:text-green-500 focus:outline-none">
+                                            <i class="fas fa-times text-xs"></i>
+                                        </button>
+                                    </span>
+                                    <button class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50">
+                                        <i class="fas fa-plus text-xs mr-1"></i>
+                                        添加标签
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 内容切换标签 -->
+                        <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                <a href="#" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    预览
+                                </a>
+                                <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    AI摘要
+                                </a>
+                                <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    智能问答
+                                </a>
+                                <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    知识关联
+                                </a>
+                                <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    版本历史
+                                </a>
+                            </nav>
+                        </div>
+                        
+                        <!-- 预览区域 -->
+                        <div class="mt-6">
+                            <div class="bg-white overflow-hidden shadow rounded-lg">
+                                <!-- 文档工具栏 -->
+                                <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="p-2 rounded-md hover:bg-gray-200">
+                                            <i class="fas fa-search-plus"></i>
+                                        </button>
+                                        <button class="p-2 rounded-md hover:bg-gray-200">
+                                            <i class="fas fa-search-minus"></i>
+                                        </button>
+                                        <span class="text-sm text-gray-600">100%</span>
+                                        <button class="p-2 rounded-md hover:bg-gray-200">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm text-gray-600">第 1 页 / 共 25 页</span>
+                                        <button class="p-2 rounded-md hover:bg-gray-200">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <button class="p-2 rounded-md hover:bg-gray-200">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 文档预览区 -->
+                                <div class="p-6 flex justify-center">
+                                    <div class="shadow-md border border-gray-200 w-full max-w-2xl">
+                                        <img src="https://images.unsplash.com/photo-1554224155-8d04cb21ed6c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="文档预览" class="w-full">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 智能搜索区 -->
+                            <div class="mt-6">
+                                <div class="bg-white overflow-hidden shadow rounded-lg p-6">
+                                    <h2 class="text-lg font-medium text-gray-900 mb-4">在文档中智能搜索</h2>
+                                    
+                                    <div class="relative">
+                                        <input type="text" class="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="输入您想了解的内容，例如：2023年第二季度的销售额是多少？">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <button type="submit" class="text-blue-500 hover:text-blue-700">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <h3 class="text-sm font-medium text-gray-700 mb-2">推荐问题：</h3>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700">
+                                                第二季度的营收增长率是多少？
+                                            </button>
+                                            <button class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700">
+                                                主要费用支出情况如何？
+                                            </button>
+                                            <button class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700">
+                                                与去年同期相比的变化？
+                                            </button>
+                                            <button class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700">
+                                                第三季度预期如何？
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 文档详细信息 -->
+                            <div class="mt-6">
+                                <div class="bg-white overflow-hidden shadow rounded-lg p-6">
+                                    <h2 class="text-lg font-medium text-gray-900 mb-4">文档信息</h2>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <dl>
+                                                <div class="sm:grid sm:grid-cols-3 sm:gap-4 py-2">
+                                                    <dt class="text-sm font-medium text-gray-500">文件名</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">财务报表Q2-2023.pdf</dd>
+                                                </div>
+                                                <div class="sm:grid sm:grid-cols-3 sm:gap-4 py-2">
+                                                    <dt class="text-sm font-medium text-gray-500">上传者</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">李财务</dd>
+                                                </div>
+                                                <div class="sm:grid sm:grid-cols-3 sm:gap-4 py-2">
+                                                    <dt class="text-sm font-medium text-gray-500">上传时间</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">2023-06-15 15:30:45</dd>
+                                                </div>
+                                            </dl>
+                                        </div>
+                                        
+                                        <div>
+                                            <dl>
+                                                <div class="sm:grid sm:grid-cols-3 sm:gap-4 py-2">
+                                                    <dt class="text-sm font-medium text-gray-500">文件大小</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">2.5 MB</dd>
+                                                </div>
+                                                <div class="sm:grid sm:grid-cols-3 sm:gap-4 py-2">
+                                                    <dt class="text-sm font-medium text-gray-500">文件类型</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">PDF文档</dd>
+                                                </div>
+                                                <div class="sm:grid sm:grid-cols-3 sm:gap-4 py-2">
+                                                    <dt class="text-sm font-medium text-gray-500">页数</dt>
+                                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">25页</dd>
+                                                </div>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 相关文档 -->
+                            <div class="mt-6">
+                                <div class="bg-white overflow-hidden shadow rounded-lg p-6">
+                                    <h2 class="text-lg font-medium text-gray-900 mb-4">AI推荐的相关文档</h2>
+                                    
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                                            <div class="flex items-center">
+                                                <i class="far fa-file-pdf text-red-500 text-2xl"></i>
+                                                <div class="ml-3">
+                                                    <h3 class="text-sm font-medium text-gray-900 truncate">财务报表Q1-2023.pdf</h3>
+                                                    <p class="text-xs text-gray-500">2.3 MB · 上季度报表</p>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <div class="bg-blue-50 text-blue-700 px-2 py-1 text-xs rounded-md">
+                                                    相关度：92%
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                                            <div class="flex items-center">
+                                                <i class="far fa-file-excel text-green-500 text-2xl"></i>
+                                                <div class="ml-3">
+                                                    <h3 class="text-sm font-medium text-gray-900 truncate">Q2财务数据明细.xlsx</h3>
+                                                    <p class="text-xs text-gray-500">1.2 MB · 财务数据</p>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <div class="bg-blue-50 text-blue-700 px-2 py-1 text-xs rounded-md">
+                                                    相关度：89%
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                                            <div class="flex items-center">
+                                                <i class="far fa-file-powerpoint text-orange-500 text-2xl"></i>
+                                                <div class="ml-3">
+                                                    <h3 class="text-sm font-medium text-gray-900 truncate">Q2业绩说明会.pptx</h3>
+                                                    <p class="text-xs text-gray-500">4.5 MB · 演示文稿</p>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <div class="bg-blue-50 text-blue-700 px-2 py-1 text-xs rounded-md">
+                                                    相关度：78%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- 移动端底部导航 -->
+        <nav class="md:hidden bg-white border-t border-gray-200 fixed bottom-0 w-full">
+            <div class="max-w-xl mx-auto px-2 flex justify-around">
+                <a href="home.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs mt-1">文档</span>
+                </a>
+                <a href="search.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-search text-xl"></i>
+                    <span class="text-xs mt-1">搜索</span>
+                </a>
+                <a href="upload.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-plus-circle text-xl"></i>
+                    <span class="text-xs mt-1">上传</span>
+                </a>
+                <a href="ai_assistant.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-robot text-xl"></i>
+                    <span class="text-xs mt-1">AI助手</span>
+                </a>
+                <a href="profile.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs mt-1">我的</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+</body>
+</html>

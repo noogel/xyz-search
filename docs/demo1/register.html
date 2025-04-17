@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能文档检索 - 注册</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col items-center justify-center px-4">
+        <div class="w-full max-w-md">
+            <!-- Logo和标题 -->
+            <div class="text-center mb-10">
+                <i class="fas fa-brain text-blue-500 text-5xl mb-3"></i>
+                <h1 class="text-3xl font-bold text-gray-800">智能文档检索</h1>
+                <p class="text-gray-600 mt-2">创建账户开始智能文档管理之旅</p>
+            </div>
+            
+            <!-- 注册表单 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-700">创建新账户</h2>
+                <form>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="username">
+                            用户名
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <input id="username" type="text" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请设置用户名">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="email">
+                            邮箱
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input id="email" type="email" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入邮箱地址">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="password">
+                            密码
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input id="password" type="password" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请设置密码">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <i class="fas fa-eye text-gray-400 cursor-pointer hover:text-gray-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="confirm-password">
+                            确认密码
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input id="confirm-password" type="password" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请再次输入密码">
+                        </div>
+                    </div>
+                    <div class="flex items-center mb-6">
+                        <input id="agree-terms" type="checkbox" class="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="agree-terms" class="ml-2 block text-sm text-gray-700">
+                            我已阅读并同意 <a href="#" class="text-blue-500 hover:text-blue-700">服务条款</a> 和 <a href="#" class="text-blue-500 hover:text-blue-700">隐私政策</a>
+                        </label>
+                    </div>
+                    <a href="home.html" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        注册
+                    </a>
+                </form>
+            </div>
+            
+            <!-- 其他注册选项 -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600 mb-4">或者使用以下方式注册</p>
+                <div class="flex justify-center space-x-4 mb-6">
+                    <button class="p-2 rounded-full bg-blue-100 text-blue-500 hover:bg-blue-200">
+                        <i class="fab fa-weixin text-xl"></i>
+                    </button>
+                    <button class="p-2 rounded-full bg-red-100 text-red-500 hover:bg-red-200">
+                        <i class="fab fa-weibo text-xl"></i>
+                    </button>
+                    <button class="p-2 rounded-full bg-blue-100 text-blue-500 hover:bg-blue-200">
+                        <i class="fab fa-apple text-xl"></i>
+                    </button>
+                </div>
+                <p class="text-sm text-gray-600">
+                    已有账户? <a href="index.html" class="text-blue-500 hover:text-blue-700">立即登录</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

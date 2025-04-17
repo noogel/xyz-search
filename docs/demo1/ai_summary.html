@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能文档检索 - AI摘要</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- 顶部导航栏 -->
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <i class="fas fa-brain text-blue-500 text-2xl"></i>
+                        <h1 class="ml-2 text-xl font-bold text-gray-800">智能文档检索</h1>
+                    </div>
+                    <div class="flex items-center">
+                        <!-- 搜索框 -->
+                        <div class="relative mx-4 lg:mx-0 w-64">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                            <input class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" type="text" placeholder="搜索文档...">
+                        </div>
+                        
+                        <!-- 用户菜单 -->
+                        <div class="ml-4 flex items-center">
+                            <div class="relative">
+                                <button type="button" class="flex items-center max-w-xs rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <img class="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.2&w=160&h=160&q=80" alt="用户头像">
+                                    <span class="ml-2 text-gray-700">张小明</span>
+                                    <i class="fas fa-chevron-down ml-1 text-gray-400"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="flex-grow flex">
+            <!-- 侧边栏 -->
+            <aside class="hidden md:flex md:flex-shrink-0">
+                <div class="flex flex-col w-64 border-r border-gray-200 bg-white">
+                    <div class="flex-grow flex flex-col pt-5 pb-4 overflow-y-auto">
+                        <nav class="flex-1 px-2 space-y-1">
+                            <a href="home.html" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-home text-gray-400 mr-3 text-lg"></i>
+                                全部文档
+                            </a>
+                            <a href="recent.html" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-clock text-gray-400 mr-3 text-lg"></i>
+                                最近浏览
+                            </a>
+                            <a href="starred.html" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-star text-gray-400 mr-3 text-lg"></i>
+                                已标星
+                            </a>
+                            <a href="ai_summary.html" class="bg-blue-50 text-blue-700 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-robot text-blue-500 mr-3 text-lg"></i>
+                                AI摘要
+                            </a>
+                            <a href="knowledge_graph.html" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-project-diagram text-gray-400 mr-3 text-lg"></i>
+                                知识图谱
+                            </a>
+                            <a href="ai_assistant.html" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                                <i class="fas fa-comments text-gray-400 mr-3 text-lg"></i>
+                                AI助手
+                            </a>
+                            
+                            <!-- 文件夹分类 -->
+                            <div class="pt-4">
+                                <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    我的文件夹
+                                </h3>
+                                <div class="mt-2 space-y-1">
+                                    <a href="#" class="group flex items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900">
+                                        <i class="fas fa-folder text-gray-400 mr-3"></i>
+                                        工作文档
+                                    </a>
+                                    <a href="#" class="group flex items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900">
+                                        <i class="fas fa-folder text-gray-400 mr-3"></i>
+                                        个人资料
+                                    </a>
+                                    <a href="#" class="group flex items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900">
+                                        <i class="fas fa-folder text-gray-400 mr-3"></i>
+                                        学习笔记
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="flex-shrink-0 border-t border-gray-200 p-4">
+                        <button class="flex items-center w-full text-left px-2 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md">
+                            <i class="fas fa-plus mr-3"></i>
+                            新建文件夹
+                        </button>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- 主内容区 -->
+            <main class="flex-1 overflow-y-auto focus:outline-none">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                        <div class="flex justify-between items-center">
+                            <h1 class="text-2xl font-semibold text-gray-900">AI摘要</h1>
+                            <div class="flex space-x-3">
+                                <div class="relative">
+                                    <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i class="fas fa-sort mr-2"></i>
+                                        排序
+                                        <i class="fas fa-chevron-down ml-1"></i>
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i class="fas fa-filter mr-2"></i>
+                                        筛选
+                                        <i class="fas fa-chevron-down ml-1"></i>
+                                    </button>
+                                </div>
+                                <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-sync-alt mr-2"></i>
+                                    生成摘要
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-6">
+                        <!-- AI处理状态卡片 -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-blue-400 text-xl mt-0.5"></i>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <h3 class="text-sm font-medium text-blue-800">AI处理状态</h3>
+                                    <div class="mt-2 text-sm text-blue-700">
+                                        <p>AI已为您的20个文档生成摘要，还有3个文档正在处理中。</p>
+                                        <div class="mt-3">
+                                            <div class="relative pt-1">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <span class="text-xs font-semibold inline-block text-blue-600">已完成 20/23</span>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <span class="text-xs font-semibold inline-block text-blue-600">87%</span>
+                                                    </div>
+                                                </div>
+                                                <div class="overflow-hidden h-2 mt-1 text-xs flex rounded bg-blue-200">
+                                                    <div style="width: 87%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 摘要类型选择 -->
+                        <div class="mb-6">
+                            <div class="bg-white shadow rounded-lg">
+                                <div class="p-1 sm:p-2">
+                                    <div class="flex flex-wrap sm:hidden">
+                                        <button class="px-4 py-2 text-sm font-medium text-blue-600 bg-gray-100 rounded-md">
+                                            单文档摘要
+                                        </button>
+                                        <button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+                                            多文档摘要
+                                        </button>
+                                        <button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+                                            主题摘要
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="hidden sm:block">
+                                        <nav class="flex space-x-4" aria-label="Tabs">
+                                            <button class="px-3 py-2 text-sm font-medium text-blue-600 bg-gray-100 rounded-md">
+                                                单文档摘要
+                                            </button>
+                                            <button class="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md">
+                                                多文档摘要
+                                            </button>
+                                            <button class="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md">
+                                                主题摘要
+                                            </button>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 摘要列表 -->
+                        <div class="space-y-6">
+                            <!-- 摘要项 1 -->
+                            <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
+                                <div class="p-6">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <i class="far fa-file-pdf text-red-500 text-3xl"></i>
+                                        </div>
+                                        <div class="ml-4 flex-1">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-gray-900">财务报表Q2-2023.pdf</h3>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <i class="fas fa-check-circle mr-1"></i>
+                                                    最新
+                                                </span>
+                                            </div>
+                                            <p class="mt-1 text-sm text-gray-500">生成于: 2023-07-15 16:30</p>
+                                            
+                                            <div class="mt-4 bg-gray-50 rounded-md p-4">
+                                                <h4 class="text-sm font-medium text-gray-700 mb-2">摘要内容:</h4>
+                                                <p class="text-sm text-gray-600 leading-relaxed">
+                                                    本季度总体表现良好，营收同比增长15.7%，主要来自数字服务部门的增长。营业利润率维持在23.4%，比上季度提高1.2个百分点。主要风险因素包括亚洲地区供应链波动和原材料成本上涨。新产品线的投资回报率达到预期，贡献了约8%的增长。公司决定增加研发投入，以保持市场竞争力。预计第三季度将继续保持增长势头，但增速可能放缓至12-14%。
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <h4 class="text-sm font-medium text-gray-700 mb-2">关键要点:</h4>
+                                                <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                                                    <li>营收同比增长15.7%，环比增长4.2%</li>
+                                                    <li>营业利润率提高至23.4%</li>
+                                                    <li>数字服务部门增长22.3%</li>
+                                                    <li>海外市场扩张成效显著，东南亚地区增长30%</li>
+                                                    <li>主要风险：供应链波动和原材料成本上涨</li>
+                                                </ul>
+                                            </div>
+                                            
+                                            <div class="mt-4 flex justify-end space-x-3">
+                                                <button class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    <i class="fas fa-sync-alt mr-1.5"></i>
+                                                    更新摘要
+                                                </button>
+                                                <a href="document_detail.html" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    查看原文
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 摘要项 2 -->
+                            <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
+                                <div class="p-6">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <i class="far fa-file-word text-blue-500 text-3xl"></i>
+                                        </div>
+                                        <div class="ml-4 flex-1">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-gray-900">市场调研报告.docx</h3>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    <i class="fas fa-history mr-1"></i>
+                                                    3天前
+                                                </span>
+                                            </div>
+                                            <p class="mt-1 text-sm text-gray-500">生成于: 2023-07-12 10:15</p>
+                                            
+                                            <div class="mt-4 bg-gray-50 rounded-md p-4">
+                                                <h4 class="text-sm font-medium text-gray-700 mb-2">摘要内容:</h4>
+                                                <p class="text-sm text-gray-600 leading-relaxed">
+                                                    本报告对目标市场进行了全面分析，发现消费者对可持续产品的需求增长了35%。Z世代消费者成为主要增长动力，他们愿意为环保产品支付额外15-20%的溢价。竞争分析显示，主要竞争对手已开始转向可持续材料，但在供应链效率方面存在挑战。报告建议公司增加绿色产品线，改进环保包装，并强化品牌在可持续发展方面的形象。市场预测显示，未来3年此细分市场将以年均22%的速度增长。
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <h4 class="text-sm font-medium text-gray-700 mb-2">关键要点:</h4>
+                                                <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                                                    <li>可持续产品需求增长35%</li>
+                                                    <li>Z世代消费者愿意支付15-20%溢价</li>
+                                                    <li>竞争对手在供应链效率方面面临挑战</li>
+                                                    <li>建议增加绿色产品线和改进环保包装</li>
+                                                    <li>市场预计年均增长22%</li>
+                                                </ul>
+                                            </div>
+                                            
+                                            <div class="mt-4 flex justify-end space-x-3">
+                                                <button class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    <i class="fas fa-sync-alt mr-1.5"></i>
+                                                    更新摘要
+                                                </button>
+                                                <a href="document_detail.html" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    查看原文
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 摘要项 3 -->
+                            <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
+                                <div class="p-6">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <i class="far fa-file-powerpoint text-orange-500 text-3xl"></i>
+                                        </div>
+                                        <div class="ml-4 flex-1">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-gray-900">产品发布会演示.pptx</h3>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                                    需更新
+                                                </span>
+                                            </div>
+                                            <p class="mt-1 text-sm text-gray-500">生成于: 2023-07-05 14:45</p>
+                                            
+                                            <div class="mt-4 bg-gray-50 rounded-md p-4">
+                                                <h4 class="text-sm font-medium text-gray-700 mb-2">摘要内容:</h4>
+                                                <p class="text-sm text-gray-600 leading-relaxed">
+                                                    此演示文稿详细介绍了即将发布的新产品系列，包括五款核心产品和两款限量版产品。重点强调了产品的创新设计、可持续性特点和独特卖点。演示包含市场数据，显示目标市场规模为25亿美元，预计五年内增长40%。营销策略侧重于社交媒体推广和与环保意识影响者的合作。产品定价策略采用多层次方法，基础产品定位于大众市场，高端产品针对特定用户群体。发布时间表设定在第四季度初。
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <h4 class="text-sm font-medium text-gray-700 mb-2">关键要点:</h4>
+                                                <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                                                    <li>包含五款核心产品和两款限量版产品</li>
+                                                    <li>目标市场规模25亿美元，五年内增长40%</li>
+                                                    <li>营销策略侧重社交媒体和意见领袖合作</li>
+                                                    <li>采用多层次定价策略</li>
+                                                    <li>计划在第四季度初发布</li>
+                                                </ul>
+                                            </div>
+                                            
+                                            <div class="mt-4 flex justify-end space-x-3">
+                                                <button class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    <i class="fas fa-sync-alt mr-1.5"></i>
+                                                    更新摘要
+                                                </button>
+                                                <a href="document_detail.html" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    查看原文
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 正在处理项 -->
+                            <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
+                                <div class="p-6">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <i class="far fa-file-excel text-green-500 text-3xl"></i>
+                                        </div>
+                                        <div class="ml-4 flex-1">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-gray-900">销售数据分析.xlsx</h3>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                    <i class="fas fa-spinner fa-spin mr-1"></i>
+                                                    处理中
+                                                </span>
+                                            </div>
+                                            <p class="mt-1 text-sm text-gray-500">开始处理时间: 2023-07-15 18:45</p>
+                                            
+                                            <div class="mt-4 bg-gray-50 rounded-md p-4 h-24 flex items-center justify-center">
+                                                <div class="text-center">
+                                                    <i class="fas fa-robot text-indigo-400 text-2xl mb-2"></i>
+                                                    <p class="text-sm text-gray-600">AI正在分析文档并生成摘要，请稍候...</p>
+                                                    <div class="mt-2 w-48 mx-auto">
+                                                        <div class="h-1.5 relative max-w-xl rounded-full overflow-hidden">
+                                                            <div class="w-full h-full bg-gray-200 absolute"></div>
+                                                            <div class="h-full bg-indigo-500 absolute animate-pulse" style="width: 75%"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4 flex justify-end space-x-3">
+                                                <button class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-400 cursor-not-allowed" disabled>
+                                                    <i class="fas fa-sync-alt mr-1.5"></i>
+                                                    更新摘要
+                                                </button>
+                                                <a href="document_detail.html" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    查看原文
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 加载更多按钮 -->
+                        <div class="mt-8 text-center">
+                            <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                加载更多摘要
+                                <i class="fas fa-chevron-down ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- 移动端底部导航 -->
+        <nav class="md:hidden bg-white border-t border-gray-200 fixed bottom-0 w-full">
+            <div class="max-w-xl mx-auto px-2 flex justify-around">
+                <a href="home.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs mt-1">文档</span>
+                </a>
+                <a href="search.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-search text-xl"></i>
+                    <span class="text-xs mt-1">搜索</span>
+                </a>
+                <a href="upload.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-plus-circle text-xl"></i>
+                    <span class="text-xs mt-1">上传</span>
+                </a>
+                <a href="ai_assistant.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-robot text-xl"></i>
+                    <span class="text-xs mt-1">AI助手</span>
+                </a>
+                <a href="profile.html" class="flex flex-col items-center py-2 text-gray-500">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs mt-1">我的</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+</body>
+</html> 
