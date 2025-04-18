@@ -25,15 +25,38 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* 移动端侧边栏过渡效果 */
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        body.sidebar-open {
+            overflow: hidden;
+        }
+        
+        /* 移动端遮罩层 */
+        .sidebar-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
+    <!-- 侧边栏遮罩层（移动端） -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-20 bg-black bg-opacity-50 hidden lg:hidden"></div>
+    
     <!-- 侧边栏 -->
     <div class="flex">
-        <div class="fixed inset-y-0 left-0 w-64 bg-indigo-800 text-white shadow-lg z-10">
-            <div class="flex items-center justify-center h-16 bg-indigo-900">
-                <i class="fas fa-robot text-2xl mr-2"></i>
-                <span class="text-xl font-semibold">智能检索平台</span>
+        <div id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-indigo-800 text-white shadow-lg z-30 transform -translate-x-full lg:translate-x-0 sidebar-transition">
+            <div class="flex items-center justify-between h-16 bg-indigo-900 px-4">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-2xl mr-2"></i>
+                    <span class="text-xl font-semibold">智能检索平台</span>
+                </div>
+                <button id="close-sidebar" class="lg:hidden text-white focus:outline-none">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
             <nav class="mt-5">
                 <a href="#" data-page="dashboard" class="nav-link flex items-center px-6 py-3 text-white hover:bg-indigo-700">
@@ -78,14 +101,19 @@
         </div>
 
         <!-- 主内容区 -->
-        <div class="ml-64 flex-1">
+        <div class="lg:ml-64 flex-1 min-h-screen">
             <!-- 顶部导航栏 -->
             <header class="bg-white shadow-sm">
-                <div class="flex items-center justify-between h-16 px-8">
-                    <h1 class="text-xl font-semibold text-gray-800" id="page-title">控制台</h1>
+                <div class="flex items-center justify-between h-16 px-4 lg:px-8">
                     <div class="flex items-center">
-                        <div class="relative mr-4">
-                            <input type="text" placeholder="全局搜索..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <button id="toggle-sidebar" class="lg:hidden mr-4 text-gray-600 focus:outline-none">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold text-gray-800" id="page-title">控制台</h1>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="relative mr-4 hidden sm:block">
+                            <input type="text" placeholder="全局搜索..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full sm:w-auto">
                             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                         </div>
                         <div class="relative mr-4">
@@ -94,14 +122,14 @@
                         </div>
                         <div class="flex items-center">
                             <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-8 h-8 rounded-full mr-2">
-                            <span class="text-gray-700">管理员</span>
+                            <span class="text-gray-700 hidden sm:inline">管理员</span>
                         </div>
                     </div>
                 </div>
             </header>
 
             <!-- 内容加载容器 -->
-            <main class="p-8">
+            <main class="p-4 lg:p-8">
                 <!-- 加载指示器 -->
                 <div id="loading-indicator" class="flex justify-center items-center h-64 hidden">
                     <div class="loader"></div>
@@ -120,6 +148,27 @@
             const loadingIndicator = document.getElementById('loading-indicator');
             const pageTitle = document.getElementById('page-title');
             const navLinks = document.querySelectorAll('.nav-link');
+            const sidebar = document.getElementById('sidebar');
+            const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+            const closeSidebarBtn = document.getElementById('close-sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            
+            // 移动端侧边栏控制
+            function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+                document.body.classList.add('sidebar-open');
+            }
+            
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+                document.body.classList.remove('sidebar-open');
+            }
+            
+            toggleSidebarBtn.addEventListener('click', openSidebar);
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
             
             // 页面标题映射
             const pageTitles = {
@@ -156,6 +205,11 @@
                         loadingIndicator.classList.add('hidden');
                         
                         console.log('页面加载完成:', url);
+                        
+                        // 在移动端加载页面后关闭侧边栏
+                        if (window.innerWidth < 1024) {
+                            closeSidebar();
+                        }
                         
                         // 只对设置页面进行特殊处理
                         if (url.includes('settings-base.html')) {
@@ -259,6 +313,17 @@
                 loadPage(page);
             });
             
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                    document.body.classList.remove('sidebar-open');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+            
             // 初始加载
             const urlParams = new URLSearchParams(window.location.search);
             const initialPage = urlParams.get('page') || 'dashboard';
@@ -273,6 +338,11 @@
             
             // 设置页面标题
             pageTitle.textContent = pageTitles[initialPage] || '控制台';
+            
+            // 如果是桌面端，显示侧边栏
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+            }
         });
     </script>
 </body>
