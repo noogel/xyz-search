@@ -132,49 +132,105 @@
                 'users': '用户管理'
             };
             
-            // 异步加载内容
-            async function loadContent(page) {
-                try {
-                    // 显示加载指示器
-                    contentContainer.innerHTML = '';
-                    loadingIndicator.classList.remove('hidden');
-                    
-                    // 获取内容
-                    const response = await fetch(`${page}-base.html`);
-                    if (!response.ok) {
-                        throw new Error(`无法加载页面: ${page}-base.html`);
-                    }
-                    
-                    const html = await response.text();
-                    
-                    // 更新页面标题
-                    pageTitle.textContent = pageTitles[page] || '控制台';
-                    
-                    // 设置活动导航项
-                    navLinks.forEach(link => {
-                        if (link.getAttribute('data-page') === page) {
-                            link.classList.add('sidebar-active');
-                        } else {
-                            link.classList.remove('sidebar-active');
+            // 加载页面函数
+            function loadPage(url) {
+                // 显示加载状态
+                contentContainer.innerHTML = '';
+                loadingIndicator.classList.remove('hidden');
+                
+                console.log('开始加载页面:', url);
+                
+                // 使用fetch获取HTML内容
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('加载失败');
                         }
-                    });
-                    
-                    // 隐藏加载指示器并显示内容
-                    setTimeout(() => {
-                        loadingIndicator.classList.add('hidden');
+                        return response.text();
+                    })
+                    .then(html => {
+                        // 设置内容
                         contentContainer.innerHTML = html;
-                    }, 300); // 短暂延迟以显示加载效果
-                    
-                } catch (error) {
-                    console.error('加载内容出错:', error);
-                    loadingIndicator.classList.add('hidden');
-                    contentContainer.innerHTML = `
-                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
-                            <p class="font-bold">加载失败</p>
-                            <p>${error.message}</p>
-                        </div>
-                    `;
-                }
+                        
+                        // 隐藏加载指示器
+                        loadingIndicator.classList.add('hidden');
+                        
+                        console.log('页面加载完成:', url);
+                        
+                        // 只对设置页面进行特殊处理
+                        if (url.includes('settings-base.html')) {
+                            console.log('检测到设置页面，准备初始化标签页');
+                            // 确保DOM完全加载后再初始化标签页
+                            setTimeout(() => {
+                                // 定义一个内联版本的初始化函数作为备份
+                                if (typeof window.initSettingsTabs !== 'function') {
+                                    console.log('未找到全局initSettingsTabs函数，使用内联版本');
+                                    window.initSettingsTabs = function() {
+                                        console.log('使用内联版本的标签页初始化函数');
+                                        const tabButtons = document.querySelectorAll('[id^="tab-"]');
+                                        const panels = document.querySelectorAll('[id^="panel-"]');
+                                        
+                                        console.log('找到标签按钮数量:', tabButtons.length);
+                                        console.log('找到面板数量:', panels.length);
+                                        
+                                        tabButtons.forEach(button => {
+                                            button.addEventListener('click', () => {
+                                                const tabId = button.id;
+                                                const panelId = tabId.replace('tab-', 'panel-');
+                                                
+                                                panels.forEach(panel => {
+                                                    panel.classList.add('hidden');
+                                                });
+                                                
+                                                tabButtons.forEach(btn => {
+                                                    btn.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
+                                                    btn.classList.add('text-gray-600', 'hover:text-gray-800');
+                                                });
+                                                
+                                                const targetPanel = document.getElementById(panelId);
+                                                if(targetPanel) {
+                                                    targetPanel.classList.remove('hidden');
+                                                } else {
+                                                    console.error('找不到目标面板:', panelId);
+                                                }
+                                                
+                                                button.classList.remove('text-gray-600', 'hover:text-gray-800');
+                                                button.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+                                            });
+                                        });
+                                        
+                                        if(tabButtons.length > 0) {
+                                            tabButtons[0].click();
+                                        }
+                                    };
+                                }
+                                
+                                // 执行初始化
+                                try {
+                                    console.log('正在调用initSettingsTabs函数...');
+                                    window.initSettingsTabs();
+                                    console.log('标签页初始化成功');
+                                } catch (error) {
+                                    console.error('标签页初始化失败:', error);
+                                }
+                            }, 300); // 增加延迟确保DOM完全渲染
+                        }
+                        
+                        // 更新浏览器历史记录
+                        const pageName = url.split('-')[0];
+                        history.pushState({page: url}, '', `?page=${pageName}`);
+                    })
+                    .catch(error => {
+                        console.error('页面加载失败:', error);
+                        loadingIndicator.classList.add('hidden');
+                        contentContainer.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-full">
+                                <div class="text-red-500 text-xl mb-4">加载失败</div>
+                                <div class="text-gray-600 mb-4">${error.message}</div>
+                                <button onclick="loadPage('${url}')" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">重试</button>
+                            </div>
+                        `;
+                    });
             }
             
             // 设置导航链接点击事件
@@ -182,29 +238,41 @@
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     const page = this.getAttribute('data-page');
-                    loadContent(page);
                     
-                    // 更新URL（可选）
-                    history.pushState({page: page}, '', `?page=${page}`);
+                    // 设置活动导航项
+                    navLinks.forEach(nav => {
+                        nav.classList.remove('sidebar-active');
+                    });
+                    this.classList.add('sidebar-active');
+                    
+                    // 更新页面标题
+                    pageTitle.textContent = pageTitles[page] || '控制台';
+                    
+                    // 加载页面内容
+                    loadPage(`${page}-base.html`);
                 });
             });
             
             // 处理浏览器导航
             window.addEventListener('popstate', function(e) {
-                const page = e.state ? e.state.page : 'dashboard';
-                loadContent(page);
+                const page = e.state ? e.state.page : 'dashboard-base.html';
+                loadPage(page);
             });
             
             // 初始加载
             const urlParams = new URLSearchParams(window.location.search);
             const initialPage = urlParams.get('page') || 'dashboard';
-            loadContent(initialPage);
+            const pagePath = `${initialPage}-base.html`;
+            loadPage(pagePath);
             
             // 初始设置活动导航项
             const activeLink = document.querySelector(`.nav-link[data-page="${initialPage}"]`);
             if (activeLink) {
                 activeLink.classList.add('sidebar-active');
             }
+            
+            // 设置页面标题
+            pageTitle.textContent = pageTitles[initialPage] || '控制台';
         });
     </script>
 </body>

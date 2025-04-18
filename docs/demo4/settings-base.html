@@ -323,42 +323,6 @@
         <!-- 系统日志内容 -->
         <p class="text-gray-500">系统日志内容将在这里显示</p>
     </div>
-
-    <!-- 添加标签页切换功能 -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 获取所有标签页按钮和面板
-            const tabButtons = document.querySelectorAll('[id^="tab-"]');
-            const panels = document.querySelectorAll('[id^="panel-"]');
-            
-            // 为每个标签按钮添加点击事件
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // 获取当前标签页ID
-                    const tabId = button.id;
-                    const panelId = tabId.replace('tab-', 'panel-');
-                    
-                    // 隐藏所有面板
-                    panels.forEach(panel => {
-                        panel.classList.add('hidden');
-                    });
-                    
-                    // 移除所有标签页的激活状态
-                    tabButtons.forEach(btn => {
-                        btn.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
-                        btn.classList.add('text-gray-600', 'hover:text-gray-800');
-                    });
-                    
-                    // 显示当前选中的面板
-                    document.getElementById(panelId).classList.remove('hidden');
-                    
-                    // 激活当前标签页
-                    button.classList.remove('text-gray-600', 'hover:text-gray-800');
-                    button.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
-                });
-            });
-        });
-    </script>
 </div>
 
 <!-- 系统状态 -->
@@ -476,4 +440,72 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<!-- 添加标签页切换功能 -->
+<script>
+    // 立即定义全局函数，确保可以被外部访问
+    window.initSettingsTabs = function() {
+        console.log('开始执行标签页初始化函数');
+        // 获取所有标签页按钮和面板
+        const tabButtons = document.querySelectorAll('[id^="tab-"]');
+        const panels = document.querySelectorAll('[id^="panel-"]');
+        
+        console.log('找到标签按钮数量:', tabButtons.length);
+        console.log('找到面板数量:', panels.length);
+        
+        // 为每个标签按钮添加点击事件
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // 获取当前标签页ID
+                const tabId = button.id;
+                const panelId = tabId.replace('tab-', 'panel-');
+                console.log('切换标签页:', tabId, '->', panelId);
+                
+                // 隐藏所有面板
+                panels.forEach(panel => {
+                    panel.classList.add('hidden');
+                });
+                
+                // 移除所有标签页的激活状态
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
+                    btn.classList.add('text-gray-600', 'hover:text-gray-800');
+                });
+                
+                // 显示当前选中的面板
+                const targetPanel = document.getElementById(panelId);
+                if(targetPanel) {
+                    targetPanel.classList.remove('hidden');
+                    console.log('面板已显示:', panelId);
+                } else {
+                    console.error('找不到目标面板:', panelId);
+                }
+                
+                // 激活当前标签页
+                button.classList.remove('text-gray-600', 'hover:text-gray-800');
+                button.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+            });
+        });
+        
+        // 确保默认选中第一个标签页
+        if(tabButtons.length > 0) {
+            console.log('触发第一个标签页的点击事件');
+            tabButtons[0].click();
+        }
+        
+        console.log('设置页标签初始化完成');
+    };
+    
+    // 当设置页面作为单独页面加载时，自动初始化标签页
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('设置页面DOMContentLoaded事件触发');
+        setTimeout(function() {
+            console.log('尝试自动初始化标签页');
+            window.initSettingsTabs();
+        }, 100);
+    });
+    
+    // 通知函数已定义
+    console.log('initSettingsTabs函数已定义，可被调用');
+</script> 
