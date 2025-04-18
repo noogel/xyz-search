@@ -1,0 +1,441 @@
+<!-- 操作栏 -->
+<div class="flex flex-wrap justify-between items-center mb-6">
+    <div class="flex space-x-2 mb-4 sm:mb-0">
+        <a href="chat.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <i class="fas fa-plus mr-2"></i>
+            <span>新对话</span>
+        </a>
+        <div class="relative">
+            <button class="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border border-gray-300 flex items-center">
+                <i class="fas fa-filter mr-2"></i>
+                <span>筛选</span>
+                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+            </button>
+            <!-- 下拉菜单可以在这里添加 -->
+        </div>
+        <div class="relative">
+            <button class="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border border-gray-300 flex items-center">
+                <i class="fas fa-calendar-alt mr-2"></i>
+                <span>时间范围</span>
+                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+            </button>
+            <!-- 下拉菜单可以在这里添加 -->
+        </div>
+    </div>
+    <div class="flex items-center space-x-2">
+        <button class="text-red-600 hover:text-red-800 flex items-center">
+            <i class="fas fa-trash-alt mr-1"></i>
+            <span>批量删除</span>
+        </button>
+        <button class="text-indigo-600 hover:text-indigo-800 flex items-center ml-4">
+            <i class="fas fa-download mr-1"></i>
+            <span>导出记录</span>
+        </button>
+    </div>
+</div>
+
+<!-- 对话列表 -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <!-- 表头 -->
+    <div class="flex bg-gray-50 text-gray-500 text-sm font-medium">
+        <div class="w-12 py-4 px-4 flex items-center justify-center">
+            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+        </div>
+        <div class="flex-1 py-4 px-4">对话主题</div>
+        <div class="w-40 py-4 px-4">用户</div>
+        <div class="w-48 py-4 px-4">使用知识库</div>
+        <div class="w-48 py-4 px-4">创建时间</div>
+        <div class="w-32 py-4 px-4">问答次数</div>
+        <div class="w-32 py-4 px-4">满意度</div>
+        <div class="w-24 py-4 px-4 text-center">操作</div>
+    </div>
+
+    <!-- 对话项 1 -->
+    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+        <div class="w-12 py-4 px-4 flex items-center justify-center">
+            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+        </div>
+        <div class="flex-1 py-4 px-4 flex items-center">
+            <div>
+                <p class="font-medium text-gray-800">RAG技术及应用场景</p>
+                <p class="text-xs text-gray-500 mt-1">最后回复: 什么是RAG技术？它的优势是什么？</p>
+            </div>
+        </div>
+        <div class="w-40 py-4 px-4 flex items-center">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-6 h-6 rounded-full mr-2">
+            <span class="text-sm text-gray-600">张小明</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600 truncate">产品技术文档库</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">2023-07-25 10:30</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">8</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <div class="flex text-yellow-400">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="far fa-star"></i>
+            </div>
+        </div>
+        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+            <a href="chat.html" class="text-gray-500 hover:text-indigo-600">
+                <i class="fas fa-eye"></i>
+            </a>
+            <button class="text-gray-500 hover:text-yellow-600">
+                <i class="fas fa-share"></i>
+            </button>
+            <button class="text-gray-500 hover:text-red-600">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 对话项 2 -->
+    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+        <div class="w-12 py-4 px-4 flex items-center justify-center">
+            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+        </div>
+        <div class="flex-1 py-4 px-4 flex items-center">
+            <div>
+                <p class="font-medium text-gray-800">知识库结构设计方案</p>
+                <p class="text-xs text-gray-500 mt-1">最后回复: 如何优化检索效果？</p>
+            </div>
+        </div>
+        <div class="w-40 py-4 px-4 flex items-center">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-6 h-6 rounded-full mr-2">
+            <span class="text-sm text-gray-600">张小明</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600 truncate">研发项目文档</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">2023-07-24 16:45</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">12</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <div class="flex text-yellow-400">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+            </div>
+        </div>
+        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+            <a href="chat.html" class="text-gray-500 hover:text-indigo-600">
+                <i class="fas fa-eye"></i>
+            </a>
+            <button class="text-gray-500 hover:text-yellow-600">
+                <i class="fas fa-share"></i>
+            </button>
+            <button class="text-gray-500 hover:text-red-600">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 对话项 3 -->
+    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+        <div class="w-12 py-4 px-4 flex items-center justify-center">
+            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+        </div>
+        <div class="flex-1 py-4 px-4 flex items-center">
+            <div>
+                <p class="font-medium text-gray-800">向量数据库选型</p>
+                <p class="text-xs text-gray-500 mt-1">最后回复: 不同向量数据库的对比分析</p>
+            </div>
+        </div>
+        <div class="w-40 py-4 px-4 flex items-center">
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80" alt="用户头像" class="w-6 h-6 rounded-full mr-2">
+            <span class="text-sm text-gray-600">王海</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600 truncate">产品技术文档库</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">2023-07-24 09:12</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">6</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <div class="flex text-yellow-400">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+            </div>
+        </div>
+        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+            <a href="chat.html" class="text-gray-500 hover:text-indigo-600">
+                <i class="fas fa-eye"></i>
+            </a>
+            <button class="text-gray-500 hover:text-yellow-600">
+                <i class="fas fa-share"></i>
+            </button>
+            <button class="text-gray-500 hover:text-red-600">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 对话项 4 -->
+    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+        <div class="w-12 py-4 px-4 flex items-center justify-center">
+            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+        </div>
+        <div class="flex-1 py-4 px-4 flex items-center">
+            <div>
+                <p class="font-medium text-gray-800">检索系统性能优化</p>
+                <p class="text-xs text-gray-500 mt-1">最后回复: 如何提高大规模知识库的响应速度？</p>
+            </div>
+        </div>
+        <div class="w-40 py-4 px-4 flex items-center">
+            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-6 h-6 rounded-full mr-2">
+            <span class="text-sm text-gray-600">李伟</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600 truncate">全部知识库</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">2023-07-15 11:20</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">15</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <div class="flex text-yellow-400">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="far fa-star"></i>
+            </div>
+        </div>
+        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+            <a href="chat.html" class="text-gray-500 hover:text-indigo-600">
+                <i class="fas fa-eye"></i>
+            </a>
+            <button class="text-gray-500 hover:text-yellow-600">
+                <i class="fas fa-share"></i>
+            </button>
+            <button class="text-gray-500 hover:text-red-600">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 对话项 5 -->
+    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+        <div class="w-12 py-4 px-4 flex items-center justify-center">
+            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+        </div>
+        <div class="flex-1 py-4 px-4 flex items-center">
+            <div>
+                <p class="font-medium text-gray-800">多模态内容支持方案</p>
+                <p class="text-xs text-gray-500 mt-1">最后回复: 如何处理图片和表格内容？</p>
+            </div>
+        </div>
+        <div class="w-40 py-4 px-4 flex items-center">
+            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-6 h-6 rounded-full mr-2">
+            <span class="text-sm text-gray-600">赵薇</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600 truncate">研发项目文档</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">2023-07-14 15:42</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">9</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <div class="flex text-yellow-400">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+            </div>
+        </div>
+        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+            <a href="chat.html" class="text-gray-500 hover:text-indigo-600">
+                <i class="fas fa-eye"></i>
+            </a>
+            <button class="text-gray-500 hover:text-yellow-600">
+                <i class="fas fa-share"></i>
+            </button>
+            <button class="text-gray-500 hover:text-red-600">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 对话项 6 -->
+    <div class="flex border-t border-gray-200 hover:bg-gray-50">
+        <div class="w-12 py-4 px-4 flex items-center justify-center">
+            <input type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+        </div>
+        <div class="flex-1 py-4 px-4 flex items-center">
+            <div>
+                <p class="font-medium text-gray-800">智能检索平台部署需求</p>
+                <p class="text-xs text-gray-500 mt-1">最后回复: 系统硬件及软件需求</p>
+            </div>
+        </div>
+        <div class="w-40 py-4 px-4 flex items-center">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-6 h-6 rounded-full mr-2">
+            <span class="text-sm text-gray-600">张小明</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600 truncate">产品技术文档库</span>
+        </div>
+        <div class="w-48 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">2023-07-13 10:05</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <span class="text-sm text-gray-600">7</span>
+        </div>
+        <div class="w-32 py-4 px-4 flex items-center">
+            <div class="flex text-yellow-400">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="far fa-star"></i>
+            </div>
+        </div>
+        <div class="w-24 py-4 px-4 flex items-center justify-center space-x-2">
+            <a href="chat.html" class="text-gray-500 hover:text-indigo-600">
+                <i class="fas fa-eye"></i>
+            </a>
+            <button class="text-gray-500 hover:text-yellow-600">
+                <i class="fas fa-share"></i>
+            </button>
+            <button class="text-gray-500 hover:text-red-600">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 分页 -->
+<div class="mt-5 flex justify-between items-center">
+    <div class="text-sm text-gray-600">
+        显示 1-6 的 42 条结果
+    </div>
+    <div class="flex space-x-1">
+        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50" disabled>
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="px-3 py-1 rounded border border-indigo-600 bg-indigo-600 text-white">
+            1
+        </button>
+        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+            2
+        </button>
+        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+            3
+        </button>
+        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+            ...
+        </button>
+        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+            7
+        </button>
+        <button class="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<!-- 统计信息 -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- 卡片 1 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="bg-indigo-100 rounded-full p-3 mr-4">
+                <i class="fas fa-comments text-indigo-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-gray-500 text-sm font-medium">总对话次数</h3>
+                <p class="text-gray-900 text-2xl font-semibold">1,423</p>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+            <div class="text-sm text-green-600 flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i>
+                <span>↑ 12%</span>
+            </div>
+            <div class="text-xs text-gray-500">vs. 上月</div>
+        </div>
+    </div>
+    
+    <!-- 卡片 2 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="bg-green-100 rounded-full p-3 mr-4">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-gray-500 text-sm font-medium">平均满意度</h3>
+                <p class="text-gray-900 text-2xl font-semibold">4.2/5</p>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+            <div class="text-sm text-green-600 flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i>
+                <span>↑ 5%</span>
+            </div>
+            <div class="text-xs text-gray-500">vs. 上月</div>
+        </div>
+    </div>
+    
+    <!-- 卡片 3 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="bg-blue-100 rounded-full p-3 mr-4">
+                <i class="fas fa-clock text-blue-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-gray-500 text-sm font-medium">平均响应时间</h3>
+                <p class="text-gray-900 text-2xl font-semibold">1.2秒</p>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+            <div class="text-sm text-green-600 flex items-center">
+                <i class="fas fa-arrow-down mr-1"></i>
+                <span>↓ 18%</span>
+            </div>
+            <div class="text-xs text-gray-500">vs. 上月</div>
+        </div>
+    </div>
+    
+    <!-- 卡片 4 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="bg-purple-100 rounded-full p-3 mr-4">
+                <i class="fas fa-users text-purple-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-gray-500 text-sm font-medium">活跃用户</h3>
+                <p class="text-gray-900 text-2xl font-semibold">28</p>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+            <div class="text-sm text-green-600 flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i>
+                <span>↑ 8%</span>
+            </div>
+            <div class="text-xs text-gray-500">vs. 上月</div>
+        </div>
+    </div>
+</div> 
