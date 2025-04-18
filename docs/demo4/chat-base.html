@@ -1,7 +1,49 @@
 <!-- 主要内容 -->
-<div class="flex-1 flex overflow-hidden h-[calc(100vh-8rem)]">
-    <!-- 左侧对话历史 -->
-    <div class="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
+<div class="flex-1 flex flex-col md:flex-row overflow-hidden h-[calc(100vh-8rem)]">
+    <!-- 移动端顶部历史记录下拉按钮 -->
+    <div class="md:hidden bg-white border-b border-gray-200 p-3 flex items-center justify-between">
+        <button id="mobile-history-toggle" class="flex items-center text-gray-700 font-medium">
+            <span>RAG技术及应用场景</span>
+            <i class="fas fa-chevron-down ml-2 text-xs transition-transform duration-200"></i>
+        </button>
+        <div class="flex items-center space-x-3">
+            <button class="text-gray-500 hover:text-gray-700 p-1">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="text-gray-500 hover:text-gray-700 p-1">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 移动端历史记录下拉列表 -->
+    <div id="mobile-history-dropdown" class="md:hidden bg-white border-b border-gray-200 overflow-y-auto hidden max-h-64">
+        <div class="p-3 border-b border-gray-100">
+            <div class="relative">
+                <input type="text" placeholder="搜索对话..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm">
+                <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+            </div>
+        </div>
+        <div class="p-3 bg-indigo-50 border-b border-gray-200">
+            <div class="font-medium text-gray-800">RAG技术及应用场景</div>
+            <div class="text-xs text-gray-500 mt-1">今天 10:30</div>
+        </div>
+        <div class="p-3 border-b border-gray-200">
+            <div class="font-medium text-gray-800">知识库结构设计方案</div>
+            <div class="text-xs text-gray-500 mt-1">昨天 16:45</div>
+        </div>
+        <div class="p-3 border-b border-gray-200">
+            <div class="font-medium text-gray-800">向量数据库选型</div>
+            <div class="text-xs text-gray-500 mt-1">昨天 09:12</div>
+        </div>
+        <div class="p-3 border-b border-gray-200">
+            <div class="font-medium text-gray-800">检索系统性能优化</div>
+            <div class="text-xs text-gray-500 mt-1">2023-07-15</div>
+        </div>
+    </div>
+
+    <!-- 左侧对话历史（桌面端） -->
+    <div class="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col h-full">
         <!-- 搜索框 -->
         <div class="p-4 border-b border-gray-200 flex-shrink-0">
             <div class="relative">
@@ -42,10 +84,10 @@
     <!-- 右侧聊天区域 -->
     <div class="flex-1 flex flex-col bg-white h-full">
         <!-- 知识库选择 -->
-        <div class="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+        <div class="p-3 md:p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center">
-                <span class="text-gray-600 mr-2">选择知识库:</span>
-                <select class="border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <span class="text-gray-600 mr-2 text-sm md:text-base">选择知识库:</span>
+                <select class="border border-gray-300 rounded-md px-2 py-1 md:px-3 md:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm">
                     <option>全部知识库</option>
                     <option>产品技术文档库</option>
                     <option>企业培训资料库</option>
@@ -54,21 +96,21 @@
                     <option>研发项目文档</option>
                 </select>
             </div>
-            <div class="flex items-center space-x-3">
-                <button class="text-gray-500 hover:text-gray-700">
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <button class="text-gray-500 hover:text-gray-700 p-1 md:p-0">
                     <i class="fas fa-cog"></i>
                 </button>
-                <button class="text-gray-500 hover:text-gray-700">
+                <button class="text-gray-500 hover:text-gray-700 p-1 md:p-0">
                     <i class="fas fa-share-alt"></i>
                 </button>
-                <button class="text-gray-500 hover:text-gray-700">
+                <button class="text-gray-500 hover:text-gray-700 p-1 md:p-0">
                     <i class="fas fa-download"></i>
                 </button>
             </div>
         </div>
         
         <!-- 聊天内容区 -->
-        <div class="flex-1 p-6 overflow-y-auto" id="chat-content">
+        <div class="flex-1 p-4 md:p-6 overflow-y-auto" id="chat-content">
             <!-- 系统消息 -->
             <div class="mb-6 text-center">
                 <span class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
@@ -79,13 +121,13 @@
             <!-- 系统问候 -->
             <div class="flex mb-6">
                 <div class="flex-shrink-0 mr-3">
-                    <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
                         <i class="fas fa-robot"></i>
                     </div>
                 </div>
                 <div class="flex-1">
-                    <div class="bg-gray-100 rounded-lg p-4">
-                        <p class="text-gray-800">您好！我是基于RAG技术的智能助手，很高兴为您提供帮助。您可以问我有关RAG技术、知识库设计、应用场景等相关问题。</p>
+                    <div class="bg-gray-100 rounded-lg p-3 md:p-4">
+                        <p class="text-gray-800 text-sm md:text-base">您好！我是基于RAG技术的智能助手，很高兴为您提供帮助。您可以问我有关RAG技术、知识库设计、应用场景等相关问题。</p>
                     </div>
                     <div class="mt-1 text-xs text-gray-500">
                         10:30
@@ -95,37 +137,37 @@
             
             <!-- 用户消息 -->
             <div class="flex justify-end mb-6">
-                <div class="flex-1 max-w-3xl ml-12">
-                    <div class="bg-indigo-600 text-white rounded-lg p-4">
-                        <p>什么是RAG技术？它的优势是什么？</p>
+                <div class="flex-1 max-w-3xl ml-6 md:ml-12">
+                    <div class="bg-indigo-600 text-white rounded-lg p-3 md:p-4">
+                        <p class="text-sm md:text-base">什么是RAG技术？它的优势是什么？</p>
                     </div>
                     <div class="mt-1 text-xs text-gray-500 text-right">
                         10:31
                     </div>
                 </div>
                 <div class="flex-shrink-0 ml-3">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-10 h-10 rounded-full">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-8 h-8 md:w-10 md:h-10 rounded-full">
                 </div>
             </div>
             
             <!-- 系统回复 -->
             <div class="flex mb-6">
                 <div class="flex-shrink-0 mr-3">
-                    <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
                         <i class="fas fa-robot"></i>
                     </div>
                 </div>
                 <div class="flex-1">
-                    <div class="bg-gray-100 rounded-lg p-4">
-                        <p class="text-gray-800 mb-3">RAG（Retrieval-Augmented Generation）是指检索增强生成，是一种结合了检索系统和生成式AI的技术架构。它通过以下流程工作：</p>
-                        <ol class="list-decimal list-inside mb-3 space-y-1">
+                    <div class="bg-gray-100 rounded-lg p-3 md:p-4">
+                        <p class="text-gray-800 mb-3 text-sm md:text-base">RAG（Retrieval-Augmented Generation）是指检索增强生成，是一种结合了检索系统和生成式AI的技术架构。它通过以下流程工作：</p>
+                        <ol class="list-decimal list-inside mb-3 space-y-1 text-sm md:text-base">
                             <li>将知识库文档处理为向量形式存储</li>
                             <li>当用户提问时，系统检索相关的知识片段</li>
                             <li>将检索到的知识与用户问题一起提供给大型语言模型</li>
                             <li>模型基于检索到的知识生成回答</li>
                         </ol>
-                        <p class="text-gray-800 mb-3">RAG技术的主要优势包括：</p>
-                        <ul class="list-disc list-inside space-y-1">
+                        <p class="text-gray-800 mb-3 text-sm md:text-base">RAG技术的主要优势包括：</p>
+                        <ul class="list-disc list-inside space-y-1 text-sm md:text-base">
                             <li>提高回答的准确性和可靠性，减少"幻觉"</li>
                             <li>能够处理专有知识和最新信息</li>
                             <li>响应更具可解释性，因为可以追踪信息来源</li>
@@ -135,7 +177,7 @@
                     </div>
                     
                     <!-- 引用来源 -->
-                    <div class="mt-2 bg-white rounded-lg border border-gray-200 p-3">
+                    <div class="mt-2 bg-white rounded-lg border border-gray-200 p-2 md:p-3">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-gray-500">引用来源</span>
                             <button class="text-indigo-600 text-xs">
@@ -146,14 +188,14 @@
                             <div class="flex items-start">
                                 <i class="fas fa-file-pdf text-red-500 mt-1 mr-2"></i>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-800">RAG技术白皮书.pdf</div>
+                                    <div class="text-xs md:text-sm font-medium text-gray-800">RAG技术白皮书.pdf</div>
                                     <div class="text-xs text-gray-500">第15页，相关度 98%</div>
                                 </div>
                             </div>
                             <div class="flex items-start">
                                 <i class="fas fa-file-word text-blue-500 mt-1 mr-2"></i>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-800">企业知识库构建指南.docx</div>
+                                    <div class="text-xs md:text-sm font-medium text-gray-800">企业知识库构建指南.docx</div>
                                     <div class="text-xs text-gray-500">第24页，相关度 85%</div>
                                 </div>
                             </div>
@@ -168,61 +210,61 @@
             
             <!-- 用户消息 -->
             <div class="flex justify-end mb-6">
-                <div class="flex-1 max-w-3xl ml-12">
-                    <div class="bg-indigo-600 text-white rounded-lg p-4">
-                        <p>对于我们公司的技术文档，应该如何设计向量数据库来提高检索效率？</p>
+                <div class="flex-1 max-w-3xl ml-6 md:ml-12">
+                    <div class="bg-indigo-600 text-white rounded-lg p-3 md:p-4">
+                        <p class="text-sm md:text-base">对于我们公司的技术文档，应该如何设计向量数据库来提高检索效率？</p>
                     </div>
                     <div class="mt-1 text-xs text-gray-500 text-right">
                         10:35
                     </div>
                 </div>
                 <div class="flex-shrink-0 ml-3">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-10 h-10 rounded-full">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-8 h-8 md:w-10 md:h-10 rounded-full">
                 </div>
             </div>
             
             <!-- 系统回复 -->
             <div class="flex">
                 <div class="flex-shrink-0 mr-3">
-                    <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
                         <i class="fas fa-robot"></i>
                     </div>
                 </div>
                 <div class="flex-1">
-                    <div class="bg-gray-100 rounded-lg p-4">
-                        <p class="text-gray-800 mb-3">为技术文档设计高效的向量数据库，您可以考虑以下策略：</p>
+                    <div class="bg-gray-100 rounded-lg p-3 md:p-4">
+                        <p class="text-gray-800 mb-3 text-sm md:text-base">为技术文档设计高效的向量数据库，您可以考虑以下策略：</p>
                         
-                        <h4 class="font-medium text-gray-800 mb-2">1. 文档分块策略</h4>
-                        <p class="text-gray-800 mb-3">技术文档通常包含结构化内容，建议：</p>
-                        <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                        <h4 class="font-medium text-gray-800 mb-2 text-sm md:text-base">1. 文档分块策略</h4>
+                        <p class="text-gray-800 mb-3 text-sm md:text-base">技术文档通常包含结构化内容，建议：</p>
+                        <ul class="list-disc list-inside mb-3 space-y-1 ml-2 text-sm md:text-base">
                             <li>按照语义完整性分块，而不是简单的固定长度</li>
                             <li>保留文档的层次结构信息（章节、标题等）</li>
                             <li>对于API文档，可以按照每个API方法作为独立单元</li>
                             <li>块大小建议在512-1024个token之间</li>
                         </ul>
                         
-                        <h4 class="font-medium text-gray-800 mb-2">2. 向量模型选择</h4>
-                        <p class="text-gray-800 mb-3">对于技术内容，推荐：</p>
-                        <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                        <h4 class="font-medium text-gray-800 mb-2 text-sm md:text-base">2. 向量模型选择</h4>
+                        <p class="text-gray-800 mb-3 text-sm md:text-base">对于技术内容，推荐：</p>
+                        <ul class="list-disc list-inside mb-3 space-y-1 ml-2 text-sm md:text-base">
                             <li>使用专门针对代码和技术文档微调的嵌入模型</li>
                             <li>尝试更高维度的向量（768维或1536维）以提高表达能力</li>
                             <li>考虑多语言模型以支持不同编程语言的代码片段</li>
                         </ul>
                         
-                        <h4 class="font-medium text-gray-800 mb-2">3. 数据库结构优化</h4>
-                        <p class="text-gray-800 mb-3">建议如下配置：</p>
-                        <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                        <h4 class="font-medium text-gray-800 mb-2 text-sm md:text-base">3. 数据库结构优化</h4>
+                        <p class="text-gray-800 mb-3 text-sm md:text-base">建议如下配置：</p>
+                        <ul class="list-disc list-inside mb-3 space-y-1 ml-2 text-sm md:text-base">
                             <li>使用HNSW或IVF索引提高检索速度</li>
                             <li>添加丰富的元数据（文档类型、版本、部门等）用于过滤</li>
                             <li>考虑实施混合检索（向量检索+关键词搜索）</li>
                             <li>建立文档间的关联关系，支持图形化浏览</li>
                         </ul>
                         
-                        <p class="text-gray-800">基于您公司现有的技术文档结构，建议先进行一次小规模测试，比较不同分块策略和向量维度对检索性能的影响，然后再进行全量数据的处理。</p>
+                        <p class="text-gray-800 text-sm md:text-base">基于您公司现有的技术文档结构，建议先进行一次小规模测试，比较不同分块策略和向量维度对检索性能的影响，然后再进行全量数据的处理。</p>
                     </div>
                     
                     <!-- 引用来源 -->
-                    <div class="mt-2 bg-white rounded-lg border border-gray-200 p-3">
+                    <div class="mt-2 bg-white rounded-lg border border-gray-200 p-2 md:p-3">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-gray-500">引用来源</span>
                             <button class="text-indigo-600 text-xs">
@@ -233,14 +275,14 @@
                             <div class="flex items-start">
                                 <i class="fas fa-file-pdf text-red-500 mt-1 mr-2"></i>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-800">向量数据库优化指南.pdf</div>
+                                    <div class="text-xs md:text-sm font-medium text-gray-800">向量数据库优化指南.pdf</div>
                                     <div class="text-xs text-gray-500">第8页，相关度 95%</div>
                                 </div>
                             </div>
                             <div class="flex items-start">
                                 <i class="fas fa-file-code text-indigo-500 mt-1 mr-2"></i>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-800">检索系统架构设计.md</div>
+                                    <div class="text-xs md:text-sm font-medium text-gray-800">检索系统架构设计.md</div>
                                     <div class="text-xs text-gray-500">相关度 92%</div>
                                 </div>
                             </div>
@@ -255,31 +297,31 @@
         </div>
         
         <!-- 底部输入区 -->
-        <div class="p-4 border-t border-gray-200 flex-shrink-0">
+        <div class="p-3 md:p-4 border-t border-gray-200 flex-shrink-0">
             <div class="flex items-end bg-gray-100 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-indigo-500">
                 <button class="text-gray-500 hover:text-indigo-600 mr-2">
                     <i class="fas fa-paperclip"></i>
                 </button>
-                <textarea id="message-input" placeholder="输入您的问题..." class="flex-1 bg-transparent border-0 focus:ring-0 resize-none max-h-32 py-2"></textarea>
+                <textarea id="message-input" placeholder="输入您的问题..." class="flex-1 bg-transparent border-0 focus:ring-0 resize-none max-h-32 py-2 text-sm md:text-base"></textarea>
                 <div class="flex items-center space-x-2 ml-2">
-                    <button class="text-gray-500 hover:text-indigo-600">
+                    <button class="text-gray-500 hover:text-indigo-600 hidden md:block">
                         <i class="fas fa-microphone"></i>
                     </button>
                     <button id="send-message-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-8 h-8 flex items-center justify-center">
-                        <i class="fas fa-paper-plane"></i>
+                        <i class="fas fa-paper-plane text-sm"></i>
                     </button>
                 </div>
             </div>
             <div class="flex justify-between mt-2 text-xs text-gray-500">
-                <div>建议：提问具体问题可以获得更准确的回答</div>
-                <div class="flex items-center">
-                    <button class="mr-4 hover:text-indigo-600">
+                <div class="hidden sm:block">建议：提问具体问题可以获得更准确的回答</div>
+                <div class="flex items-center ml-auto">
+                    <button class="mr-4 hover:text-indigo-600 hidden md:flex items-center">
                         <i class="fas fa-keyboard mr-1"></i>
                         <span>快捷键</span>
                     </button>
-                    <button class="hover:text-indigo-600">
+                    <button class="hover:text-indigo-600 flex items-center">
                         <i class="fas fa-sliders-h mr-1"></i>
-                        <span>高级选项</span>
+                        <span class="hidden md:inline">高级选项</span>
                     </button>
                 </div>
             </div>
@@ -289,14 +331,43 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // 移动端历史记录下拉切换
+        const mobileHistoryToggle = document.getElementById('mobile-history-toggle');
+        const mobileHistoryDropdown = document.getElementById('mobile-history-dropdown');
+        const toggleIcon = mobileHistoryToggle.querySelector('i');
+        
+        if(mobileHistoryToggle && mobileHistoryDropdown) {
+            mobileHistoryToggle.addEventListener('click', function() {
+                mobileHistoryDropdown.classList.toggle('hidden');
+                toggleIcon.classList.toggle('rotate-180');
+            });
+            
+            // 点击下拉项切换到对应的对话
+            const historyItems = mobileHistoryDropdown.querySelectorAll('div[class*="border-b"]:not(:first-child)');
+            historyItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // 更新标题
+                    const conversationTitle = this.querySelector('.font-medium').textContent;
+                    mobileHistoryToggle.querySelector('span').textContent = conversationTitle;
+                    
+                    // 隐藏下拉菜单
+                    mobileHistoryDropdown.classList.add('hidden');
+                    toggleIcon.classList.remove('rotate-180');
+                    
+                    // 在实际应用中，这里可以加载对应的对话记录
+                    console.log(`加载对话: ${conversationTitle}`);
+                });
+            });
+        }
+
         // 确保聊天内容初始时滚动到底部
         const chatContent = document.getElementById('chat-content');
         if (chatContent) {
             chatContent.scrollTop = chatContent.scrollHeight;
         }
         
-        // 历史记录项点击事件
-        const historyItems = document.querySelectorAll('.overflow-y-auto .p-4');
+        // 桌面端历史记录项点击事件
+        const historyItems = document.querySelectorAll('.hidden.md\\:flex .overflow-y-auto .p-4');
         historyItems.forEach(item => {
             item.addEventListener('click', function() {
                 // 移除所有项的高亮状态
@@ -322,19 +393,25 @@
                 const now = new Date();
                 const timeString = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
                 
+                // 确定头像尺寸类
+                const avatarClass = window.innerWidth < 768 ? "w-8 h-8" : "w-10 h-10";
+                const contentPadding = window.innerWidth < 768 ? "p-3" : "p-4";
+                const textSize = window.innerWidth < 768 ? "text-sm" : "text-base";
+                const marginLeft = window.innerWidth < 768 ? "ml-6" : "ml-12";
+                
                 // 添加用户消息
                 const userMessageHTML = `
                 <div class="flex justify-end mb-6">
-                    <div class="flex-1 max-w-3xl ml-12">
-                        <div class="bg-indigo-600 text-white rounded-lg p-4">
-                            <p>${message}</p>
+                    <div class="flex-1 max-w-3xl ${marginLeft}">
+                        <div class="bg-indigo-600 text-white rounded-lg ${contentPadding}">
+                            <p class="${textSize}">${message}</p>
                         </div>
                         <div class="mt-1 text-xs text-gray-500 text-right">
                             ${timeString}
                         </div>
                     </div>
                     <div class="flex-shrink-0 ml-3">
-                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="w-10 h-10 rounded-full">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="用户头像" class="${avatarClass} rounded-full">
                     </div>
                 </div>
                 `;
@@ -352,13 +429,13 @@
                     const botResponseHTML = `
                     <div class="flex mb-6">
                         <div class="flex-shrink-0 mr-3">
-                            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                            <div class="${avatarClass} rounded-full bg-indigo-600 flex items-center justify-center text-white">
                                 <i class="fas fa-robot"></i>
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="bg-gray-100 rounded-lg p-4">
-                                <p class="text-gray-800">这是对"${message}"的模拟回复。在实际应用中，这里将显示从RAG系统获取的回答。</p>
+                            <div class="bg-gray-100 rounded-lg ${contentPadding}">
+                                <p class="text-gray-800 ${textSize}">这是对"${message}"的模拟回复。在实际应用中，这里将显示从RAG系统获取的回答。</p>
                             </div>
                             <div class="mt-1 text-xs text-gray-500">
                                 ${timeString} · RAG技术支持
@@ -389,7 +466,7 @@
         }
         
         // 顶部操作按钮事件
-        const actionButtons = document.querySelectorAll('.p-4.border-b .text-gray-500');
+        const actionButtons = document.querySelectorAll('.p-3.md\\:p-4.border-b .text-gray-500');
         actionButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const icon = this.querySelector('i');
@@ -401,6 +478,16 @@
                     alert('下载对话记录');
                 }
             });
+        });
+        
+        // 窗口大小变化时调整显示
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) { // md断点
+                if (mobileHistoryDropdown && !mobileHistoryDropdown.classList.contains('hidden')) {
+                    mobileHistoryDropdown.classList.add('hidden');
+                    if (toggleIcon) toggleIcon.classList.remove('rotate-180');
+                }
+            }
         });
     });
 </script> 
