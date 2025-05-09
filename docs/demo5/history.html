@@ -1,0 +1,497 @@
+<!-- 对话历史内容 -->
+<div class="mb-6">
+    <div class="flex flex-col md:flex-row items-center justify-end gap-4 mb-6">
+        <div class="flex flex-wrap gap-2">
+            <div class="relative">
+                <input type="text" placeholder="搜索对话内容..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+            <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <option>全部对话</option>
+                <option>本周内</option>
+                <option>本月内</option>
+                <option>上月</option>
+            </select>
+            <button class="flex items-center justify-center bg-primary-100 text-primary-700 px-4 py-2 rounded-lg hover:bg-primary-200">
+                <i class="fas fa-filter mr-2"></i>
+                筛选
+            </button>
+        </div>
+    </div>
+
+    <!-- 对话列表 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            ID
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            对话标题
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            知识库
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            消息数
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            开始时间
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            最近活动
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            操作
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- 对话项1 -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            #3291
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">产品架构设计文档解析</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">用户：张小明</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
+                                产品技术文档库
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            12条
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            今天 10:30
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            17分钟前
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button class="text-primary-600 hover:text-primary-900" title="继续对话">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900" title="导出对话">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" title="删除对话">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 对话项2 -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            #3290
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">微服务框架选型</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">用户：张小明</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
+                                研发项目文档
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            23条
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            昨天 16:45
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            昨天 18:22
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button class="text-primary-600 hover:text-primary-900" title="继续对话">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900" title="导出对话">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" title="删除对话">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 对话项3 -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            #3289
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">数据库性能优化讨论</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">用户：张小明</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
+                                全部知识库
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            17条
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            昨天 09:12
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            昨天 10:45
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button class="text-primary-600 hover:text-primary-900" title="继续对话">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900" title="导出对话">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" title="删除对话">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 对话项4 -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            #3288
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">前端组件库调研</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">用户：张小明</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
+                                产品技术文档库
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            8条
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            2023-07-15
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            2023-07-15
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button class="text-primary-600 hover:text-primary-900" title="继续对话">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900" title="导出对话">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" title="删除对话">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 对话项5 -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            #3287
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">Docker容器化部署方案</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">用户：张小明</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
+                                研发项目文档
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            15条
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            2023-07-14
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            2023-07-14
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button class="text-primary-600 hover:text-primary-900" title="继续对话">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900" title="导出对话">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" title="删除对话">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 对话项6 -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            #3286
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">CI/CD流程优化</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">用户：张小明</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
+                                研发项目文档
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            19条
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            2023-07-13
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            2023-07-13
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button class="text-primary-600 hover:text-primary-900" title="继续对话">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900" title="导出对话">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" title="删除对话">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 分页控件 -->
+    <div class="flex items-center justify-between mt-6">
+        <div class="text-sm text-gray-700">
+            显示 <span class="font-medium">1</span> 到 <span class="font-medium">6</span> 共 <span class="font-medium">42</span> 条结果
+        </div>
+        <div class="flex space-x-1">
+            <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50" disabled>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="px-3 py-1 rounded-lg border border-primary-600 bg-primary-600 text-white">
+                1
+            </button>
+            <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
+                2
+            </button>
+            <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
+                3
+            </button>
+            <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
+                ...
+            </button>
+            <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
+                7
+            </button>
+            <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 对话详情模态框（初始隐藏） -->
+<div id="conversation-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <!-- 模态框头部 -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">对话详情</h3>
+            <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- 模态框内容 -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h4 class="text-lg font-medium text-gray-800">微服务框架选型</h4>
+                <div class="flex items-center text-sm text-gray-500 mt-1">
+                    <span class="flex items-center">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        开始于：昨天 16:45
+                    </span>
+                    <span class="mx-3">|</span>
+                    <span class="flex items-center">
+                        <i class="fas fa-user mr-1"></i>
+                        用户：张小明
+                    </span>
+                    <span class="mx-3">|</span>
+                    <span class="flex items-center">
+                        <i class="fas fa-database mr-1"></i>
+                        研发项目文档
+                    </span>
+                </div>
+            </div>
+            
+            <!-- 对话内容 -->
+            <div class="space-y-6">
+                <!-- 系统消息 -->
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                        2023-07-18 16:45
+                    </span>
+                </div>
+                
+                <!-- 用户消息 -->
+                <div class="flex justify-end">
+                    <div class="rounded-lg bg-primary-600 text-white py-3 px-4 max-w-[80%]">
+                        <p>我们团队正在考虑选择一个微服务框架，目前考虑Spring Cloud和Kubernetes原生方案，有什么建议吗？</p>
+                    </div>
+                </div>
+                
+                <!-- 系统回复 -->
+                <div class="flex">
+                    <div class="rounded-lg bg-gray-100 py-3 px-4 max-w-[80%]">
+                        <p class="text-gray-800">基于公司现有的技术栈和基础设施，我建议从以下几个维度来考虑微服务框架的选择：...</p>
+                        <div class="mt-2 text-xs text-gray-500">来源: 微服务架构文档.pdf, 技术选型指南.docx</div>
+                    </div>
+                </div>
+                
+                <!-- 更多消息内容... -->
+            </div>
+        </div>
+        
+        <!-- 模态框底部 -->
+        <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
+            <button class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                <i class="fas fa-download mr-2"></i>
+                导出对话
+            </button>
+            <button class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                <i class="fas fa-external-link-alt mr-2"></i>
+                继续对话
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('pageLoaded', function(e) {
+        if (e.detail.page === 'history') {
+            console.log('对话历史页面已加载');
+            
+            // 表格行点击事件
+            const tableRows = document.querySelectorAll('tbody tr');
+            const modal = document.getElementById('conversation-detail-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            
+            if (tableRows && modal && closeModalBtn) {
+                tableRows.forEach(row => {
+                    row.addEventListener('click', function(e) {
+                        // 如果点击的是操作按钮，不显示模态框
+                        if (e.target.closest('button')) {
+                            return;
+                        }
+                        
+                        // 显示模态框
+                        modal.classList.remove('hidden');
+                    });
+                });
+                
+                // 关闭模态框
+                closeModalBtn.addEventListener('click', function() {
+                    modal.classList.add('hidden');
+                });
+                
+                // 点击模态框外部关闭
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // 操作按钮点击事件
+            const actionButtons = document.querySelectorAll('tbody button');
+            if (actionButtons) {
+                actionButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.stopPropagation(); // 阻止事件冒泡，避免触发行点击事件
+                        
+                        const action = this.getAttribute('title');
+                        const row = this.closest('tr');
+                        const conversationTitle = row.querySelector('.text-sm.font-medium').textContent;
+                        
+                        console.log(`${action}: ${conversationTitle}`);
+                        
+                        if (action === '删除对话') {
+                            if (confirm(`确定要删除对话 "${conversationTitle}" 吗？`)) {
+                                // 这里可以添加删除逻辑
+                                row.remove(); // 从DOM中移除该行
+                            }
+                        } else if (action === '导出对话') {
+                            alert(`导出对话: ${conversationTitle}`);
+                        } else if (action === '继续对话') {
+                            // 在实际应用中，这里会跳转到聊天页面
+                            window.location.href = '?page=chat';
+                        }
+                    });
+                });
+            }
+        }
+    });
+</script> 

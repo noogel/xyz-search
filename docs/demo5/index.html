@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XYZ智能检索平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-active {
+            background-color: #0369a1;
+        }
+        
+        /* 加载动画 */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #0ea5e9;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 移动端导航菜单动画 */
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="flex h-screen overflow-hidden">
+        <!-- 移动端侧边栏遮罩 -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-20 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+        <!-- 侧边栏 -->
+        <div id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-primary-800 text-white shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+            <div class="flex items-center justify-between h-16 bg-primary-900 px-4">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-2xl mr-2"></i>
+                    <span class="text-xl font-semibold">XYZ检索平台</span>
+                </div>
+                <button class="lg:hidden text-white" onclick="toggleSidebar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="mt-5">
+                <a href="#" data-page="dashboard" class="nav-link flex items-center px-6 py-3 text-white hover:bg-primary-700">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    <span>控制台</span>
+                </a>
+                <a href="#" data-page="files" class="nav-link flex items-center px-6 py-3 text-white hover:bg-primary-700">
+                    <i class="fas fa-file-alt mr-3"></i>
+                    <span>文件搜索</span>
+                </a>
+                <a href="#" data-page="upload" class="nav-link flex items-center px-6 py-3 text-white hover:bg-primary-700">
+                    <i class="fas fa-upload mr-3"></i>
+                    <span>上传文件</span>
+                </a>
+                <a href="#" data-page="chat" class="nav-link flex items-center px-6 py-3 text-white hover:bg-primary-700">
+                    <i class="fas fa-comments mr-3"></i>
+                    <span>智能对话</span>
+                </a>
+                <a href="#" data-page="history" class="nav-link flex items-center px-6 py-3 text-white hover:bg-primary-700">
+                    <i class="fas fa-history mr-3"></i>
+                    <span>对话历史</span>
+                </a>
+                <a href="#" data-page="indexing" class="nav-link flex items-center px-6 py-3 text-white hover:bg-primary-700">
+                    <i class="fas fa-database mr-3"></i>
+                    <span>索引进度</span>
+                </a>
+                <a href="#" data-page="settings" class="nav-link flex items-center px-6 py-3 text-white hover:bg-primary-700">
+                    <i class="fas fa-cog mr-3"></i>
+                    <span>系统设置</span>
+                </a>
+            </nav>
+            <div class="absolute bottom-0 w-full">
+                <div class="flex items-center px-6 py-3 hover:bg-primary-700">
+                    <i class="fas fa-question-circle mr-3"></i>
+                    <span>帮助中心</span>
+                </div>
+                <a href="#" class="flex items-center px-6 py-3 hover:bg-primary-700">
+                    <i class="fas fa-sign-out-alt mr-3"></i>
+                    <span>退出登录</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 移动端侧边栏切换按钮 -->
+        <button id="mobile-sidebar-toggle" class="fixed top-4 left-4 bg-primary-600 hover:bg-primary-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg z-20 lg:hidden">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- 主内容区 -->
+        <div class="flex-1 flex flex-col overflow-hidden lg:ml-64">
+            <!-- 内容区域 -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 lg:p-8 h-screen">
+                <!-- 加载指示器 -->
+                <div id="loading-indicator" class="flex justify-center items-center h-64 hidden">
+                    <div class="loader"></div>
+                </div>
+                
+                <!-- 内容将被异步加载到这里 -->
+                <div id="content-container"></div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // 切换侧边栏显示/隐藏
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加移动端切换按钮的事件监听
+            const mobileToggleBtn = document.getElementById('mobile-sidebar-toggle');
+            if (mobileToggleBtn) {
+                mobileToggleBtn.addEventListener('click', toggleSidebar);
+            }
+            
+            // 获取页面元素
+            const contentContainer = document.getElementById('content-container');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            // 页面标题映射
+            const pageTitles = {
+                'dashboard': '控制台',
+                'files': '文件搜索',
+                'upload': '上传文件',
+                'chat': '智能对话',
+                'history': '对话历史',
+                'indexing': '索引进度',
+                'settings': '系统设置'
+            };
+            
+            // 异步加载内容
+            async function loadContent(page) {
+                try {
+                    // 显示加载指示器
+                    contentContainer.innerHTML = '';
+                    loadingIndicator.classList.remove('hidden');
+                    
+                    // 获取内容
+                    const response = await fetch(`${page}.html`);
+                    if (!response.ok) {
+                        throw new Error(`无法加载页面: ${page}.html`);
+                    }
+                    
+                    const html = await response.text();
+                    
+                    // 更新浏览器标题
+                    document.title = `${pageTitles[page] || '控制台'} - XYZ智能检索平台`;
+                    
+                    // 设置活动导航项
+                    navLinks.forEach(link => {
+                        if (link.getAttribute('data-page') === page) {
+                            link.classList.add('sidebar-active');
+                        } else {
+                            link.classList.remove('sidebar-active');
+                        }
+                    });
+                    
+                    // 在移动设备上点击菜单项后关闭侧边栏
+                    if (window.innerWidth < 1024) {
+                        toggleSidebar();
+                    }
+                    
+                    // 隐藏加载指示器并显示内容
+                    setTimeout(() => {
+                        loadingIndicator.classList.add('hidden');
+                        contentContainer.innerHTML = html;
+                        
+                        // 触发自定义事件以通知页面已加载
+                        const pageLoadedEvent = new CustomEvent('pageLoaded', { detail: { page } });
+                        document.dispatchEvent(pageLoadedEvent);
+                    }, 300); // 短暂延迟以显示加载效果
+                    
+                } catch (error) {
+                    console.error('加载内容出错:', error);
+                    loadingIndicator.classList.add('hidden');
+                    contentContainer.innerHTML = `
+                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+                            <p class="font-bold">加载失败</p>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // 设置导航链接点击事件
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    loadContent(page);
+                    
+                    // 更新URL（可选）
+                    history.pushState({page: page}, '', `?page=${page}`);
+                });
+            });
+            
+            // 处理浏览器导航
+            window.addEventListener('popstate', function(e) {
+                const page = e.state ? e.state.page : 'dashboard';
+                loadContent(page);
+            });
+            
+            // 初始加载
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialPage = urlParams.get('page') || 'dashboard';
+            loadContent(initialPage);
+            
+            // 初始设置活动导航项
+            const activeLink = document.querySelector(`.nav-link[data-page="${initialPage}"]`);
+            if (activeLink) {
+                activeLink.classList.add('sidebar-active');
+            }
+        });
+    </script>
+</body>
+</html> 

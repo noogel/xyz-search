@@ -1,0 +1,400 @@
+<!-- 文件上传页面 -->
+<div class="mb-6">
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="flex justify-end mb-6">
+            <div class="text-sm text-gray-500 flex items-center">
+                <i class="fas fa-info-circle mr-1 text-primary-500"></i>
+                <span>支持 PDF, Word, Excel, PowerPoint, TXT, MD, HTML 等格式</span>
+            </div>
+        </div>
+
+        <!-- 上传区域 -->
+        <div id="upload-container" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center mb-6">
+            <div class="space-y-4">
+                <i class="fas fa-cloud-upload-alt text-5xl text-gray-400"></i>
+                <div>
+                    <p class="text-lg font-medium text-gray-700">拖放文件到此处上传</p>
+                    <p class="text-sm text-gray-500 mt-1">或者</p>
+                </div>
+                <div>
+                    <label for="file-upload" class="inline-block bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg cursor-pointer">
+                        选择文件
+                    </label>
+                    <input id="file-upload" type="file" multiple class="hidden" />
+                </div>
+                <p class="text-xs text-gray-500">单个文件最大 50MB，最多可同时上传20个文件</p>
+            </div>
+        </div>
+
+        <!-- 上传选项 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- 知识库选择 -->
+            <div>
+                <label for="knowledge-base-select" class="block text-sm font-medium text-gray-700 mb-2">选择知识库</label>
+                <select id="knowledge-base-select" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option>产品技术文档库</option>
+                    <option>企业培训资料库</option>
+                    <option>市场营销资料库</option>
+                    <option>客户支持知识库</option>
+                    <option>研发项目文档</option>
+                </select>
+            </div>
+            
+            <!-- 文档分类 -->
+            <div>
+                <label for="document-category" class="block text-sm font-medium text-gray-700 mb-2">文档分类</label>
+                <select id="document-category" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option>技术规范</option>
+                    <option>用户手册</option>
+                    <option>API文档</option>
+                    <option>设计文档</option>
+                    <option>培训材料</option>
+                    <option>会议记录</option>
+                    <option>其他</option>
+                </select>
+            </div>
+            
+            <!-- 高级选项 -->
+            <div class="md:col-span-2">
+                <div class="flex items-center mb-2">
+                    <h3 class="text-sm font-medium text-gray-700">高级选项</h3>
+                    <div class="ml-2 w-full h-px bg-gray-200"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 权限设置 -->
+                    <div>
+                        <label for="permission" class="block text-sm font-medium text-gray-700 mb-2">权限设置</label>
+                        <select id="permission" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                            <option>公开（所有人可见）</option>
+                            <option>团队（仅团队成员可见）</option>
+                            <option>私有（仅自己可见）</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 过期时间 -->
+                    <div>
+                        <label for="expiration" class="block text-sm font-medium text-gray-700 mb-2">过期时间</label>
+                        <select id="expiration" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                            <option>永不过期</option>
+                            <option>1个月</option>
+                            <option>3个月</option>
+                            <option>6个月</option>
+                            <option>1年</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 索引优先级 -->
+                    <div>
+                        <label for="index-priority" class="block text-sm font-medium text-gray-700 mb-2">索引优先级</label>
+                        <select id="index-priority" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                            <option>低</option>
+                            <option selected>普通</option>
+                            <option>高</option>
+                            <option>紧急</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 选项复选框 -->
+                <div class="mt-4 space-y-2">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" checked>
+                        <span class="ml-2 text-sm text-gray-700">上传后立即索引</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4">
+                        <span class="ml-2 text-sm text-gray-700">覆盖同名文件</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" checked>
+                        <span class="ml-2 text-sm text-gray-700">提取文档元数据</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="flex justify-end space-x-3">
+            <button type="button" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                取消
+            </button>
+            <button type="submit" id="upload-btn" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                开始上传
+            </button>
+        </div>
+    </div>
+
+    <!-- 上传队列 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="border-b border-gray-200 p-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">上传队列</h3>
+                <div class="flex space-x-2">
+                    <button class="text-sm text-gray-600 hover:text-primary-600" id="clear-completed-btn">
+                        清除已完成
+                    </button>
+                    <button class="text-sm text-gray-600 hover:text-primary-600" id="clear-all-btn">
+                        清除全部
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 文件列表 -->
+        <div id="file-list" class="divide-y divide-gray-200">
+            <!-- 示例文件项，实际使用时通过JS动态生成 -->
+            <div class="p-4 flex items-center" id="file-item-template" style="display: none;">
+                <div class="flex-shrink-0 mr-3">
+                    <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 truncate file-name">产品需求文档.pdf</p>
+                            <p class="text-xs text-gray-500 file-size">2.4 MB</p>
+                        </div>
+                        <div class="text-xs font-medium text-gray-500 file-status">准备上传</div>
+                    </div>
+                    <div class="mt-1 relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="absolute top-0 left-0 h-full bg-primary-600 progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 ml-3">
+                    <button class="text-gray-500 hover:text-red-600 cancel-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 空状态 -->
+        <div id="empty-state" class="p-10 text-center">
+            <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-2"></i>
+            <p class="text-gray-500">还没有上传文件</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('pageLoaded', function(e) {
+        if (e.detail.page === 'upload') {
+            console.log('文件上传页面已加载');
+            
+            // 获取DOM元素
+            const uploadContainer = document.getElementById('upload-container');
+            const fileInput = document.getElementById('file-upload');
+            const uploadBtn = document.getElementById('upload-btn');
+            const fileList = document.getElementById('file-list');
+            const fileItemTemplate = document.getElementById('file-item-template');
+            const emptyState = document.getElementById('empty-state');
+            const clearCompletedBtn = document.getElementById('clear-completed-btn');
+            const clearAllBtn = document.getElementById('clear-all-btn');
+            
+            let files = []; // 存储待上传文件信息
+            
+            // 拖放上传
+            uploadContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadContainer.classList.add('border-primary-500');
+                uploadContainer.classList.add('bg-primary-50');
+            });
+            
+            uploadContainer.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadContainer.classList.remove('border-primary-500');
+                uploadContainer.classList.remove('bg-primary-50');
+            });
+            
+            uploadContainer.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadContainer.classList.remove('border-primary-500');
+                uploadContainer.classList.remove('bg-primary-50');
+                
+                const droppedFiles = e.dataTransfer.files;
+                handleFiles(droppedFiles);
+            });
+            
+            // 文件选择上传
+            fileInput.addEventListener('change', function() {
+                handleFiles(fileInput.files);
+            });
+            
+            // 文件处理函数
+            function handleFiles(fileList) {
+                if (fileList.length === 0) return;
+                
+                // 显示文件列表，隐藏空状态
+                emptyState.style.display = 'none';
+                
+                // 处理文件
+                for (let i = 0; i < fileList.length; i++) {
+                    const file = fileList[i];
+                    
+                    // 检查文件大小
+                    if (file.size > 50 * 1024 * 1024) { // 50MB
+                        alert(`文件 ${file.name} 超过大小限制 (50MB)`);
+                        continue;
+                    }
+                    
+                    // 创建文件项
+                    const fileItem = fileItemTemplate.cloneNode(true);
+                    fileItem.style.display = 'flex';
+                    fileItem.id = `file-item-${Date.now()}-${i}`;
+                    
+                    // 设置文件图标
+                    const fileIcon = fileItem.querySelector('.flex-shrink-0 i');
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                    
+                    if (['pdf'].includes(fileExtension)) {
+                        fileIcon.className = 'fas fa-file-pdf text-red-500 text-xl';
+                    } else if (['doc', 'docx'].includes(fileExtension)) {
+                        fileIcon.className = 'fas fa-file-word text-blue-500 text-xl';
+                    } else if (['xls', 'xlsx'].includes(fileExtension)) {
+                        fileIcon.className = 'fas fa-file-excel text-green-500 text-xl';
+                    } else if (['ppt', 'pptx'].includes(fileExtension)) {
+                        fileIcon.className = 'fas fa-file-powerpoint text-orange-500 text-xl';
+                    } else if (['txt'].includes(fileExtension)) {
+                        fileIcon.className = 'fas fa-file-alt text-gray-500 text-xl';
+                    } else if (['md'].includes(fileExtension)) {
+                        fileIcon.className = 'fas fa-file-code text-purple-500 text-xl';
+                    } else if (['html', 'htm'].includes(fileExtension)) {
+                        fileIcon.className = 'fas fa-file-code text-indigo-500 text-xl';
+                    } else {
+                        fileIcon.className = 'fas fa-file text-gray-500 text-xl';
+                    }
+                    
+                    // 设置文件信息
+                    fileItem.querySelector('.file-name').textContent = file.name;
+                    fileItem.querySelector('.file-size').textContent = formatFileSize(file.size);
+                    
+                    // 添加到文件列表
+                    fileList.appendChild(fileItem);
+                    
+                    // 添加到待上传文件数组
+                    files.push({
+                        id: fileItem.id,
+                        file: file,
+                        element: fileItem,
+                        status: 'ready' // ready, uploading, completed, error
+                    });
+                }
+                
+                // 启用上传按钮
+                if (files.length > 0) {
+                    uploadBtn.disabled = false;
+                }
+            }
+            
+            // 文件大小格式化
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // 上传按钮点击事件
+            uploadBtn.addEventListener('click', function() {
+                if (files.length === 0) return;
+                
+                // 模拟上传过程
+                files.forEach((fileObj, index) => {
+                    if (fileObj.status !== 'ready') return;
+                    
+                    // 更新状态为上传中
+                    fileObj.status = 'uploading';
+                    fileObj.element.querySelector('.file-status').textContent = '上传中...';
+                    
+                    // 模拟上传进度
+                    let progress = 0;
+                    const progressBar = fileObj.element.querySelector('.progress-bar');
+                    
+                    const progressInterval = setInterval(() => {
+                        progress += Math.random() * 10;
+                        
+                        if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(progressInterval);
+                            
+                            // 更新状态为已完成
+                            fileObj.status = 'completed';
+                            fileObj.element.querySelector('.file-status').textContent = '已完成';
+                            fileObj.element.querySelector('.file-status').classList.add('text-green-600');
+                            
+                            // 检查所有文件是否都已上传完成
+                            const allCompleted = files.every(f => f.status === 'completed' || f.status === 'error');
+                            if (allCompleted) {
+                                alert('所有文件上传完成');
+                            }
+                        }
+                        
+                        progressBar.style.width = `${progress}%`;
+                    }, 500);
+                    
+                    // 模拟随机上传失败
+                    if (Math.random() < 0.2) { // 20%的概率上传失败
+                        setTimeout(() => {
+                            clearInterval(progressInterval);
+                            
+                            // 更新状态为失败
+                            fileObj.status = 'error';
+                            fileObj.element.querySelector('.file-status').textContent = '上传失败';
+                            fileObj.element.querySelector('.file-status').classList.add('text-red-600');
+                            fileObj.element.querySelector('.progress-bar').classList.add('bg-red-500');
+                        }, (Math.random() * 3 + 1) * 1000);
+                    }
+                });
+                
+                // 禁用上传按钮
+                uploadBtn.disabled = true;
+            });
+            
+            // 取消按钮点击事件
+            fileList.addEventListener('click', function(e) {
+                if (e.target.closest('.cancel-btn')) {
+                    const fileItem = e.target.closest('[id^="file-item-"]');
+                    const fileId = fileItem.id;
+                    
+                    // 从DOM和数组中移除文件
+                    fileItem.remove();
+                    files = files.filter(f => f.id !== fileId);
+                    
+                    // 如果没有文件，显示空状态并禁用上传按钮
+                    if (files.length === 0) {
+                        emptyState.style.display = 'block';
+                        uploadBtn.disabled = true;
+                    }
+                }
+            });
+            
+            // 清除已完成按钮
+            clearCompletedBtn.addEventListener('click', function() {
+                files = files.filter(f => f.status !== 'completed');
+                document.querySelectorAll('[id^="file-item-"]').forEach(item => {
+                    if (item.querySelector('.file-status').textContent === '已完成') {
+                        item.remove();
+                    }
+                });
+                
+                // 如果没有文件，显示空状态并禁用上传按钮
+                if (files.length === 0) {
+                    emptyState.style.display = 'block';
+                    uploadBtn.disabled = true;
+                }
+            });
+            
+            // 清除全部按钮
+            clearAllBtn.addEventListener('click', function() {
+                files = [];
+                document.querySelectorAll('[id^="file-item-"]').forEach(item => {
+                    item.remove();
+                });
+                
+                // 显示空状态并禁用上传按钮
+                emptyState.style.display = 'block';
+                uploadBtn.disabled = true;
+            });
+        }
+    });
+</script> 

@@ -1,0 +1,511 @@
+<!-- 聊天界面 -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <!-- 左侧区域：对话历史和知识库选择 -->
+    <div class="md:col-span-1">
+        <!-- 对话历史卡片 -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="p-4 border-b border-gray-100">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-medium text-gray-700">对话历史</h3>
+                    <button class="text-primary-600 hover:text-primary-700 text-sm">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <div class="relative mb-3">
+                    <input type="text" placeholder="搜索对话..." class="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                    <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                </div>
+                <!-- 对话列表 -->
+                <div class="space-y-2 max-h-[calc(100vh-22rem)] overflow-y-auto">
+                    <div class="p-2 rounded-lg bg-primary-50 border border-primary-100">
+                        <div class="font-medium text-gray-800 text-sm">产品架构设计文档解析</div>
+                        <div class="text-xs text-gray-500 mt-0.5">今天 10:30</div>
+                    </div>
+                    <div class="p-2 rounded-lg hover:bg-gray-50 border border-gray-50">
+                        <div class="font-medium text-gray-800 text-sm">微服务框架选型</div>
+                        <div class="text-xs text-gray-500 mt-0.5">昨天 16:45</div>
+                    </div>
+                    <div class="p-2 rounded-lg hover:bg-gray-50 border border-gray-50">
+                        <div class="font-medium text-gray-800 text-sm">数据库性能优化讨论</div>
+                        <div class="text-xs text-gray-500 mt-0.5">昨天 09:12</div>
+                    </div>
+                    <div class="p-2 rounded-lg hover:bg-gray-50 border border-gray-50">
+                        <div class="font-medium text-gray-800 text-sm">前端组件库调研</div>
+                        <div class="text-xs text-gray-500 mt-0.5">2023-07-15</div>
+                    </div>
+                    <div class="p-2 rounded-lg hover:bg-gray-50 border border-gray-50">
+                        <div class="font-medium text-gray-800 text-sm">Docker容器化部署方案</div>
+                        <div class="text-xs text-gray-500 mt-0.5">2023-07-14</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 知识库选择卡片 -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b border-gray-100">
+                <h3 class="font-medium text-gray-700">知识库选择</h3>
+            </div>
+            <div class="p-4">
+                <select class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm mb-3">
+                    <option>全部知识库</option>
+                    <option>产品技术文档库</option>
+                    <option>企业培训资料库</option>
+                    <option>市场营销资料库</option>
+                    <option>客户支持知识库</option>
+                    <option>研发项目文档</option>
+                </select>
+                
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        产品文档 <button class="ml-1 text-primary-600 hover:text-primary-800"><i class="fas fa-times"></i></button>
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        技术资料 <button class="ml-1 text-indigo-600 hover:text-indigo-800"><i class="fas fa-times"></i></button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 右侧区域：聊天内容 -->
+    <div class="md:col-span-3">
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="font-medium text-gray-700">产品架构设计文档解析</h3>
+                <div class="flex space-x-3">
+                    <button class="text-gray-500 hover:text-gray-700" title="对话设置">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="text-gray-500 hover:text-gray-700" title="分享对话">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button class="text-gray-500 hover:text-gray-700" title="下载对话记录">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 聊天内容区 -->
+            <div class="p-4 h-[calc(100vh-18rem)] overflow-y-auto" id="chat-content">
+                <!-- 系统消息 -->
+                <div class="mb-4 text-center">
+                    <span class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
+                        今天 10:30
+                    </span>
+                </div>
+                
+                <!-- 系统问候 -->
+                <div class="flex mb-4">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-gray-50 rounded-2xl p-4 shadow-sm border border-gray-100">
+                            <p class="text-gray-800">您好！我是基于RAG技术的智能助手，可以回答您关于产品和技术文档的问题。请问有什么可以帮您？</p>
+                        </div>
+                        <div class="mt-0.5 text-xs text-gray-500">
+                            10:30
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 用户消息 -->
+                <div class="flex justify-end mb-4">
+                    <div class="flex-1 max-w-3xl ml-10">
+                        <div class="bg-primary-50 text-gray-800 rounded-2xl p-4 shadow-sm border border-primary-100">
+                            <p>我们的微服务架构应该如何设计才能保证高可用性？</p>
+                        </div>
+                        <div class="mt-0.5 text-xs text-gray-500 text-right">
+                            10:31
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 ml-3">
+                        <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="用户头像" class="w-9 h-9 rounded-full border border-gray-200">
+                    </div>
+                </div>
+                
+                <!-- 系统回复 -->
+                <div class="flex mb-4">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-gray-50 rounded-2xl p-4 shadow-sm border border-gray-100">
+                            <p class="text-gray-800 mb-3">根据您的问题，设计高可用性的微服务架构需要考虑以下几个关键方面：</p>
+                            
+                            <h4 class="font-medium text-gray-800 mb-2">1. 服务冗余与负载均衡</h4>
+                            <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                                <li>为每个微服务部署多个实例，避免单点故障</li>
+                                <li>使用负载均衡器（如Nginx、HAProxy）分发流量</li>
+                                <li>考虑使用Kubernetes等容器编排工具自动管理服务实例数量</li>
+                            </ul>
+                            
+                            <h4 class="font-medium text-gray-800 mb-2">2. 服务发现与注册</h4>
+                            <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                                <li>实现服务注册表（如Eureka、Consul、ZooKeeper）</li>
+                                <li>确保服务能动态发现彼此的位置</li>
+                                <li>健康检查和自动移除故障节点</li>
+                            </ul>
+                            
+                            <h4 class="font-medium text-gray-800 mb-2">3. 断路器模式</h4>
+                            <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                                <li>使用断路器（如Hystrix、Resilience4j）防止级联故障</li>
+                                <li>实现优雅的服务降级策略</li>
+                                <li>提供合理的回退机制</li>
+                            </ul>
+                            
+                            <h4 class="font-medium text-gray-800 mb-2">4. 数据一致性</h4>
+                            <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                                <li>实现事务管理策略（如Saga模式、TCC）</li>
+                                <li>考虑CAP理论权衡，明确一致性要求</li>
+                                <li>采用最终一致性模型处理分布式数据</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 引用来源 -->
+                        <div class="mt-2 bg-white rounded-lg border border-gray-100 p-3 shadow-sm">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-medium text-gray-500">引用来源</span>
+                                <button class="text-primary-600 text-xs hover:text-primary-800">
+                                    查看全部
+                                </button>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-start">
+                                    <i class="fas fa-file-pdf text-red-500 mt-1 mr-2"></i>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-800">微服务架构设计指南v2.3.pdf</div>
+                                        <div class="text-xs text-gray-500">第15-18页，相关度 98%</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-file-powerpoint text-orange-500 mt-1 mr-2"></i>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-800">高可用架构最佳实践.pptx</div>
+                                        <div class="text-xs text-gray-500">第24页，相关度 85%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-0.5 text-xs text-gray-500">
+                            10:32 · 基于知识库检索
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 用户消息 -->
+                <div class="flex justify-end mb-4">
+                    <div class="flex-1 max-w-3xl ml-10">
+                        <div class="bg-primary-50 text-gray-800 rounded-2xl p-4 shadow-sm border border-primary-100">
+                            <p>针对微服务之间的通信，我们应该选择同步还是异步模式？有什么最佳实践？</p>
+                        </div>
+                        <div class="mt-0.5 text-xs text-gray-500 text-right">
+                            10:35
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 ml-3">
+                        <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="用户头像" class="w-9 h-9 rounded-full border border-gray-200">
+                    </div>
+                </div>
+                
+                <!-- 思考中动画 -->
+                <div class="flex mb-4" id="thinking-animation">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-gray-50 rounded-2xl p-3 shadow-sm border border-gray-100">
+                            <div class="flex space-x-2">
+                                <div class="w-3 h-3 bg-gray-300 rounded-full animate-bounce"></div>
+                                <div class="w-3 h-3 bg-gray-300 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                <div class="w-3 h-3 bg-gray-300 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部输入区 -->
+            <div class="p-4 border-t border-gray-100">
+                <div class="flex items-end bg-gray-50 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-primary-500 shadow-sm border border-gray-100">
+                    <button class="text-gray-500 hover:text-primary-600 mr-2" title="上传文件">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <textarea id="message-input" placeholder="输入您的问题..." class="flex-1 bg-transparent border-0 focus:ring-0 resize-none max-h-32 py-2 text-sm"></textarea>
+                    <div class="flex items-center space-x-2 ml-2">
+                        <button class="text-gray-500 hover:text-primary-600" title="语音输入">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button id="send-message-btn" class="bg-primary-600 hover:bg-primary-700 text-white rounded-full w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex justify-between mt-2 text-xs text-gray-500">
+                    <div>提示：提问具体问题可以获得更准确的回答</div>
+                    <div class="flex items-center">
+                        <button class="mr-4 hover:text-primary-600" title="快捷键">
+                            <i class="fas fa-keyboard mr-1"></i>
+                            <span>快捷键</span>
+                        </button>
+                        <button class="hover:text-primary-600" title="高级选项">
+                            <i class="fas fa-sliders-h mr-1"></i>
+                            <span>高级选项</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 移动版历史弹出层 -->
+<div id="history-sidebar" class="fixed inset-0 bg-gray-500 bg-opacity-75 z-50 hidden md:hidden">
+    <div class="absolute inset-y-0 left-0 max-w-xs w-full bg-white shadow-lg flex flex-col transform transition-transform duration-300">
+        <div class="p-3 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-800">对话历史</h3>
+            <button id="close-history-btn" class="text-gray-500 hover:text-gray-900">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="p-3 border-b border-gray-100">
+            <div class="relative">
+                <input type="text" placeholder="搜索对话..." class="w-full pl-9 pr-3 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                <i class="fas fa-search absolute left-3 top-2 text-gray-400"></i>
+            </div>
+        </div>
+        
+        <!-- 新建对话按钮 -->
+        <div class="p-3">
+            <button class="w-full bg-primary-600 hover:bg-primary-700 text-white rounded-lg py-1.5 flex items-center justify-center text-sm">
+                <i class="fas fa-plus mr-2"></i>
+                <span>新建对话</span>
+            </button>
+        </div>
+        
+        <!-- 历史记录 -->
+        <div class="flex-1 overflow-y-auto">
+            <div class="p-3 border-b border-gray-100 bg-primary-50">
+                <div class="font-medium text-gray-800 text-sm">产品架构设计文档解析</div>
+                <div class="text-xs text-gray-500 mt-0.5">今天 10:30</div>
+            </div>
+            <div class="p-3 border-b border-gray-100">
+                <div class="font-medium text-gray-800 text-sm">微服务框架选型</div>
+                <div class="text-xs text-gray-500 mt-0.5">昨天 16:45</div>
+            </div>
+            <div class="p-3 border-b border-gray-100">
+                <div class="font-medium text-gray-800 text-sm">数据库性能优化讨论</div>
+                <div class="text-xs text-gray-500 mt-0.5">昨天 09:12</div>
+            </div>
+            <div class="p-3 border-b border-gray-100">
+                <div class="font-medium text-gray-800 text-sm">前端组件库调研</div>
+                <div class="text-xs text-gray-500 mt-0.5">2023-07-15</div>
+            </div>
+            <div class="p-3 border-b border-gray-100">
+                <div class="font-medium text-gray-800 text-sm">Docker容器化部署方案</div>
+                <div class="text-xs text-gray-500 mt-0.5">2023-07-14</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('pageLoaded', function(e) {
+        if (e.detail.page === 'chat') {
+            console.log('聊天页面已加载');
+            
+            // 初始化聊天功能
+            const chatContent = document.getElementById('chat-content');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-message-btn');
+            const thinkingAnimation = document.getElementById('thinking-animation');
+            
+            // 确保聊天内容初始时滚动到底部
+            chatContent.scrollTop = chatContent.scrollHeight;
+            
+            // 隐藏思考中动画初始状态
+            thinkingAnimation.style.display = 'none';
+            
+            // 发送消息功能
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message) {
+                    // 获取当前时间
+                    const now = new Date();
+                    const timeString = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
+                    
+                    // 添加用户消息
+                    const userMessageHTML = `
+                    <div class="flex justify-end mb-4">
+                        <div class="flex-1 max-w-3xl ml-10">
+                            <div class="bg-primary-50 text-gray-800 rounded-2xl p-4 shadow-sm border border-primary-100">
+                                <p>${message}</p>
+                            </div>
+                            <div class="mt-0.5 text-xs text-gray-500 text-right">
+                                ${timeString}
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0 ml-3">
+                            <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="用户头像" class="w-9 h-9 rounded-full border border-gray-200">
+                        </div>
+                    </div>
+                    `;
+                    
+                    // 移除现有的思考中动画（如果有）
+                    thinkingAnimation.style.display = 'none';
+                    
+                    // 添加用户消息到聊天窗口
+                    chatContent.insertAdjacentHTML('beforeend', userMessageHTML);
+                    
+                    // 清空输入框
+                    messageInput.value = '';
+                    
+                    // 滚动到底部
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                    
+                    // 显示思考中动画
+                    thinkingAnimation.style.display = 'flex';
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                    
+                    // 模拟系统响应（在实际应用中，这里会调用后端API）
+                    setTimeout(() => {
+                        // 隐藏思考中动画
+                        thinkingAnimation.style.display = 'none';
+                        
+                        // 生成回复内容
+                        let replyContent = '';
+                        
+                        if (message.toLowerCase().includes('异步') || message.toLowerCase().includes('同步') || message.toLowerCase().includes('通信')) {
+                            replyContent = `
+                            <p class="text-gray-800 mb-3">微服务间通信模式的选择（同步vs异步）取决于具体业务需求，两种模式各有优劣：</p>
+                            
+                            <h4 class="font-medium text-gray-800 mb-2">同步通信模式</h4>
+                            <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                                <li>适用于需要立即响应的场景</li>
+                                <li>实现简单，使用REST API或gRPC</li>
+                                <li>服务间存在强依赖，一个服务故障可能导致连锁反应</li>
+                                <li>较高的耦合度，可能影响系统弹性</li>
+                            </ul>
+                            
+                            <h4 class="font-medium text-gray-800 mb-2">异步通信模式</h4>
+                            <ul class="list-disc list-inside mb-3 space-y-1 ml-2">
+                                <li>通过消息队列（如Kafka、RabbitMQ）实现松耦合</li>
+                                <li>提高系统弹性和可用性</li>
+                                <li>适合非实时业务处理、长时间运行的流程</li>
+                                <li>实现和调试相对复杂</li>
+                            </ul>
+                            
+                            <p class="text-gray-800 mb-3">根据我们公司技术文档《微服务设计模式实践指南》的建议，最佳实践包括：</p>
+                            
+                            <ul class="list-disc list-inside space-y-1 ml-2">
+                                <li>采用"通信模式混合策略"：核心事务路径使用同步通信，非关键路径使用异步</li>
+                                <li>实现事件驱动架构，降低服务间的直接依赖</li>
+                                <li>使用消息持久化确保消息不丢失</li>
+                                <li>为异步流程设计完善的补偿机制和幂等性</li>
+                                <li>实现分布式跟踪，确保可观测性</li>
+                            </ul>
+                            `;
+                        } else {
+                            replyContent = `
+                            <p class="text-gray-800">这是对"${message}"的回复。在实际应用中，这将基于RAG检索系统从知识库中获取相关信息并生成回答。</p>
+                            `;
+                        }
+                        
+                        // 构建完整回复HTML
+                        const botResponseHTML = `
+                        <div class="flex mb-4">
+                            <div class="flex-shrink-0 mr-3">
+                                <div class="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="bg-gray-50 rounded-2xl p-4 shadow-sm border border-gray-100">
+                                    ${replyContent}
+                                </div>
+                                
+                                <!-- 引用来源 -->
+                                <div class="mt-2 bg-white rounded-lg border border-gray-100 p-3 shadow-sm">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-medium text-gray-500">引用来源</span>
+                                        <button class="text-primary-600 text-xs hover:text-primary-800">
+                                            查看全部
+                                        </button>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="flex items-start">
+                                            <i class="fas fa-file-alt text-gray-500 mt-1 mr-2"></i>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-800">微服务设计模式实践指南.md</div>
+                                                <div class="text-xs text-gray-500">相关度 96%</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start">
+                                            <i class="fas fa-file-code text-indigo-500 mt-1 mr-2"></i>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-800">通信模式最佳实践.json</div>
+                                                <div class="text-xs text-gray-500">相关度 89%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-0.5 text-xs text-gray-500">
+                                    ${timeString} · 基于知识库检索
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        
+                        // 添加回复到聊天窗口
+                        chatContent.insertAdjacentHTML('beforeend', botResponseHTML);
+                        chatContent.scrollTop = chatContent.scrollHeight;
+                    }, 2000);
+                }
+            }
+            
+            // 发送按钮点击事件
+            if (sendButton) {
+                sendButton.addEventListener('click', sendMessage);
+            }
+            
+            // 支持按Enter键发送消息（Shift+Enter换行）
+            if (messageInput) {
+                messageInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault(); // 阻止默认的换行行为
+                        sendMessage();
+                    }
+                });
+            }
+            
+            // 移动端历史记录侧边栏
+            const showHistoryBtn = document.getElementById('show-history-btn');
+            const closeHistoryBtn = document.getElementById('close-history-btn');
+            const historySidebar = document.getElementById('history-sidebar');
+            
+            if (showHistoryBtn && closeHistoryBtn && historySidebar) {
+                showHistoryBtn.addEventListener('click', function() {
+                    historySidebar.classList.remove('hidden');
+                    historySidebar.querySelector('.transform').classList.add('slide-in');
+                });
+                
+                closeHistoryBtn.addEventListener('click', function() {
+                    historySidebar.classList.add('hidden');
+                });
+            }
+        }
+    });
+</script> 
