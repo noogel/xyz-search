@@ -1,0 +1,245 @@
+<!-- API设置子页面 -->
+<div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+    <div class="mb-6">
+        <h2 class="text-xl font-bold text-white">API设置</h2>
+        <p class="text-gray-300">API访问控制与接口配置</p>
+    </div>
+
+    <form>
+        <!-- API基础设置 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">API基础设置</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">API状态</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option selected>已启用</option>
+                        <option>仅限内部</option>
+                        <option>维护模式</option>
+                        <option>已禁用</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">API版本</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option selected>v1</option>
+                        <option>v2 (beta)</option>
+                        <option>同时启用v1和v2</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">端口号</label>
+                    <input type="number" value="8000" min="1000" max="65535" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">最大请求大小 (MB)</label>
+                    <input type="number" value="10" min="1" max="100" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+            </div>
+        </div>
+
+        <!-- 限流与安全 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">限流与安全</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">API速率限制 (请求/分钟)</label>
+                    <input type="number" value="60" min="1" max="1000" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">IP限流策略</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option selected>令牌桶</option>
+                        <option>滑动窗口</option>
+                        <option>固定窗口</option>
+                        <option>不限流</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">并发请求数限制</label>
+                    <input type="number" value="20" min="1" max="500" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">IP封禁时间 (分钟)</label>
+                    <input type="number" value="30" min="1" max="1440" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+            </div>
+        </div>
+
+        <!-- 认证配置 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">认证配置</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">认证方式</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option selected>API密钥</option>
+                        <option>JWT</option>
+                        <option>OAuth 2.0</option>
+                        <option>IP白名单</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">JWT密钥有效期 (天)</label>
+                    <input type="number" value="30" min="1" max="365" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-200 mb-1">JWT密钥 (用于签名)</label>
+                    <div class="flex">
+                        <input type="password" value="****************************************" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <button type="button" class="ml-2 px-3 py-2 bg-white/10 border border-gray-600 rounded-lg text-white hover:bg-white/20" id="regenerate-key">
+                            重新生成
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API密钥管理 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">API密钥管理</h3>
+            <div class="bg-white/5 rounded-lg p-4">
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-200">密钥名称</span>
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-200 ml-20">创建日期</span>
+                            <span class="text-sm font-medium text-gray-200 ml-32">上次使用</span>
+                            <span class="text-sm font-medium text-gray-200 ml-20">操作</span>
+                        </div>
+                    </div>
+                    <hr class="border-gray-700 mb-2" />
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-sm text-gray-300">主API密钥</span>
+                        <div class="flex items-center">
+                            <span class="text-sm text-gray-400 ml-12">2024-05-01</span>
+                            <span class="text-sm text-gray-400 ml-24">2024-05-10</span>
+                            <button type="button" class="ml-12 px-2 py-1 bg-white/10 hover:bg-white/20 rounded text-xs text-white">查看</button>
+                            <button type="button" class="ml-2 px-2 py-1 bg-red-900/30 hover:bg-red-800/40 rounded text-xs text-white">撤销</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-sm text-gray-300">测试环境密钥</span>
+                        <div class="flex items-center">
+                            <span class="text-sm text-gray-400 ml-12">2024-04-15</span>
+                            <span class="text-sm text-gray-400 ml-24">2024-05-09</span>
+                            <button type="button" class="ml-12 px-2 py-1 bg-white/10 hover:bg-white/20 rounded text-xs text-white">查看</button>
+                            <button type="button" class="ml-2 px-2 py-1 bg-red-900/30 hover:bg-red-800/40 rounded text-xs text-white">撤销</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="create-api-key" class="mt-2 px-3 py-2 bg-primary-700 hover:bg-primary-600 rounded-lg text-sm text-white">
+                    创建新API密钥
+                </button>
+            </div>
+        </div>
+
+        <!-- CORS配置 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">CORS配置</h3>
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="enable-cors" checked class="w-4 h-4 rounded bg-white/20 border-gray-600">
+                    <label for="enable-cors" class="ml-2 text-sm font-medium text-gray-200">启用CORS</label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">允许的域名 (每行一个)</label>
+                    <textarea rows="3" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">https://example.com
+https://*.xyz-search.com
+http://localhost:3000</textarea>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="allow-credentials" checked class="w-4 h-4 rounded bg-white/20 border-gray-600">
+                    <label for="allow-credentials" class="ml-2 text-sm font-medium text-gray-200">允许凭证 (Access-Control-Allow-Credentials)</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex justify-end space-x-3">
+            <button type="button" class="px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-lg text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                重置
+            </button>
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                保存设置
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    console.log('[settings-api.html] API设置子页面已加载，时间:', new Date().toISOString());
+    
+    // 确保页面元素已加载后才绑定事件
+    setTimeout(() => {
+        try {
+            // 绑定表单提交事件
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('[settings-api.html] API设置表单提交');
+                    alert('API设置已保存');
+                });
+                console.log('[settings-api.html] 表单提交事件已绑定');
+            } else {
+                console.error('[settings-api.html] 未找到表单元素');
+            }
+            
+            // 绑定重置按钮事件
+            const resetButton = document.querySelector('button[type="button"]:last-of-type');
+            if (resetButton) {
+                resetButton.addEventListener('click', function() {
+                    console.log('[settings-api.html] 点击了重置按钮');
+                    if (confirm('确定要重置所有API设置吗？这将恢复默认值。')) {
+                        document.querySelector('form').reset();
+                        alert('API设置已重置为默认值');
+                    }
+                });
+                console.log('[settings-api.html] 重置按钮事件已绑定');
+            } else {
+                console.error('[settings-api.html] 未找到重置按钮');
+            }
+            
+            // 创建API密钥按钮事件
+            const createApiKeyButton = document.getElementById('create-api-key');
+            if (createApiKeyButton) {
+                createApiKeyButton.addEventListener('click', function() {
+                    console.log('[settings-api.html] 点击了创建API密钥按钮');
+                    const keyName = prompt('请输入新API密钥的名称:');
+                    if (keyName) {
+                        alert(`已创建新API密钥: ${keyName}\n密钥: xyz_api_${Math.random().toString(36).substring(2, 15)}`);
+                    }
+                });
+                console.log('[settings-api.html] 创建API密钥按钮事件已绑定');
+            } else {
+                console.error('[settings-api.html] 未找到创建API密钥按钮');
+            }
+            
+            // 重新生成JWT密钥按钮事件
+            const regenerateKeyButton = document.getElementById('regenerate-key');
+            if (regenerateKeyButton) {
+                regenerateKeyButton.addEventListener('click', function() {
+                    console.log('[settings-api.html] 点击了重新生成JWT密钥按钮');
+                    if (confirm('确定要重新生成JWT密钥吗？这将使所有当前的JWT令牌失效。')) {
+                        alert('JWT密钥已重新生成，所有现有令牌已失效。');
+                    }
+                });
+                console.log('[settings-api.html] 重新生成JWT密钥按钮事件已绑定');
+            } else {
+                console.error('[settings-api.html] 未找到重新生成JWT密钥按钮');
+            }
+            
+            console.log('[settings-api.html] API设置子页面事件绑定完成');
+        } catch (error) {
+            console.error('[settings-api.html] 初始化事件绑定时出错:', error);
+        }
+    }, 100);
+    
+    // 响应settingsTabLoaded事件
+    document.addEventListener('settingsTabLoaded', function(e) {
+        if (e.detail.tab === 'api') {
+            console.log('[settings-api.html] 检测到API设置标签页已加载事件');
+        }
+    });
+</script> 

@@ -1,0 +1,239 @@
+<!-- 向量数据库配置子页面 -->
+<div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+    <div class="mb-6">
+        <h2 class="text-xl font-bold text-white">向量数据库</h2>
+        <p class="text-gray-300">管理嵌入向量存储与索引配置</p>
+    </div>
+
+    <form>
+        <!-- 数据库类型 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">数据库设置</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">向量数据库类型</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option selected>Chroma</option>
+                        <option>Pinecone</option>
+                        <option>Weaviate</option>
+                        <option>Milvus</option>
+                        <option>Qdrant</option>
+                        <option>FAISS (本地)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">连接模式</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option selected>HTTP</option>
+                        <option>gRPC</option>
+                        <option>内存模式</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">服务器地址</label>
+                    <input type="text" value="http://localhost:8000" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">API密钥</label>
+                    <input type="password" placeholder="输入您的API密钥" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+            </div>
+        </div>
+
+        <!-- 索引设置 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">索引设置</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">集合/索引名称</label>
+                    <input type="text" value="xyz_documents" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">相似度度量方式</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option selected>余弦相似度</option>
+                        <option>欧氏距离</option>
+                        <option>点积</option>
+                        <option>汉明距离</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">索引类型</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option selected>HNSW</option>
+                        <option>Flat</option>
+                        <option>IVF</option>
+                        <option>ANNOY</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">最大连接数 (HNSW)</label>
+                    <input type="number" value="64" min="16" max="512" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+            </div>
+        </div>
+
+        <!-- 缓存与优化 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">缓存与优化</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">缓存大小 (MB)</label>
+                    <input type="number" value="1024" min="64" max="8192" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">查询超时时间 (秒)</label>
+                    <input type="number" value="30" min="1" max="300" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-200 mb-1">向量预读取</label>
+                    <div class="flex items-center">
+                        <input type="range" min="0" max="100" step="10" value="50" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        <span class="ml-2 text-sm text-gray-300 w-10">50%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 高级选项 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">高级选项</h3>
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="metadata" checked class="w-4 h-4 rounded bg-white/20 border-gray-600">
+                    <label for="metadata" class="ml-2 text-sm font-medium text-gray-200">启用元数据过滤</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="backup" checked class="w-4 h-4 rounded bg-white/20 border-gray-600">
+                    <label for="backup" class="ml-2 text-sm font-medium text-gray-200">每日自动备份</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="compress" class="w-4 h-4 rounded bg-white/20 border-gray-600">
+                    <label for="compress" class="ml-2 text-sm font-medium text-gray-200">启用向量压缩</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据库管理 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">数据库管理</h3>
+            <div class="flex space-x-4">
+                <button type="button" id="test-connection" class="px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-lg text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                    测试连接
+                </button>
+                <button type="button" id="clear-db" class="px-4 py-2 border border-red-800 shadow-sm text-sm font-medium rounded-lg text-white bg-red-900/20 hover:bg-red-800/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200">
+                    清空数据库
+                </button>
+                <button type="button" id="rebuild-index" class="px-4 py-2 border border-yellow-800 shadow-sm text-sm font-medium rounded-lg text-white bg-yellow-800/20 hover:bg-yellow-700/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-200">
+                    重建索引
+                </button>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex justify-end space-x-3">
+            <button type="button" class="px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-lg text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                重置
+            </button>
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                保存设置
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    console.log('向量数据库页面已加载');
+    
+    // 确保页面元素已加载后才绑定事件
+    setTimeout(() => {
+        // 处理范围输入事件
+        const rangeInputs = document.querySelectorAll('input[type="range"]');
+        rangeInputs.forEach(input => {
+            const output = input.nextElementSibling;
+            // 设置初始值
+            if (output) {
+                output.textContent = input.value + '%';
+            }
+            
+            // 添加变化监听
+            input.addEventListener('input', function() {
+                if (output) {
+                    output.textContent = this.value + '%';
+                }
+                console.log(`范围滑块值变化: ${this.value}%`);
+            });
+        });
+        
+        // 绑定表单提交事件
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('向量数据库表单提交');
+                alert('向量数据库设置已保存');
+            });
+            console.log('表单提交事件已绑定');
+        } else {
+            console.error('未找到表单元素');
+        }
+        
+        // 绑定重置按钮事件
+        const resetButton = document.querySelector('button[type="button"]:last-of-type');
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                console.log('点击了重置按钮');
+                if (confirm('确定要重置所有向量数据库设置吗？这将恢复默认值。')) {
+                    document.querySelector('form').reset();
+                    
+                    // 重置后更新范围输入值显示
+                    rangeInputs.forEach(input => {
+                        const output = input.nextElementSibling;
+                        if (output) {
+                            output.textContent = input.value + '%';
+                        }
+                    });
+                    
+                    alert('向量数据库设置已重置为默认值');
+                }
+            });
+            console.log('重置按钮事件已绑定');
+        } else {
+            console.error('未找到重置按钮');
+        }
+        
+        // 数据库管理按钮事件
+        document.getElementById('test-connection').addEventListener('click', function() {
+            console.log('测试数据库连接');
+            
+            // 模拟连接测试
+            const testingAlert = alert('正在测试连接...');
+            setTimeout(() => {
+                alert('连接成功！数据库可用。');
+            }, 1000);
+        });
+        
+        document.getElementById('clear-db').addEventListener('click', function() {
+            console.log('清空数据库请求');
+            if (confirm('警告：此操作将删除向量数据库中的所有数据。此操作不可恢复。是否继续？')) {
+                alert('数据库已清空，所有向量和元数据已删除。');
+            }
+        });
+        
+        document.getElementById('rebuild-index').addEventListener('click', function() {
+            console.log('重建索引请求');
+            if (confirm('确定要重建索引吗？在此过程中，搜索功能可能会暂时不可用。')) {
+                alert('索引重建已开始，将在后台完成。该过程可能需要几分钟时间。');
+            }
+        });
+        
+        console.log('向量数据库页面事件绑定完成');
+    }, 100);
+    
+    // 响应settingsTabLoaded事件
+    document.addEventListener('settingsTabLoaded', function(e) {
+        if (e.detail.tab === 'vector') {
+            console.log('检测到向量数据库标签页已加载事件');
+        }
+    });
+</script> 

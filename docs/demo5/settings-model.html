@@ -1,0 +1,250 @@
+<!-- 模型配置子页面 -->
+<div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-white">模型配置</h2>
+        <p class="text-gray-300">配置AI模型参数与推理选项</p>
+    </div>
+
+    <form>
+        <!-- 模型选择 -->
+        <div class="mb-10 bg-white/5 rounded-xl p-5 border border-white/10">
+            <h3 class="text-lg font-medium text-white mb-4 flex items-center">
+                <i class="fas fa-microchip text-primary-400 mr-2"></i>
+                基础模型设置
+            </h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-2">嵌入模型</label>
+                    <select class="w-full px-3 py-2 bg-white/10 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-400 text-white transition-all duration-200">
+                        <option selected>text-embedding-3-large</option>
+                        <option>text-embedding-3-small</option>
+                        <option>text-embedding-ada-002</option>
+                        <option>自定义模型...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-2">嵌入维度</label>
+                    <select class="w-full px-3 py-2 bg-white/10 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-400 text-white transition-all duration-200">
+                        <option>256</option>
+                        <option>512</option>
+                        <option selected>1024</option>
+                        <option>1536</option>
+                        <option>3072</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-2">大语言模型</label>
+                    <select class="w-full px-3 py-2 bg-white/10 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-400 text-white transition-all duration-200">
+                        <option selected>gpt-3.5-turbo</option>
+                        <option>gpt-4-turbo</option>
+                        <option>gpt-4o</option>
+                        <option>claude-3-opus</option>
+                        <option>claude-3-sonnet</option>
+                        <option>claude-3-haiku</option>
+                        <option>自定义模型...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-2">自定义模型API地址</label>
+                    <input type="text" placeholder="http://localhost:8000/v1" class="w-full px-3 py-2 bg-white/10 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-400 text-white transition-all duration-200">
+                </div>
+            </div>
+        </div>
+
+        <!-- 模型参数 -->
+        <div class="mb-10 bg-white/5 rounded-xl p-5 border border-white/10">
+            <h3 class="text-lg font-medium text-white mb-4 flex items-center">
+                <i class="fas fa-sliders-h text-primary-400 mr-2"></i>
+                模型参数
+            </h3>
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-200">温度 (Temperature)</label>
+                        <span class="text-sm font-medium text-primary-300 bg-primary-900/30 rounded-md px-2 py-0.5 min-w-[3rem] text-center" id="temp-value">0.7</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs text-gray-400 mr-2">精确</span>
+                        <input type="range" min="0" max="2" step="0.1" value="0.7" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500" id="temp-slider">
+                        <span class="text-xs text-gray-400 ml-2">创造</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-2">最大输出Token数</label>
+                    <input type="number" value="4096" min="1" max="32000" class="w-full px-3 py-2 bg-white/10 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-400 text-white transition-all duration-200">
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-200">Top P</label>
+                        <span class="text-sm font-medium text-primary-300 bg-primary-900/30 rounded-md px-2 py-0.5 min-w-[3rem] text-center" id="topp-value">0.95</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs text-gray-400 mr-2">确定</span>
+                        <input type="range" min="0" max="1" step="0.05" value="0.95" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500" id="topp-slider">
+                        <span class="text-xs text-gray-400 ml-2">多样</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-200">Presence Penalty</label>
+                        <span class="text-sm font-medium text-primary-300 bg-primary-900/30 rounded-md px-2 py-0.5 min-w-[3rem] text-center" id="presence-value">0</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs text-gray-400 mr-2">重复</span>
+                        <input type="range" min="-2" max="2" step="0.1" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500" id="presence-slider">
+                        <span class="text-xs text-gray-400 ml-2">新颖</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 高级设置 -->
+        <div class="mb-10 bg-white/5 rounded-xl p-5 border border-white/10">
+            <h3 class="text-lg font-medium text-white mb-4 flex items-center">
+                <i class="fas fa-cogs text-primary-400 mr-2"></i>
+                高级设置
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all duration-200">
+                    <input type="checkbox" id="stream" class="w-4 h-4 rounded bg-white/20 border-gray-600 accent-primary-500">
+                    <label for="stream" class="ml-3 text-sm font-medium text-gray-200 cursor-pointer">启用流式响应</label>
+                    <div class="ml-auto text-gray-500 text-xs">
+                        <i class="fas fa-info-circle" title="实时返回模型生成结果，提高响应速度"></i>
+                    </div>
+                </div>
+                <div class="flex items-center p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all duration-200">
+                    <input type="checkbox" id="cache" checked class="w-4 h-4 rounded bg-white/20 border-gray-600 accent-primary-500">
+                    <label for="cache" class="ml-3 text-sm font-medium text-gray-200 cursor-pointer">启用响应缓存</label>
+                    <div class="ml-auto text-gray-500 text-xs">
+                        <i class="fas fa-info-circle" title="缓存相同问题的回答，提高性能和降低API成本"></i>
+                    </div>
+                </div>
+                <div class="flex items-center p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all duration-200">
+                    <input type="checkbox" id="retry" checked class="w-4 h-4 rounded bg-white/20 border-gray-600 accent-primary-500">
+                    <label for="retry" class="ml-3 text-sm font-medium text-gray-200 cursor-pointer">自动重试失败请求</label>
+                    <div class="ml-auto text-gray-500 text-xs">
+                        <i class="fas fa-info-circle" title="当API请求失败时自动重试，提高可靠性"></i>
+                    </div>
+                </div>
+                <div class="flex items-center p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all duration-200">
+                    <input type="checkbox" id="log" checked class="w-4 h-4 rounded bg-white/20 border-gray-600 accent-primary-500">
+                    <label for="log" class="ml-3 text-sm font-medium text-gray-200 cursor-pointer">记录模型使用日志</label>
+                    <div class="ml-auto text-gray-500 text-xs">
+                        <i class="fas fa-info-circle" title="记录API调用历史，便于审计和资源监控"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex justify-end space-x-4">
+            <button type="button" class="px-5 py-2.5 border border-gray-600 shadow-sm text-sm font-medium rounded-lg text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                <i class="fas fa-undo mr-1.5"></i> 重置
+            </button>
+            <button type="submit" class="px-5 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                <i class="fas fa-save mr-1.5"></i> 保存设置
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    console.log('[settings-model.html] 模型配置子页面已加载，时间:', new Date().toISOString());
+    
+    // 确保页面元素已加载后才绑定事件
+    setTimeout(() => {
+        try {
+            // 处理范围输入事件
+            const tempSlider = document.getElementById('temp-slider');
+            const tempValue = document.getElementById('temp-value');
+            
+            const toppSlider = document.getElementById('topp-slider');
+            const toppValue = document.getElementById('topp-value');
+            
+            const presenceSlider = document.getElementById('presence-slider');
+            const presenceValue = document.getElementById('presence-value');
+            
+            // 温度滑块事件
+            if (tempSlider && tempValue) {
+                tempSlider.addEventListener('input', function() {
+                    tempValue.textContent = this.value;
+                    console.log(`[settings-model.html] 温度变化: ${this.value}`);
+                });
+            }
+            
+            // Top P滑块事件
+            if (toppSlider && toppValue) {
+                toppSlider.addEventListener('input', function() {
+                    toppValue.textContent = this.value;
+                    console.log(`[settings-model.html] Top P变化: ${this.value}`);
+                });
+            }
+            
+            // Presence Penalty滑块事件
+            if (presenceSlider && presenceValue) {
+                presenceSlider.addEventListener('input', function() {
+                    presenceValue.textContent = this.value;
+                    console.log(`[settings-model.html] Presence Penalty变化: ${this.value}`);
+                });
+            }
+            
+            // 绑定表单提交事件
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('[settings-model.html] 模型配置表单提交');
+                    
+                    // 显示保存成功的消息
+                    const saveBtn = this.querySelector('button[type="submit"]');
+                    const originalText = saveBtn.innerHTML;
+                    saveBtn.innerHTML = '<i class="fas fa-check mr-1.5"></i> 已保存';
+                    saveBtn.classList.add('bg-green-600');
+                    saveBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        saveBtn.innerHTML = originalText;
+                        saveBtn.classList.remove('bg-green-600');
+                        saveBtn.disabled = false;
+                    }, 1500);
+                });
+                console.log('[settings-model.html] 表单提交事件已绑定');
+            }
+            
+            // 绑定重置按钮事件
+            const resetButton = document.querySelector('button[type="button"]');
+            if (resetButton) {
+                resetButton.addEventListener('click', function() {
+                    console.log('[settings-model.html] 点击了重置按钮');
+                    if (confirm('确定要重置所有模型设置吗？这将恢复默认值。')) {
+                        // 重置表单
+                        form.reset();
+                        
+                        // 重置滑块显示值
+                        if (tempSlider && tempValue) tempValue.textContent = tempSlider.value;
+                        if (toppSlider && toppValue) toppValue.textContent = toppSlider.value;
+                        if (presenceSlider && presenceValue) presenceValue.textContent = presenceSlider.value;
+                        
+                        // 显示重置成功的消息
+                        this.innerHTML = '<i class="fas fa-check mr-1.5"></i> 已重置';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-undo mr-1.5"></i> 重置';
+                        }, 1500);
+                    }
+                });
+                console.log('[settings-model.html] 重置按钮事件已绑定');
+            }
+            
+            console.log('[settings-model.html] 模型配置子页面事件绑定完成');
+        } catch (error) {
+            console.error('[settings-model.html] 初始化事件时出错:', error);
+        }
+    }, 100);
+    
+    // 响应settingsTabLoaded事件
+    document.addEventListener('settingsTabLoaded', function(e) {
+        if (e.detail.tab === 'model') {
+            console.log('[settings-model.html] 检测到模型配置标签页已加载事件');
+        }
+    });
+</script>

@@ -1,0 +1,161 @@
+<!-- 通用设置子页面 -->
+<div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+    <div class="mb-6">
+        <h2 class="text-xl font-bold text-white">通用设置</h2>
+        <p class="text-gray-300">基础系统配置与界面设置</p>
+    </div>
+
+    <form>
+        <!-- 系统信息 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">系统信息</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">系统名称</label>
+                    <input type="text" value="XYZ智能检索平台" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">当前版本</label>
+                    <div class="flex items-center">
+                        <input type="text" value="v1.2.5" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white" disabled>
+                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-200">
+                            最新版本
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 界面设置 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">界面设置</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">界面主题</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option>默认主题</option>
+                        <option>暗黑模式</option>
+                        <option>高对比度</option>
+                        <option>自定义</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">界面语言</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option>简体中文</option>
+                        <option>English</option>
+                        <option>日本語</option>
+                        <option>한국어</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">每页显示记录数</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option>10</option>
+                        <option selected>20</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">日期时间格式</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option>YYYY-MM-DD HH:mm:ss</option>
+                        <option>DD/MM/YYYY HH:mm:ss</option>
+                        <option>MM/DD/YYYY HH:mm:ss</option>
+                        <option>自定义</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统性能 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-medium text-white mb-4">系统性能</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">文档处理并行度</label>
+                    <select class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <option>1</option>
+                        <option>2</option>
+                        <option selected>4</option>
+                        <option>8</option>
+                        <option>16</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">缓存过期时间</label>
+                    <div class="flex items-center">
+                        <input type="number" value="24" class="w-24 px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <span class="ml-2 text-sm text-gray-300">小时</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">系统最大并发请求数</label>
+                    <input type="number" value="20" class="w-full px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">请求超时时间</label>
+                    <div class="flex items-center">
+                        <input type="number" value="30" class="w-24 px-3 py-2 bg-white/20 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-white">
+                        <span class="ml-2 text-sm text-gray-300">秒</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex justify-end space-x-3">
+            <button type="button" class="px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-lg text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                重置
+            </button>
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                保存设置
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    console.log('通用设置子页面已加载');
+    
+    // 确保页面元素已加载后才绑定事件
+    setTimeout(() => {
+        // 绑定表单提交事件
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('通用设置表单提交');
+                alert('设置已保存');
+            });
+            console.log('表单提交事件已绑定');
+        } else {
+            console.error('未找到表单元素');
+        }
+        
+        // 绑定重置按钮事件
+        const resetButton = document.querySelector('button[type="button"]');
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                console.log('点击了重置按钮');
+                if (confirm('确定要重置所有设置吗？这将恢复默认值。')) {
+                    document.querySelector('form').reset();
+                    alert('设置已重置为默认值');
+                }
+            });
+            console.log('重置按钮事件已绑定');
+        } else {
+            console.error('未找到重置按钮');
+        }
+        
+        console.log('通用设置子页面事件绑定完成');
+    }, 100);
+    
+    // 响应settingsTabLoaded事件
+    document.addEventListener('settingsTabLoaded', function(e) {
+        if (e.detail.tab === 'general') {
+            console.log('检测到通用设置标签页已加载事件');
+        }
+    });
+</script> 
