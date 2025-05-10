@@ -19,11 +19,15 @@ import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScore;
+import co.elastic.clients.elasticsearch._types.query_dsl.FuzzyQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchPhraseQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import co.elastic.clients.elasticsearch.core.DeleteResponse;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
@@ -32,7 +36,9 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Highlight;
 import co.elastic.clients.elasticsearch.core.search.HighlightField;
 import co.elastic.clients.elasticsearch.core.search.HighlighterFragmenter;
+import co.elastic.clients.elasticsearch.core.search.HighlighterOrder;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
@@ -143,8 +149,8 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
         }
     }
 
-    @Nullable
     @Override
+    @Nullable
     public ResourceHighlightHitsDto searchByResId(String resId, @Nullable String text) {
         try {
             BoolQuery.Builder builder = new BoolQuery.Builder();
@@ -158,19 +164,21 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
             Query redId = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
             builder.must(redId);
 
-            Highlight highlight = Highlight.of(t -> t.fields("content", HighlightField.of(k -> k
-                    .type("plain")
-                    // 上下文内容
-                    .fragmentSize(200)
-                    // 8 条
-                    .numberOfFragments(8)
-                    // 高亮标记
-                    .fragmenter(HighlighterFragmenter.Span))));
+            // 改进的高亮配置
+            Highlight highlight = Highlight.of(t -> t
+                .fields("content", HighlightField.of(k -> k
+                    .type("unified")  // 使用更高级的unified highlighter
+                    .fragmentSize(150)  // 更合理的片段大小
+                    .numberOfFragments(10)  // 增加片段数量
+                    .preTags("<em>")  // 自定义标签
+                    .postTags("</em>")
+                    .fragmenter(HighlighterFragmenter.Span)
+                    .order(HighlighterOrder.Score)  // 按相关性排序片段
+                )));
 
             SearchRequest searchRequest = SearchRequest.of(s -> s
                     .index(getIndexName())
                     .query(q -> q.bool(t -> builder))
-//                    .source(l -> l.filter(m -> m.excludes("content")))
                     .highlight(highlight));
             log.info("search:{}", searchRequest.toString());
             SearchResponse<FullTextSearchModel> search = elasticClient.getClient().search(searchRequest,
@@ -251,57 +259,55 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
         resp.setData(new ArrayList<>());
 
         try {
-            BoolQuery.Builder builder = new BoolQuery.Builder();
+            // 构建主查询
+            BoolQuery.Builder mainQueryBuilder = new BoolQuery.Builder();
 
             if (!StringUtils.isEmpty(searchDto.getSearchQuery())) {
-                // 改进的搜索逻辑，使用多种匹配策略提高精准度
+                // 1. 多字段跨字段查询 - 主要匹配逻辑
+                Query multiFieldQuery = MultiMatchQuery.of(m -> m
+                    .query(searchDto.getSearchQuery())
+                    .type(TextQueryType.CrossFields)
+                    .operator(Operator.And)
+                    .fields("content^1", "resName^10", "resTitle^5")
+                    .minimumShouldMatch("60%")
+                    .tieBreaker(0.3))._toQuery();
                 
-                // 1. 内容短语匹配 - 保持词语顺序和紧密度
+                // 2. 短语匹配 - 提高精确度
                 Query contentPhrase = MatchPhraseQuery.of(m -> m
-                        .field("content")
-                        .query(searchDto.getSearchQuery())
-                        .slop(3))._toQuery();
+                    .field("content")
+                    .query(searchDto.getSearchQuery())
+                    .slop(3)
+                    .boost(searchDto.getSearchQuery().length() > 5 ? 5.0f : 2.0f))._toQuery();
                 
-                // 2. 内容标准匹配 - 但要求最低匹配度
-                Query contentMatch = MatchQuery.of(m -> m
-                        .field("content")
-                        .query(searchDto.getSearchQuery())
-                        .analyzer("ik_smart")
-                        .minimumShouldMatch("60%"))._toQuery();
+                // 3. 标题短语匹配 - 高优先级
+                Query titlePhrase = MatchPhraseQuery.of(m -> m
+                    .field("resTitle")
+                    .query(searchDto.getSearchQuery())
+                    .slop(0)
+                    .boost(6.0f))._toQuery();
                 
-                // 3. 资源名称匹配 - 保持高权重
-                Query resName = MatchQuery.of(m -> m
-                        .field("resName")
-                        .query(searchDto.getSearchQuery())
-                        .boost(10.0f)
-                        .analyzer("ik_smart"))._toQuery();
+                // 4. 添加模糊匹配 - 容错
+                Query fuzzyQuery = FuzzyQuery.of(f -> f
+                    .field("content")
+                    .value(searchDto.getSearchQuery())
+                    .fuzziness("AUTO")
+                    .prefixLength(2)
+                    .maxExpansions(50)
+                    .boost(0.8f))._toQuery();
                 
-                // 4. 标题匹配
-                Query resTitleMatch = MatchQuery.of(m -> m
-                        .field("resTitle")
-                        .query(searchDto.getSearchQuery())
-                        .boost(8.0f)
-                        .analyzer("ik_smart"))._toQuery();
+                // 组装BoolQuery
+                BoolQuery.Builder complexQuery = new BoolQuery.Builder();
                 
-                // 根据查询长度动态调整短语匹配的权重
-                float phraseBoost = 1.0f;
-                if (searchDto.getSearchQuery().length() > 5) {
-                    // 对较长的查询给予短语匹配更高的权重
-                    contentPhrase = MatchPhraseQuery.of(m -> m
-                            .field("content")
-                            .query(searchDto.getSearchQuery())
-                            .slop(3)
-                            .boost(5.0f))._toQuery();
-                }
+                // 必须满足的条件
+                complexQuery.must(multiFieldQuery);
                 
-                BoolQuery.Builder orSearch = new BoolQuery.Builder();
-                orSearch.should(contentPhrase, contentMatch, resName, resTitleMatch);
+                // 加分项
+                complexQuery.should(contentPhrase, titlePhrase, fuzzyQuery);
                 
-                // 提高精准度 - 至少满足一个条件
-                orSearch.minimumShouldMatch("1");
-                
-                builder.must(l -> l.bool(orSearch.build()));
+                mainQueryBuilder.must(complexQuery.build()._toQuery());
             }
+            
+            // 处理其他过滤条件，沿用现有逻辑
             if (CollectionUtils.isNotEmpty(searchDto.getResTypeList())) {
                 BoolQuery.Builder orResType = new BoolQuery.Builder();
                 for (String resType : searchDto.getResTypeList()) {
@@ -310,35 +316,53 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
                             .value(resType))._toQuery();
                     orResType.should(resTypeQuery);
                 }
-                builder.must(orResType.build()._toQuery());
+                mainQueryBuilder.must(orResType.build()._toQuery());
             }
             if (StringUtils.isNotEmpty(searchDto.getDirPrefix())) {
                 Query resDir = TermQuery.of(m -> m
                         .field("resDir")
                         .value(searchDto.getDirPrefix()))._toQuery();
-                builder.must(resDir);
+                mainQueryBuilder.must(resDir);
             }
             Field resSizeField = searchDto.getResSize();
             if (resSizeField != null) {
                 Query resSize = this.buildRangeQuery("resSize", resSizeField.getValue(), resSizeField.getCompare());
-                builder.must(resSize);
+                mainQueryBuilder.must(resSize);
             }
             Field modifiedAtField = searchDto.getModifiedAt();
             if (modifiedAtField != null) {
                 String valueOf = String.valueOf(Instant.now().getEpochSecond() - Long.parseLong(modifiedAtField.getValue()));
                 Query modifiedAt = this.buildRangeQuery("modifiedAt", valueOf, modifiedAtField.getCompare());
-                builder.must(modifiedAt);
+                mainQueryBuilder.must(modifiedAt);
             }
+            
             // 排序
             var sortOptions = buildOrderByQuery(searchDto.getOrder());
+            
             // 分页
             CommonSearchDto.Paging paging = searchDto.getPaging();
-            SearchRequest sReq = SearchRequest.of(s -> s.index(getIndexName())
-                    .query(q -> q.bool(t -> builder))
-                    .source(l -> l.filter(m -> m.excludes("content")))
-                    .sort(sortOptions)
-                    .size(paging.getLimit())
-                    .from(paging.getOffset()));
+            
+            // 最终查询
+            Query finalQuery = mainQueryBuilder.build()._toQuery();
+            
+            // 创建搜索请求
+            SearchRequest sReq = SearchRequest.of(s -> s
+                .index(getIndexName())
+                .query(finalQuery)
+                // 优化返回字段，减少网络传输
+                .source(SourceConfig.of(sc -> sc
+                    .filter(f -> f.excludes("content"))
+                ))
+                .trackScores(true)          // 追踪分数
+                .trackTotalHits(t -> t.enabled(true)) // 精确计算总数
+                .timeout("5s")              // 设置超时
+                .sort(sortOptions)
+                .size(paging.getLimit())
+                .from(paging.getOffset())
+                // 添加优先级和缓存控制
+                .preference("_local")       // 优先使用本地分片
+                .requestCache(true));      // 使用请求缓存
+                
             log.info("search:{}", sReq.toString());
             var sResp = elasticClient.getClient().search(sReq, FullTextSearchModel.class);
             TotalHits total = sResp.hits().total();
