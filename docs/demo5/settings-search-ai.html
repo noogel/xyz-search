@@ -201,6 +201,129 @@
             </div>
         </div>
     </div>
+    
+    <div class="border-t border-gray-200"></div>
+    
+    <!-- Elasticsearch全文索引配置 -->
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Elasticsearch全文索引配置</h3>
+        <div class="space-y-6">
+            <!-- 启用Elasticsearch全文索引 -->
+            <div class="flex items-center">
+                <input id="enable-elasticsearch" name="enable-elasticsearch" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                <label for="enable-elasticsearch" class="ml-2 block text-sm text-gray-900">
+                    启用Elasticsearch全文索引
+                </label>
+            </div>
+            
+            <!-- Elasticsearch配置 -->
+            <div id="elasticsearch-search-config" class="pl-6 border-l-2 border-gray-200 space-y-4 opacity-50">
+                <!-- 索引设置 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">索引名称</label>
+                        <input type="text" value="xyz_search_docs" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                        <p class="mt-1 text-xs text-gray-500">Elasticsearch索引名称</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">分析器</label>
+                        <select class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md" disabled>
+                            <option selected>ik_smart</option>
+                            <option>ik_max_word</option>
+                            <option>standard</option>
+                            <option>smartcn</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">用于中文分词的分析器</p>
+                    </div>
+                </div>
+                
+                <!-- 搜索字段权重配置 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">搜索字段权重配置</label>
+                    <div class="space-y-2 mt-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm text-gray-600">标题权重</label>
+                            <span class="text-sm text-gray-500" id="title-weight-value">3</span>
+                        </div>
+                        <input type="range" min="1" max="5" step="0.5" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" id="title-weight-slider" disabled>
+                        
+                        <div class="flex items-center justify-between mt-3">
+                            <label class="text-sm text-gray-600">内容权重</label>
+                            <span class="text-sm text-gray-500" id="content-weight-value">1</span>
+                        </div>
+                        <input type="range" min="0.5" max="3" step="0.5" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" id="content-weight-slider" disabled>
+                        
+                        <div class="flex items-center justify-between mt-3">
+                            <label class="text-sm text-gray-600">文件名权重</label>
+                            <span class="text-sm text-gray-500" id="filename-weight-value">2</span>
+                        </div>
+                        <input type="range" min="0.5" max="3" step="0.5" value="2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" id="filename-weight-slider" disabled>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">控制各个字段在搜索中的重要程度</p>
+                </div>
+                
+                <!-- 高级搜索配置 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">高级搜索配置</label>
+                    <div class="mt-2 space-y-2">
+                        <div class="flex items-center">
+                            <input id="enable-highlight" name="enable-highlight" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked disabled>
+                            <label for="enable-highlight" class="ml-2 block text-sm text-gray-900">
+                                启用搜索结果高亮
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="enable-fuzzy" name="enable-fuzzy" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked disabled>
+                            <label for="enable-fuzzy" class="ml-2 block text-sm text-gray-900">
+                                启用模糊匹配
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="enable-wildcard" name="enable-wildcard" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked disabled>
+                            <label for="enable-wildcard" class="ml-2 block text-sm text-gray-900">
+                                支持通配符查询 (* 和 ?)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 同义词配置 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">同义词配置 (每行一对，用逗号分隔)</label>
+                    <textarea rows="3" placeholder="智能,人工智能,AI&#10;文档,文件,资料&#10;检索,搜索,查询" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled></textarea>
+                    <p class="mt-1 text-xs text-gray-500">定义搜索中的同义词，提高相关文档的召回率</p>
+                </div>
+                
+                <!-- 测试连接按钮 -->
+                <div>
+                    <button type="button" id="test-es-search" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" disabled>
+                        <i class="fas fa-plug mr-2"></i>
+                        测试Elasticsearch连接
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Elasticsearch说明 -->
+            <div class="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>Elasticsearch全文索引提供强大的全文检索功能，支持中文分词、同义词扩展和模糊搜索。</p>
+                        <p class="mt-2">主要优势：</p>
+                        <ul class="list-disc list-inside mt-1 space-y-1">
+                            <li>更灵活的查询语法和过滤条件</li>
+                            <li>支持多字段加权搜索和相关性排序</li>
+                            <li>高性能的分布式搜索引擎</li>
+                            <li>可与向量搜索结合，提供混合检索能力</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 按钮组 -->
     <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
@@ -266,7 +389,7 @@
                 });
             }
             
-            // 处理测试连接按钮点击
+            // 处理OCR测试连接按钮点击
             const testConnectionBtn = document.querySelector('button:has(i.fa-sync-alt)');
             if (testConnectionBtn) {
                 testConnectionBtn.addEventListener('click', function() {
@@ -283,6 +406,73 @@
                         
                         // 显示测试结果
                         alert('OCR服务连接测试成功！\n响应时间: 328ms');
+                    }, 1000);
+                });
+            }
+            
+            // 处理Elasticsearch全文索引启用状态
+            const enableElasticsearch = document.getElementById('enable-elasticsearch');
+            const elasticsearchConfig = document.getElementById('elasticsearch-search-config');
+            
+            if (enableElasticsearch && elasticsearchConfig) {
+                enableElasticsearch.addEventListener('change', function() {
+                    // 启用或禁用Elasticsearch配置区域
+                    const isEnabled = this.checked;
+                    elasticsearchConfig.classList.toggle('opacity-50', !isEnabled);
+                    
+                    // 启用或禁用所有输入字段
+                    const inputs = elasticsearchConfig.querySelectorAll('input, select, button, textarea');
+                    inputs.forEach(input => {
+                        input.disabled = !isEnabled;
+                    });
+                });
+            }
+            
+            // 初始化字段权重滑块
+            const titleWeightSlider = document.getElementById('title-weight-slider');
+            const titleWeightValue = document.getElementById('title-weight-value');
+            
+            if (titleWeightSlider && titleWeightValue) {
+                titleWeightSlider.addEventListener('input', function() {
+                    titleWeightValue.textContent = this.value;
+                });
+            }
+            
+            const contentWeightSlider = document.getElementById('content-weight-slider');
+            const contentWeightValue = document.getElementById('content-weight-value');
+            
+            if (contentWeightSlider && contentWeightValue) {
+                contentWeightSlider.addEventListener('input', function() {
+                    contentWeightValue.textContent = this.value;
+                });
+            }
+            
+            const filenameWeightSlider = document.getElementById('filename-weight-slider');
+            const filenameWeightValue = document.getElementById('filename-weight-value');
+            
+            if (filenameWeightSlider && filenameWeightValue) {
+                filenameWeightSlider.addEventListener('input', function() {
+                    filenameWeightValue.textContent = this.value;
+                });
+            }
+            
+            // 处理Elasticsearch测试连接按钮点击
+            const testEsSearchBtn = document.getElementById('test-es-search');
+            if (testEsSearchBtn) {
+                testEsSearchBtn.addEventListener('click', function() {
+                    // 显示连接测试中
+                    const originalText = this.textContent.trim();
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 连接中...';
+                    this.disabled = true;
+                    
+                    // 模拟测试过程
+                    setTimeout(() => {
+                        // 恢复按钮状态
+                        this.innerHTML = '<i class="fas fa-plug mr-2"></i> 测试Elasticsearch连接';
+                        this.disabled = false;
+                        
+                        // 显示测试结果
+                        alert('Elasticsearch全文索引连接测试成功！\n版本: 8.10.2\n索引状态: 正常\n文档数量: 1,248');
                     }, 1000);
                 });
             }

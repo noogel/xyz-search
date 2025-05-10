@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文件上传</title>
+    <meta id="csrf-token" name="csrf-token" th:content="${_csrf.token}" th:if="${_csrf}">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <link href="css/dropzone.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/dropzone.min.js"></script>
+    <style>
+        .upload-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .upload-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        .dropzone {
+            min-height: 200px;
+            border: 2px dashed #0d6efd;
+            border-radius: 5px;
+            background: white;
+        }
+        .dropzone .dz-message {
+            text-align: center;
+            margin: 4em 0;
+        }
+        .dropzone .dz-preview .dz-error-message {
+            top: 150px;
+        }
+        .file-type-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .alert-upload-folder {
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="row text-center">
+                <p class="popout">
+                    <span>智</span>
+                    <span>能</span>
+                    <span>检</span>
+                    <span>索</span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="col-md-10 offset-md-1">
+            <div class="upload-container">
+                <div class="upload-header">
+                    <h4><i class="bi bi-cloud-upload"></i> 文件上传</h4>
+                    <p class="text-muted">上传文件到系统进行索引和检索</p>
+                </div>
+                
+                <div id="upload-status-alert" class="alert alert-primary d-none" role="alert">
+                    <i class="bi bi-info-circle-fill"></i> <span id="upload-status-message"></span>
+                </div>
+                
+                <form id="upload-dropzone" class="dropzone dz-clickable">
+                    <div class="dz-default dz-message text-center">
+                        <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: #0d6efd;"></i>
+                        <div class="mt-3">拖放文件或者点击上传</div>
+                        <div class="text-muted mt-2">支持PDF、EPUB、Word文档、图片和视频等格式</div>
+                    </div>
+                </form>
+                
+                <div class="file-type-info">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-file-earmark-check"></i> 支持的文件类型</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-file-earmark-pdf"></i> PDF文档 (.pdf)</li>
+                                <li><i class="bi bi-file-earmark-richtext"></i> EPUB电子书 (.epub)</li>
+                                <li><i class="bi bi-file-earmark-word"></i> Word文档 (.docx)</li>
+                                <li><i class="bi bi-file-earmark-text"></i> 文本文件 (.txt, .md等)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-file-earmark-image"></i> 图片文件 (.jpg, .png, .gif等)</li>
+                                <li><i class="bi bi-file-earmark-play"></i> 视频文件 (.mp4, .avi, .mkv等)</li>
+                                <li><i class="bi bi-file-earmark-music"></i> 音频文件 (.mp3, .wav等)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="upload-folder-alert" class="alert alert-upload-folder">
+                    <!-- 上传目录状态显示区域 -->
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-check"></i> 最近上传的文件
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="recent-uploads" class="list-group">
+                        <!-- 最近上传的文件将显示在这里 -->
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-hourglass"></i> 正在加载...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12">
+            <footer class="py-3 my-4">
+                <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+                    <li class="nav-item"><a class="nav-link px-2 text-muted" href="/">搜索</a></li>
+                    <li class="nav-item"><a href="/chat/page" class="nav-link px-2 text-muted">AI 对话</a></li>
+                    <li class="nav-item"><a class="nav-link px-2 text-muted" href="/upload">上传</a></li>
+                    <li class="nav-item"><a class="nav-link px-2 text-muted" href="/settings">设置</a></li>
+                    <li class="nav-item"><a class="nav-link px-2 text-muted" href="/logout">登出</a></li>
+                </ul>
+                <p class="text-center text-muted">© 2015 – 2025 <span style="font-size: 0.8rem">❤</span> noogel</p>
+            </footer>
+        </div>
+    </div>
+</div>
+
+<!-- 文件上传错误模态框 -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">上传错误</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="errorModalBody">
+                出现错误，请重试。
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    Dropzone.autoDiscover = false;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查上传目录配置状态
+        checkUploadFolderStatus();
+        
+        // 初始化Dropzone
+        const myDropzone = new Dropzone("#upload-dropzone", {
+            url: "/upload",
+            paramName: "file",
+            maxFilesize: 1024, // MB
+            maxFiles: 50,
+            parallelUploads: 2,
+            dictDefaultMessage: "拖放文件或者点击上传",
+            clickable: true,
+            acceptedFiles: 'application/pdf,text/*,application/epub+zip,video/*,image/*,application/vnd.openxmlformats-officedocument.wordprocessingml.document,audio/*',
+            headers: {
+                'x-csrf-token': document.head.querySelector('meta[name="csrf-token"]').content
+            },
+            init: function() {
+                // 上传完成后的处理
+                this.on("success", function(file, response) {
+                    showUploadStatus("文件 " + file.name + " 上传成功！", "success");
+                    // 添加到最近上传列表
+                    addToRecentUploads(file.name, file.size, file.type);
+                });
+                
+                // 上传错误处理
+                this.on("error", function(file, errorMessage) {
+                    let errorText = errorMessage;
+                    
+                    if (typeof errorMessage === 'string') {
+                        errorText = errorMessage;
+                    } else if (errorMessage && errorMessage.message) {
+                        errorText = errorMessage.message;
+                    } else {
+                        try {
+                            const errorObj = JSON.parse(errorMessage);
+                            errorText = errorObj.message || "上传失败";
+                        } catch (e) {
+                            errorText = "上传过程中发生错误";
+                        }
+                    }
+                    
+                    showUploadStatus("文件 " + file.name + " 上传失败: " + errorText, "danger");
+                    showErrorModal(errorText);
+                });
+                
+                // 全部完成后的处理
+                this.on("queuecomplete", function() {
+                    setTimeout(function() {
+                        // 3秒后隐藏状态消息
+                        hideUploadStatus();
+                    }, 3000);
+                });
+            }
+        });
+        
+        // 加载最近上传的文件
+        loadRecentUploads();
+    });
+    
+    // 检查上传目录配置状态
+    function checkUploadFolderStatus() {
+        fetch('/api/upload/status', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-csrf-token': document.head.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const alertElem = document.getElementById('upload-folder-alert');
+            
+            if (data.configured) {
+                alertElem.className = 'alert alert-upload-folder alert-success';
+                alertElem.innerHTML = '<i class="bi bi-check-circle-fill"></i> 上传目录已配置: <strong>' + data.directory + '</strong>';
+            } else {
+                alertElem.className = 'alert alert-upload-folder alert-warning';
+                alertElem.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> 上传目录未配置，请在<a href="/settings" class="alert-link">系统设置</a>中设置上传目录。';
+            }
+        })
+        .catch(error => {
+            console.error('获取上传状态失败:', error);
+            const alertElem = document.getElementById('upload-folder-alert');
+            alertElem.className = 'alert alert-upload-folder alert-secondary';
+            alertElem.innerHTML = '<i class="bi bi-info-circle-fill"></i> 无法获取上传目录状态';
+        });
+    }
+    
+    // 显示上传状态
+    function showUploadStatus(message, type) {
+        const alertElem = document.getElementById('upload-status-alert');
+        const messageElem = document.getElementById('upload-status-message');
+        
+        alertElem.className = 'alert alert-' + type;
+        alertElem.classList.remove('d-none');
+        messageElem.textContent = message;
+    }
+    
+    // 隐藏上传状态
+    function hideUploadStatus() {
+        const alertElem = document.getElementById('upload-status-alert');
+        alertElem.classList.add('d-none');
+    }
+    
+    // 显示错误模态框
+    function showErrorModal(errorMessage) {
+        const modalBodyElem = document.getElementById('errorModalBody');
+        modalBodyElem.textContent = errorMessage;
+        
+        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+        errorModal.show();
+    }
+    
+    // 加载最近上传的文件
+    function loadRecentUploads() {
+        // 模拟数据 - 实际应当通过API获取
+        const recentFiles = [
+            { name: '示例文档.pdf', time: '刚刚', size: '2.5 MB', type: 'application/pdf' },
+            { name: '研究资料.docx', time: '5分钟前', size: '1.2 MB', type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+            { name: '电子书.epub', time: '昨天', size: '3.7 MB', type: 'application/epub+zip' }
+        ];
+        
+        const recentUploadsElem = document.getElementById('recent-uploads');
+        recentUploadsElem.innerHTML = '';
+        
+        if (recentFiles.length === 0) {
+            recentUploadsElem.innerHTML = '<div class="text-center text-muted py-3">暂无上传记录</div>';
+            return;
+        }
+        
+        recentFiles.forEach(file => {
+            let icon = 'bi-file-earmark';
+            
+            if (file.type.includes('pdf')) {
+                icon = 'bi-file-earmark-pdf';
+            } else if (file.type.includes('word')) {
+                icon = 'bi-file-earmark-word';
+            } else if (file.type.includes('epub')) {
+                icon = 'bi-file-earmark-richtext';
+            } else if (file.type.includes('image')) {
+                icon = 'bi-file-earmark-image';
+            } else if (file.type.includes('video')) {
+                icon = 'bi-file-earmark-play';
+            } else if (file.type.includes('audio')) {
+                icon = 'bi-file-earmark-music';
+            } else if (file.type.includes('text')) {
+                icon = 'bi-file-earmark-text';
+            }
+            
+            const itemHtml = `
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div>
+                            <i class="bi ${icon} me-2"></i>
+                            <span class="fw-bold">${file.name}</span>
+                            <span class="text-muted small ms-2">(${file.size})</span>
+                        </div>
+                        <small class="text-muted">${file.time}</small>
+                    </div>
+                </a>
+            `;
+            
+            recentUploadsElem.innerHTML += itemHtml;
+        });
+    }
+    
+    // 添加到最近上传列表
+    function addToRecentUploads(fileName, fileSize, fileType) {
+        const recentUploadsElem = document.getElementById('recent-uploads');
+        
+        // 如果是首次上传，清空"暂无上传记录"的提示
+        if (recentUploadsElem.querySelector('.text-muted')) {
+            recentUploadsElem.innerHTML = '';
+        }
+        
+        let icon = 'bi-file-earmark';
+        
+        if (fileType.includes('pdf')) {
+            icon = 'bi-file-earmark-pdf';
+        } else if (fileType.includes('word')) {
+            icon = 'bi-file-earmark-word';
+        } else if (fileType.includes('epub')) {
+            icon = 'bi-file-earmark-richtext';
+        } else if (fileType.includes('image')) {
+            icon = 'bi-file-earmark-image';
+        } else if (fileType.includes('video')) {
+            icon = 'bi-file-earmark-play';
+        } else if (fileType.includes('audio')) {
+            icon = 'bi-file-earmark-music';
+        } else if (fileType.includes('text')) {
+            icon = 'bi-file-earmark-text';
+        }
+        
+        // 格式化文件大小
+        const formattedSize = formatFileSize(fileSize);
+        
+        const itemHtml = `
+            <a href="#" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <i class="bi ${icon} me-2"></i>
+                        <span class="fw-bold">${fileName}</span>
+                        <span class="text-muted small ms-2">(${formattedSize})</span>
+                    </div>
+                    <small class="text-muted">刚刚</small>
+                </div>
+            </a>
+        `;
+        
+        // 添加到列表顶部
+        recentUploadsElem.innerHTML = itemHtml + recentUploadsElem.innerHTML;
+    }
+    
+    // 格式化文件大小
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+</script>
+</body>
+</html> 

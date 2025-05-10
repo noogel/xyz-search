@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>系统设置</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <link href="css/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="js/jsoneditor.min.js"></script>
+    <style>
+        .nav-tabs .nav-link {
+            color: #495057;
+            background-color: #f8f9fa;
+            border-color: #dee2e6 #dee2e6 #fff;
+            margin-right: 5px;
+        }
+        .nav-tabs .nav-link.active {
+            color: #007bff;
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+            font-weight: bold;
+        }
+        .setting-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+        .setting-card h5 {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .slider-container {
+            margin: 10px 0;
+        }
+        .slider-value {
+            font-weight: bold;
+            display: inline-block;
+            width: 40px;
+            text-align: center;
+        }
+    </style>
+    <script type="text/javascript">
+        window.onload=function(){
+            if (!judgeFalse([[${result?.show}]])) {
+                var resultModal = new bootstrap.Modal(document.getElementById('opResultModal'));
+                resultModal.show();
+            }
+            
+            // 初始化标签页
+            const triggerTabList = document.querySelectorAll('#settingTabs button');
+            triggerTabList.forEach(triggerEl => {
+                const tabTrigger = new bootstrap.Tab(triggerEl);
+                triggerEl.addEventListener('click', event => {
+                    event.preventDefault();
+                    tabTrigger.show();
+                });
+            });
+        }
+        
+        const judgeFalse = function (param) {
+            return param === undefined || param === false;
+        }
+        
+        const fetch_data_post = function (href, obj) {
+            fetch(href, {
+                method: 'POST',
+                body: new FormData(document.getElementById("searchSettingForm")),
+            }).then(r => r.json()).then(function (data) {
+                document.querySelector("#opResultModalBody").textContent = data.body;
+                document.querySelector("#opResultModalHeader").textContent = data.header;
+            }).catch(function (err) {
+                document.querySelector("#opResultModalBody").textContent = err.toString();
+                document.querySelector("#opResultModalHeader").textContent = '操作失败';
+            });
+            new bootstrap.Modal(document.getElementById('opResultModal')).show();
+        }
+        
+        // 切换Elasticsearch启用状态
+        function toggleElasticEnable(checkbox) {
+            const elasticSettingsDiv = document.getElementById('elasticSettings');
+            if (checkbox.checked) {
+                elasticSettingsDiv.classList.remove('d-none');
+            } else {
+                elasticSettingsDiv.classList.add('d-none');
+            }
+        }
+        
+        // 切换Qdrant启用状态
+        function toggleQdrantEnable(checkbox) {
+            const qdrantSettingsDiv = document.getElementById('qdrantSettings');
+            if (checkbox.checked) {
+                qdrantSettingsDiv.classList.remove('d-none');
+            } else {
+                qdrantSettingsDiv.classList.add('d-none');
+            }
+        }
+        
+        // 更新滑块值显示
+        function updateSliderValue(slider, valueId) {
+            document.getElementById(valueId).textContent = slider.value;
+        }
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="row text-center">
+                <p class="popout">
+                    <span>智</span>
+                    <span>能</span>
+                    <span>检</span>
+                    <span>索</span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="col-12 mb-4">
+            <!-- 标签页导航 -->
+            <ul class="nav nav-tabs" id="settingTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-tab-pane" type="button" role="tab" aria-controls="file-tab-pane" aria-selected="true">文件与目录管理</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="search-tab" data-bs-toggle="tab" data-bs-target="#search-tab-pane" type="button" role="tab" aria-controls="search-tab-pane" aria-selected="false">搜索与AI服务</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="storage-tab" data-bs-toggle="tab" data-bs-target="#storage-tab-pane" type="button" role="tab" aria-controls="storage-tab-pane" aria-selected="false">数据存储配置</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="notify-tab" data-bs-toggle="tab" data-bs-target="#notify-tab-pane" type="button" role="tab" aria-controls="notify-tab-pane" aria-selected="false">通知与集成</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="account-tab" data-bs-toggle="tab" data-bs-target="#account-tab-pane" type="button" role="tab" aria-controls="account-tab-pane" aria-selected="false">账户设置</button>
+                </li>
+            </ul>
+            
+            <!-- 标签页内容 -->
+            <div class="tab-content p-3 border border-top-0 rounded-bottom" id="settingTabsContent">
+                <!-- 文件与目录管理 -->
+                <div class="tab-pane fade show active" id="file-tab-pane" role="tabpanel" aria-labelledby="file-tab" tabindex="0">
+                    <form action="/settings/file-directory" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
+                        
+                        <div class="setting-card">
+                            <h5>索引目录配置</h5>
+                            <p class="text-muted">设置需要索引的目录及排除规则</p>
+                            <!-- 循环索引目录列表 -->
+                            <div class="mb-3" th:each="indexDir, stat : ${settings.fileDirectorySetting.indexDirectories}">
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">目录路径</span>
+                                    <input type="text" class="form-control" 
+                                           th:name="|fileDirectorySetting.indexDirectories[${stat.index}].directory|" 
+                                           th:value="${indexDir.directory}">
+                                </div>
+                                <!-- 排除目录 -->
+                                <div class="ms-4 mb-2">
+                                    <label class="form-label">排除目录</label>
+                                    <div th:each="excludeDir, excludeStat : ${indexDir.excludesDirectories}">
+                                        <input type="text" class="form-control mb-1" 
+                                               th:name="|fileDirectorySetting.indexDirectories[${stat.index}].excludesDirectories[${excludeStat.index}]|" 
+                                               th:value="${excludeDir}">
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary mt-1">添加排除目录</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary">添加索引目录</button>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h5>文件收集配置</h5>
+                            <p class="text-muted">配置文件自动收集规则</p>
+                            
+                            <!-- 循环收集目录列表 -->
+                            <div class="mb-3" th:each="collectDir, stat : ${settings.fileDirectorySetting.collectDirectories}">
+                                <div class="mb-2">
+                                    <label class="form-label">收集来源目录</label>
+                                    <div th:each="fromDir, fromStat : ${collectDir.fromList}">
+                                        <input type="text" class="form-control mb-1"
+                                               th:name="|fileDirectorySetting.collectDirectories[${stat.index}].fromList[${fromStat.index}]|"
+                                               th:value="${fromDir}">
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary mt-1">添加来源目录</button>
+                                </div>
+                                
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">目标目录</span>
+                                    <input type="text" class="form-control"
+                                           th:name="|fileDirectorySetting.collectDirectories[${stat.index}].to|"
+                                           th:value="${collectDir.to}">
+                                </div>
+                                
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">过滤正则</span>
+                                    <input type="text" class="form-control"
+                                           th:name="|fileDirectorySetting.collectDirectories[${stat.index}].filterRegex|"
+                                           th:value="${collectDir.filterRegex}">
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox"
+                                           th:name="|fileDirectorySetting.collectDirectories[${stat.index}].autoDelete|"
+                                           th:checked="${collectDir.autoDelete}" value="true">
+                                    <label class="form-check-label">收集后自动删除源文件</label>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary">添加收集规则</button>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h5>其他目录设置</h5>
+                            
+                            <div class="mb-3">
+                                <label for="opdsDirectory" class="form-label">OPDS目录</label>
+                                <input type="text" class="form-control" id="opdsDirectory" 
+                                       name="fileDirectorySetting.opdsDirectory" 
+                                       th:value="${settings.fileDirectorySetting.opdsDirectory}">
+                                <div class="form-text">如果设置，将启用OPDS服务</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="uploadFileDirectory" class="form-label">上传文件目录</label>
+                                <input type="text" class="form-control" id="uploadFileDirectory" 
+                                       name="fileDirectorySetting.uploadFileDirectory" 
+                                       th:value="${settings.fileDirectorySetting.uploadFileDirectory}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="markDeleteDirectory" class="form-label">删除文件转移目录</label>
+                                <input type="text" class="form-control" id="markDeleteDirectory" 
+                                       name="fileDirectorySetting.markDeleteDirectory" 
+                                       th:value="${settings.fileDirectorySetting.markDeleteDirectory}">
+                            </div>
+                        </div>
+                        
+                        <div class="row justify-content-between mt-3">
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">保存文件与目录设置</button>
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-success" onclick="fetch_data_post('/settings/sync/fast', this)">快速更新</button>
+                                <button type="button" class="btn btn-info" onclick="fetch_data_post('/settings/sync/collect', this)">收集文件</button>
+                                <button type="button" class="btn btn-warning" onclick="fetch_data_post('/settings/sync/all', this)">全量更新</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 搜索与AI服务 -->
+                <div class="tab-pane fade" id="search-tab-pane" role="tabpanel" aria-labelledby="search-tab" tabindex="0">
+                    <form action="/settings/search-ai" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
+                        
+                        <div class="setting-card">
+                            <h5>向量搜索配置</h5>
+                            
+                            <div class="mb-3">
+                                <label for="similarityThreshold" class="form-label">相似度阈值</label>
+                                <div class="slider-container">
+                                    <input type="range" class="form-range" min="0" max="1" step="0.01" id="similarityThreshold"
+                                           name="searchAiSetting.chat.vector.similarityThreshold"
+                                           th:value="${settings.searchAiSetting.chat?.vector?.similarityThreshold ?: 0.7}"
+                                           oninput="updateSliderValue(this, 'similarityThresholdValue')">
+                                    <span class="slider-value" id="similarityThresholdValue" 
+                                          th:text="${settings.searchAiSetting.chat?.vector?.similarityThreshold ?: 0.7}">0.7</span>
+                                </div>
+                                <div class="form-text">向量搜索相似度阈值，越高匹配越精确</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="topK" class="form-label">TopK结果数</label>
+                                <div class="slider-container">
+                                    <input type="range" class="form-range" min="1" max="30" step="1" id="topK"
+                                           name="searchAiSetting.chat.vector.topK"
+                                           th:value="${settings.searchAiSetting.chat?.vector?.topK ?: 5}"
+                                           oninput="updateSliderValue(this, 'topKValue')">
+                                    <span class="slider-value" id="topKValue" 
+                                          th:text="${settings.searchAiSetting.chat?.vector?.topK ?: 5}">5</span>
+                                </div>
+                                <div class="form-text">返回的最大结果数量</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h5>Ollama配置</h5>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="ollamaEnable"
+                                       name="searchAiSetting.chat.ollama.enable"
+                                       th:checked="${settings.searchAiSetting.chat?.ollama?.enable}">
+                                <label class="form-check-label" for="ollamaEnable">启用Ollama</label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="ollamaBaseUrl" class="form-label">Ollama服务地址</label>
+                                <input type="text" class="form-control" id="ollamaBaseUrl"
+                                       name="searchAiSetting.chat.ollama.baseUrl"
+                                       th:value="${settings.searchAiSetting.chat?.ollama?.baseUrl}">
+                                <div class="form-text">例如：http://localhost:11434</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="ollamaChatModel" class="form-label">对话模型</label>
+                                <input type="text" class="form-control" id="ollamaChatModel"
+                                       name="searchAiSetting.chat.ollama.chatModel"
+                                       th:value="${settings.searchAiSetting.chat?.ollama?.chatModel}">
+                                <div class="form-text">例如：llama2</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h5>OCR服务配置</h5>
+                            
+                            <div class="mb-3">
+                                <label for="paddleOcrUrl" class="form-label">PaddleOCR服务地址</label>
+                                <input type="text" class="form-control" id="paddleOcrUrl"
+                                       name="searchAiSetting.paddleOcr.url"
+                                       th:value="${settings.searchAiSetting.paddleOcr?.url}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="paddleOcrTimeout" class="form-label">超时时间(毫秒)</label>
+                                <input type="number" class="form-control" id="paddleOcrTimeout"
+                                       name="searchAiSetting.paddleOcr.timeout"
+                                       th:value="${settings.searchAiSetting.paddleOcr?.timeout ?: 10000}">
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h5>外部搜索链接配置</h5>
+                            
+                            <div class="mb-3" th:each="link, stat : ${settings.searchAiSetting.linkItems}">
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">描述</span>
+                                    <input type="text" class="form-control"
+                                           th:name="|searchAiSetting.linkItems[${stat.index}].desc|"
+                                           th:value="${link.desc}">
+                                </div>
+                                
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">URL</span>
+                                    <input type="text" class="form-control"
+                                           th:name="|searchAiSetting.linkItems[${stat.index}].searchUrl|"
+                                           th:value="${link.searchUrl}">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary">添加外部链接</button>
+                        </div>
+                        
+                        <div class="row justify-content-start mt-3">
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">保存搜索与AI设置</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 数据存储配置 -->
+                <div class="tab-pane fade" id="storage-tab-pane" role="tabpanel" aria-labelledby="storage-tab" tabindex="0">
+                    <form action="/settings/data-storage" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
+                        
+                        <div class="setting-card">
+                            <h5>Elasticsearch配置</h5>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="elasticEnable"
+                                       name="dataStorageSetting.elastic.enable"
+                                       th:checked="${settings.dataStorageSetting.elastic?.enable}"
+                                       onchange="toggleElasticEnable(this)">
+                                <label class="form-check-label" for="elasticEnable">启用Elasticsearch</label>
+                            </div>
+                            
+                            <div id="elasticSettings" th:class="${settings.dataStorageSetting.elastic?.enable ? '' : 'd-none'}">
+                                <div class="mb-3">
+                                    <label for="elasticHost" class="form-label">主机地址</label>
+                                    <input type="text" class="form-control" id="elasticHost"
+                                           name="dataStorageSetting.elastic.host"
+                                           th:value="${settings.dataStorageSetting.elastic?.host}">
+                                    <div class="form-text">例如：https://localhost:9200</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="elasticUsername" class="form-label">用户名</label>
+                                    <input type="text" class="form-control" id="elasticUsername"
+                                           name="dataStorageSetting.elastic.username"
+                                           th:value="${settings.dataStorageSetting.elastic?.username}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="elasticPassword" class="form-label">密码</label>
+                                    <input type="password" class="form-control" id="elasticPassword"
+                                           name="dataStorageSetting.elastic.password"
+                                           th:value="${settings.dataStorageSetting.elastic?.password}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="elasticCaPath" class="form-label">CA证书路径</label>
+                                    <input type="text" class="form-control" id="elasticCaPath"
+                                           name="dataStorageSetting.elastic.caPath"
+                                           th:value="${settings.dataStorageSetting.elastic?.caPath}">
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="elasticConnectionTimeout" class="form-label">连接超时(毫秒)</label>
+                                        <input type="number" class="form-control" id="elasticConnectionTimeout"
+                                               name="dataStorageSetting.elastic.connectionTimeout"
+                                               th:value="${settings.dataStorageSetting.elastic?.connectionTimeout ?: 5000}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="elasticSocketTimeout" class="form-label">Socket超时(毫秒)</label>
+                                        <input type="number" class="form-control" id="elasticSocketTimeout"
+                                               name="dataStorageSetting.elastic.socketTimeout"
+                                               th:value="${settings.dataStorageSetting.elastic?.socketTimeout ?: 10000}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h5>Qdrant向量数据库配置</h5>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="qdrantEnable"
+                                       name="dataStorageSetting.qdrant.enable"
+                                       th:checked="${settings.dataStorageSetting.qdrant?.enable}"
+                                       onchange="toggleQdrantEnable(this)">
+                                <label class="form-check-label" for="qdrantEnable">启用Qdrant</label>
+                            </div>
+                            
+                            <div id="qdrantSettings" th:class="${settings.dataStorageSetting.qdrant?.enable ? '' : 'd-none'}">
+                                <div class="mb-3">
+                                    <label for="qdrantHost" class="form-label">主机地址</label>
+                                    <input type="text" class="form-control" id="qdrantHost"
+                                           name="dataStorageSetting.qdrant.host"
+                                           th:value="${settings.dataStorageSetting.qdrant?.host}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="qdrantPort" class="form-label">端口</label>
+                                    <input type="number" class="form-control" id="qdrantPort"
+                                           name="dataStorageSetting.qdrant.port"
+                                           th:value="${settings.dataStorageSetting.qdrant?.port ?: 6333}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="qdrantApiKey" class="form-label">API密钥</label>
+                                    <input type="password" class="form-control" id="qdrantApiKey"
+                                           name="dataStorageSetting.qdrant.apiKey"
+                                           th:value="${settings.dataStorageSetting.qdrant?.apiKey}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row justify-content-start mt-3">
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">保存数据存储设置</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 通知与集成 -->
+                <div class="tab-pane fade" id="notify-tab-pane" role="tabpanel" aria-labelledby="notify-tab" tabindex="0">
+                    <form action="/settings/notification" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
+                        
+                        <div class="setting-card">
+                            <h5>邮件通知配置</h5>
+                            
+                            <div class="mb-3">
+                                <label for="senderEmail" class="form-label">发件人邮箱</label>
+                                <input type="email" class="form-control" id="senderEmail"
+                                       name="notificationIntegrationSetting.notifyEmail.senderEmail"
+                                       th:value="${settings.notificationIntegrationSetting.notifyEmail?.senderEmail}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="emailHost" class="form-label">SMTP服务器</label>
+                                <input type="text" class="form-control" id="emailHost"
+                                       name="notificationIntegrationSetting.notifyEmail.emailHost"
+                                       th:value="${settings.notificationIntegrationSetting.notifyEmail?.emailHost}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="emailPort" class="form-label">SMTP端口</label>
+                                <input type="number" class="form-control" id="emailPort"
+                                       name="notificationIntegrationSetting.notifyEmail.emailPort"
+                                       th:value="${settings.notificationIntegrationSetting.notifyEmail?.emailPort}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="emailPass" class="form-label">邮箱密码/授权码</label>
+                                <input type="password" class="form-control" id="emailPass"
+                                       name="notificationIntegrationSetting.notifyEmail.emailPass"
+                                       th:value="${settings.notificationIntegrationSetting.notifyEmail?.emailPass}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">收件人列表</label>
+                                <div th:each="receiver, stat : ${settings.notificationIntegrationSetting.notifyEmail?.receivers}">
+                                    <input type="email" class="form-control mb-1"
+                                           th:name="|notificationIntegrationSetting.notifyEmail.receivers[${stat.index}]|"
+                                           th:value="${receiver}">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mt-1">添加收件人</button>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h5>访问通知设置</h5>
+                            
+                            <div class="mb-3">
+                                <label for="notifyType" class="form-label">通知类型</label>
+                                <select class="form-select" id="notifyType" name="notificationIntegrationSetting.notify.type">
+                                    <option value="email" th:selected="${settings.notificationIntegrationSetting.notify?.type == 'email'}">邮件</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="accessIntervalHours" class="form-label">访问通知间隔(小时)</label>
+                                <input type="number" class="form-control" id="accessIntervalHours"
+                                       name="notificationIntegrationSetting.notify.accessIntervalHours"
+                                       th:value="${settings.notificationIntegrationSetting.notify?.accessIntervalHours}">
+                                <div class="form-text">设置为空则不发送通知</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row justify-content-start mt-3">
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">保存通知设置</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 账户设置 -->
+                <div class="tab-pane fade" id="account-tab-pane" role="tabpanel" aria-labelledby="account-tab" tabindex="0">
+                    <form id="searchSettingForm" action="/settings" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
+                        
+                        <div class="setting-card">
+                            <h5>账户信息</h5>
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用户名<span class="text-muted">（只读）</span></label>
+                                <input type="text" class="form-control" id="username" name="username"
+                                       th:value="${settings.username}" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">密码</label>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       th:value="${settings.password}">
+                                <div class="form-text">修改密码后需要重新登录</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row justify-content-start mt-3">
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">保存账户设置</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 隐藏字段，用于保持其他设置 -->
+                        <input type="hidden" name="fileDirectorySetting" th:value="${settings.fileDirectorySetting}" />
+                        <input type="hidden" name="searchAiSetting" th:value="${settings.searchAiSetting}" />
+                        <input type="hidden" name="dataStorageSetting" th:value="${settings.dataStorageSetting}" />
+                        <input type="hidden" name="notificationIntegrationSetting" th:value="${settings.notificationIntegrationSetting}" />
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <footer class="py-3 my-4">
+                <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+                    <li class="nav-item"><a href="/" class="nav-link px-2 text-muted">搜索</a></li>
+                    <li class="nav-item"><a href="/chat/page" class="nav-link px-2 text-muted">AI 对话</a></li>
+                    <li class="nav-item"><a href="/upload" class="nav-link px-2 text-muted">上传</a></li>
+                    <li class="nav-item"><a href="/settings" class="nav-link px-2 text-muted">设置</a></li>
+                    <li class="nav-item"><a href="/logout" class="nav-link px-2 text-muted">登出</a></li>
+                </ul>
+                <p class="text-center text-muted">© 2015 – 2025 <span style="font-size: 0.8rem">❤</span> noogel</p>
+            </footer>
+        </div>
+
+        <!-- 操作结果弹窗 -->
+        <div class="modal" id="opResultModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="opResultModalHeader" th:text="${result?.header}"></h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="opResultModalBody" th:text="${result?.body}"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html> 
