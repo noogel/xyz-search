@@ -1,11 +1,39 @@
 package noogel.xyz.search.infrastructure.repo.impl.elastic;
 
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Repository;
+
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.query_dsl.*;
-import co.elastic.clients.elasticsearch.core.*;
-import co.elastic.clients.elasticsearch.core.search.*;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScore;
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchPhraseQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.elasticsearch.core.DeleteResponse;
+import co.elastic.clients.elasticsearch.core.GetResponse;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Highlight;
+import co.elastic.clients.elasticsearch.core.search.HighlightField;
+import co.elastic.clients.elasticsearch.core.search.HighlighterFragmenter;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.elasticsearch.indices.ForcemergeRequest;
@@ -24,14 +52,6 @@ import noogel.xyz.search.infrastructure.dto.repo.RandomSearchDto;
 import noogel.xyz.search.infrastructure.exception.ExceptionCode;
 import noogel.xyz.search.infrastructure.model.FullTextSearchModel;
 import noogel.xyz.search.infrastructure.repo.FullTextSearchRepo;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.time.Instant;
-import java.util.*;
 
 @Repository
 @Slf4j
@@ -234,17 +254,52 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
             BoolQuery.Builder builder = new BoolQuery.Builder();
 
             if (!StringUtils.isEmpty(searchDto.getSearchQuery())) {
-                Query content = MatchQuery.of(m -> m
+                // 改进的搜索逻辑，使用多种匹配策略提高精准度
+                
+                // 1. 内容短语匹配 - 保持词语顺序和紧密度
+                Query contentPhrase = MatchPhraseQuery.of(m -> m
                         .field("content")
                         .query(searchDto.getSearchQuery())
-                        .analyzer("ik_smart"))._toQuery();
+                        .slop(3))._toQuery();
+                
+                // 2. 内容标准匹配 - 但要求最低匹配度
+                Query contentMatch = MatchQuery.of(m -> m
+                        .field("content")
+                        .query(searchDto.getSearchQuery())
+                        .analyzer("ik_smart")
+                        .minimumShouldMatch("60%"))._toQuery();
+                
+                // 3. 资源名称匹配 - 保持高权重
                 Query resName = MatchQuery.of(m -> m
                         .field("resName")
                         .query(searchDto.getSearchQuery())
-                        .boost(10.f)
+                        .boost(10.0f)
                         .analyzer("ik_smart"))._toQuery();
+                
+                // 4. 标题匹配
+                Query resTitleMatch = MatchQuery.of(m -> m
+                        .field("resTitle")
+                        .query(searchDto.getSearchQuery())
+                        .boost(8.0f)
+                        .analyzer("ik_smart"))._toQuery();
+                
+                // 根据查询长度动态调整短语匹配的权重
+                float phraseBoost = 1.0f;
+                if (searchDto.getSearchQuery().length() > 5) {
+                    // 对较长的查询给予短语匹配更高的权重
+                    contentPhrase = MatchPhraseQuery.of(m -> m
+                            .field("content")
+                            .query(searchDto.getSearchQuery())
+                            .slop(3)
+                            .boost(5.0f))._toQuery();
+                }
+                
                 BoolQuery.Builder orSearch = new BoolQuery.Builder();
-                orSearch.should(content, resName);
+                orSearch.should(contentPhrase, contentMatch, resName, resTitleMatch);
+                
+                // 提高精准度 - 至少满足一个条件
+                orSearch.minimumShouldMatch("1");
+                
                 builder.must(l -> l.bool(orSearch.build()));
             }
             if (CollectionUtils.isNotEmpty(searchDto.getResTypeList())) {
