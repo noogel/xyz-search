@@ -1,0 +1,494 @@
+<!-- 通知与集成配置页面内容 -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <!-- 电子邮件通知设置 -->
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">电子邮件通知设置</h3>
+        
+        <div class="space-y-6">
+            <!-- 启用电子邮件通知 -->
+            <div class="flex items-center">
+                <input id="enable-email" name="enable-email" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                <label for="enable-email" class="ml-2 block text-sm text-gray-900">
+                    启用电子邮件通知
+                </label>
+            </div>
+            
+            <!-- 邮件服务器配置 -->
+            <div id="email-config" class="pl-6 border-l-2 border-gray-200 space-y-4 opacity-50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SMTP服务器</label>
+                        <input type="text" placeholder="smtp.example.com" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SMTP端口</label>
+                        <input type="text" placeholder="587" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">发件人邮箱</label>
+                        <input type="email" placeholder="notification@example.com" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">发件人名称</label>
+                        <input type="text" placeholder="智能检索平台" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SMTP用户名</label>
+                        <input type="text" placeholder="user@example.com" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SMTP密码</label>
+                        <input type="password" placeholder="••••••••" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <input id="use-ssl" name="use-ssl" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked disabled>
+                    <label for="use-ssl" class="ml-2 block text-sm text-gray-900">
+                        使用SSL/TLS加密连接
+                    </label>
+                </div>
+                
+                <div>
+                    <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" disabled>
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        发送测试邮件
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 邮件通知说明 -->
+            <div class="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>电子邮件通知可用于系统重要事件（如新文件索引完成、OCR任务完成等）的提醒。</p>
+                        <p class="mt-2">请确保SMTP服务器信息正确，并在启用前测试连接。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="border-t border-gray-200"></div>
+    
+    <!-- Webhook配置 -->
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Webhook配置</h3>
+        <div class="space-y-6">
+            <!-- 启用Webhook -->
+            <div class="flex items-center">
+                <input id="enable-webhook" name="enable-webhook" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                <label for="enable-webhook" class="ml-2 block text-sm text-gray-900">
+                    启用Webhook回调
+                </label>
+            </div>
+            
+            <!-- Webhook配置 -->
+            <div id="webhook-config" class="pl-6 border-l-2 border-gray-200 space-y-4 opacity-50">
+                <!-- Webhook列表 -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-sm font-medium text-gray-700">回调端点列表</h4>
+                        <button type="button" id="add-webhook-btn" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" disabled>
+                            <i class="fas fa-plus mr-1.5"></i>
+                            <span>添加Webhook</span>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名称</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">事件类型</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-4 py-3">
+                                        <div class="text-sm text-gray-900">文件索引通知</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="text-sm text-gray-900">https://example.com/webhook/file-indexed</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            文件索引
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                        <button type="button" class="text-primary-600 hover:text-primary-800 mr-3" disabled>编辑</button>
+                                        <button type="button" class="text-red-600 hover:text-red-800" disabled>删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">安全密钥 (Secret)</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <input type="password" value="••••••••••••••••••••••••••••••" class="focus:ring-primary-500 focus:border-primary-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md" disabled>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <button type="button" class="text-gray-400 hover:text-gray-500 focus:outline-none" disabled>
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">用于验证回调请求的签名密钥</p>
+                </div>
+                
+                <div>
+                    <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" disabled>
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        重新生成密钥
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Webhook说明 -->
+            <div class="bg-yellow-50 rounded-lg p-4 text-sm text-yellow-800">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-yellow-600"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>Webhook可用于将系统事件通知到外部应用或服务。</p>
+                        <p class="mt-2">每个Webhook请求都会包含事件数据和基于密钥的签名验证。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="border-t border-gray-200"></div>
+    
+    <!-- 第三方应用集成 -->
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">第三方应用集成</h3>
+        <div class="space-y-6">
+            <!-- 集成列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Feishu/飞书集成 -->
+                <div class="relative border rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-feather-alt text-blue-500 text-lg"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-medium text-gray-900">飞书 (Feishu)</h4>
+                            </div>
+                        </div>
+                        <div class="ml-4 flex-shrink-0">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">连接飞书，实现消息通知和工作流集成</div>
+                    <button type="button" class="mt-3 text-primary-600 hover:text-primary-800 text-sm">
+                        配置设置
+                    </button>
+                </div>
+                
+                <!-- Slack集成 -->
+                <div class="relative border rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fab fa-slack text-purple-500 text-lg"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-medium text-gray-900">Slack</h4>
+                            </div>
+                        </div>
+                        <div class="ml-4 flex-shrink-0">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">连接Slack，实现消息通知和团队协作</div>
+                    <button type="button" class="mt-3 text-primary-600 hover:text-primary-800 text-sm">
+                        配置设置
+                    </button>
+                </div>
+                
+                <!-- 企业微信集成 -->
+                <div class="relative border rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fab fa-weixin text-green-500 text-lg"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-medium text-gray-900">企业微信</h4>
+                            </div>
+                        </div>
+                        <div class="ml-4 flex-shrink-0">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">连接企业微信，实现消息通知和机器人集成</div>
+                    <button type="button" class="mt-3 text-primary-600 hover:text-primary-800 text-sm">
+                        配置设置
+                    </button>
+                </div>
+                
+                <!-- 钉钉集成 -->
+                <div class="relative border rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-comment-dots text-blue-600 text-lg"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-medium text-gray-900">钉钉</h4>
+                            </div>
+                        </div>
+                        <div class="ml-4 flex-shrink-0">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">连接钉钉，实现消息通知和机器人集成</div>
+                    <button type="button" class="mt-3 text-primary-600 hover:text-primary-800 text-sm">
+                        配置设置
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 添加更多集成按钮 -->
+            <div class="flex justify-center">
+                <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <i class="fas fa-plus mr-2"></i>
+                    添加更多集成
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 按钮组 -->
+    <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+        <button type="button" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            重置
+        </button>
+        <button type="button" class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            保存设置
+        </button>
+    </div>
+</div>
+
+<!-- 添加Webhook对话框 -->
+<div id="add-webhook-dialog" class="fixed inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-link text-primary-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            添加Webhook
+                        </h3>
+                        <div class="mt-4 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">名称</label>
+                                <div class="mt-1">
+                                    <input type="text" class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="索引完成通知">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">回调URL</label>
+                                <div class="mt-1">
+                                    <input type="text" class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="https://example.com/webhook">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">事件类型</label>
+                                <div class="mt-1 space-y-2">
+                                    <div class="flex items-center">
+                                        <input id="event-file-indexed" name="event-types" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                                        <label for="event-file-indexed" class="ml-2 block text-sm text-gray-900">
+                                            文件索引完成
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input id="event-ocr-complete" name="event-types" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                                        <label for="event-ocr-complete" class="ml-2 block text-sm text-gray-900">
+                                            OCR处理完成
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input id="event-search" name="event-types" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                                        <label for="event-search" class="ml-2 block text-sm text-gray-900">
+                                            搜索事件
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input id="event-system" name="event-types" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                                        <label for="event-system" class="ml-2 block text-sm text-gray-900">
+                                            系统事件
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    添加
+                </button>
+                <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm close-dialog">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('settingsTabLoaded', function(e) {
+        if (e.detail.tab === 'notification-integration') {
+            console.log('通知与集成配置标签页已加载');
+            
+            // 处理电子邮件通知启用状态
+            const enableEmail = document.getElementById('enable-email');
+            const emailConfig = document.getElementById('email-config');
+            
+            if (enableEmail && emailConfig) {
+                enableEmail.addEventListener('change', function() {
+                    // 启用或禁用邮件配置区域
+                    const isEnabled = this.checked;
+                    emailConfig.classList.toggle('opacity-50', !isEnabled);
+                    
+                    // 启用或禁用所有输入字段
+                    const inputs = emailConfig.querySelectorAll('input, button');
+                    inputs.forEach(input => {
+                        input.disabled = !isEnabled;
+                    });
+                });
+            }
+            
+            // 处理Webhook启用状态
+            const enableWebhook = document.getElementById('enable-webhook');
+            const webhookConfig = document.getElementById('webhook-config');
+            
+            if (enableWebhook && webhookConfig) {
+                enableWebhook.addEventListener('change', function() {
+                    // 启用或禁用Webhook配置区域
+                    const isEnabled = this.checked;
+                    webhookConfig.classList.toggle('opacity-50', !isEnabled);
+                    
+                    // 启用或禁用所有输入字段和按钮
+                    const inputs = webhookConfig.querySelectorAll('input, button');
+                    inputs.forEach(input => {
+                        input.disabled = !isEnabled;
+                    });
+                });
+            }
+            
+            // 处理添加Webhook按钮点击
+            const addWebhookBtn = document.getElementById('add-webhook-btn');
+            const addWebhookDialog = document.getElementById('add-webhook-dialog');
+            
+            if (addWebhookBtn && addWebhookDialog) {
+                addWebhookBtn.addEventListener('click', function() {
+                    addWebhookDialog.classList.remove('hidden');
+                });
+            }
+            
+            // 处理关闭对话框按钮点击
+            const closeDialogBtns = document.querySelectorAll('.close-dialog');
+            closeDialogBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 查找最近的对话框并隐藏
+                    const dialog = this.closest('.fixed.inset-0');
+                    if (dialog) {
+                        dialog.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // 处理第三方应用切换开关
+            const toggleSwitches = document.querySelectorAll('.relative.inline-flex.items-center.cursor-pointer input[type="checkbox"]');
+            toggleSwitches.forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const isEnabled = this.checked;
+                    const appName = this.closest('.relative.border').querySelector('h4').textContent;
+                    if (isEnabled) {
+                        alert(`${appName} 集成已启用，请完成配置。`);
+                    } else {
+                        alert(`${appName} 集成已禁用。`);
+                    }
+                });
+            });
+            
+            // 处理配置设置按钮点击
+            const configBtns = document.querySelectorAll('button.text-primary-600.hover\\:text-primary-800.text-sm');
+            configBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const appName = this.closest('.relative.border').querySelector('h4').textContent;
+                    alert(`配置 ${appName} 集成\n此功能正在开发中...`);
+                });
+            });
+            
+            // 处理添加更多集成按钮点击
+            const addMoreIntegrationBtn = document.querySelector('button:has(i.fa-plus)');
+            if (addMoreIntegrationBtn) {
+                addMoreIntegrationBtn.addEventListener('click', function() {
+                    alert('添加更多集成\n此功能正在开发中...');
+                });
+            }
+            
+            // 处理发送测试邮件按钮点击
+            const sendTestEmailBtn = document.querySelector('button:has(i.fa-paper-plane)');
+            if (sendTestEmailBtn) {
+                sendTestEmailBtn.addEventListener('click', function() {
+                    // 显示发送中
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 发送中...';
+                    this.disabled = true;
+                    
+                    // 模拟发送过程
+                    setTimeout(() => {
+                        // 恢复按钮状态
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        
+                        // 显示发送结果
+                        alert('测试邮件发送成功！');
+                    }, 1000);
+                });
+            }
+        }
+    });
+</script> 

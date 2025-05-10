@@ -1,0 +1,291 @@
+<!-- 搜索与AI服务配置页面内容 -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <!-- 向量搜索参数 -->
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">向量搜索参数</h3>
+        
+        <div class="space-y-6">
+            <!-- 相似度阈值设置 -->
+            <div>
+                <div class="flex items-center justify-between">
+                    <label class="block text-sm font-medium text-gray-700">相似度阈值 (Similarity Threshold)</label>
+                    <span class="text-sm text-gray-500" id="similarity-threshold-value">0.5</span>
+                </div>
+                <input type="range" min="0" max="1" step="0.05" value="0.5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2" id="similarity-threshold-slider">
+                <p class="mt-1 text-xs text-gray-500">控制检索结果的最小相似度要求。较高的值会提高结果精确性但可能减少返回结果数量。</p>
+            </div>
+            
+            <!-- 检索结果数量 -->
+            <div>
+                <div class="flex items-center justify-between">
+                    <label class="block text-sm font-medium text-gray-700">检索结果数量 (Top-K)</label>
+                    <span class="text-sm text-gray-500" id="top-k-value">5</span>
+                </div>
+                <input type="range" min="1" max="20" step="1" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2" id="top-k-slider">
+                <p class="mt-1 text-xs text-gray-500">控制每次检索返回的最大结果数量。较大的值可能提供更多相关信息，但也可能引入噪音。</p>
+            </div>
+            
+            <!-- 查询性能说明 -->
+            <div class="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>向量搜索参数会影响检索结果的相关性和系统性能。推荐设置：</p>
+                        <ul class="list-disc list-inside mt-2 space-y-1">
+                            <li>相似度阈值：0.5-0.7之间，根据检索精度要求调整</li>
+                            <li>检索结果数量：3-10之间，根据对话理解需求调整</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="border-t border-gray-200"></div>
+    
+    <!-- AI模型配置 -->
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">AI模型配置</h3>
+        <div class="space-y-6">
+            <!-- 模型服务选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">AI模型服务</label>
+                <div class="mt-1 space-y-2">
+                    <div class="flex items-center">
+                        <input id="enable-ollama" name="model-service" type="radio" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                        <label for="enable-ollama" class="ml-2 block text-sm text-gray-900">
+                            启用Ollama服务
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ollama配置 -->
+            <div id="ollama-config" class="pl-6 border-l-2 border-gray-200 space-y-4 opacity-50">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ollama服务地址</label>
+                    <input type="text" value="http://192.168.124.101:11434" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                    <p class="mt-1 text-xs text-gray-500">Ollama API服务的基础URL地址</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Chat模型</label>
+                    <select class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md" disabled>
+                        <option selected>qwen2.5:14b</option>
+                        <option>llama3:8b</option>
+                        <option>mistral:7b</option>
+                        <option>gemma:7b</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">用于对话的大语言模型</p>
+                </div>
+                
+                <!-- 模型参数 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">上下文窗口大小</label>
+                        <select class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md" disabled>
+                            <option>2048</option>
+                            <option selected>4096</option>
+                            <option>8192</option>
+                            <option>16384</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">模型能处理的最大Token数</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">温度 (Temperature)</label>
+                        <div class="flex items-center">
+                            <input type="range" min="0" max="1" step="0.1" value="0.7" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" id="temperature-slider" disabled>
+                            <span class="ml-2 text-sm text-gray-500" id="temperature-value">0.7</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">控制输出的随机性</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">最大生成Token数</label>
+                    <input type="number" value="10000" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" disabled>
+                    <p class="mt-1 text-xs text-gray-500">模型单次回答的最大生成长度</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">词嵌入模型</label>
+                    <div class="mt-1 space-y-2">
+                        <div class="flex items-center">
+                            <input id="default-embedding" name="embedding-model" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked disabled>
+                            <label for="default-embedding" class="ml-2 block text-sm text-gray-900">
+                                使用模型默认词嵌入
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="additional-embedding" name="embedding-model" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked disabled>
+                            <label for="additional-embedding" class="ml-2 block text-sm text-gray-900">
+                                jinaai/jina-embeddings-v2-base-zh
+                            </label>
+                        </div>
+                        <button type="button" class="text-primary-600 hover:text-primary-800 text-sm" disabled>
+                            <i class="fas fa-plus mr-1"></i> 添加额外词嵌入模型
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">模型拉取策略</label>
+                    <select class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md" disabled>
+                        <option selected>仅当缺失时拉取</option>
+                        <option>总是拉取最新</option>
+                        <option>不自动拉取</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">控制模型文件的自动下载行为</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="border-t border-gray-200"></div>
+    
+    <!-- OCR服务配置 -->
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">OCR服务配置</h3>
+        <div class="space-y-6">
+            <!-- PaddleOCR配置 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">PaddleOCR服务</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">服务地址</label>
+                        <input type="text" value="http://paddleocr:8866/predict/ocr_system" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                        <p class="mt-1 text-xs text-gray-500">PaddleOCR服务API地址</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">超时时间（毫秒）</label>
+                        <input type="number" value="120000" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                        <p class="mt-1 text-xs text-gray-500">OCR请求的最大等待时间</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OCR服务状态 -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 pt-0.5">
+                        <div class="h-4 w-4 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">服务状态: 正常运行中</p>
+                        <p class="text-sm text-gray-500 mt-1">当前队列: 0 | 今日总处理: 125张图片</p>
+                    </div>
+                    <div class="ml-auto">
+                        <button type="button" class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <i class="fas fa-sync-alt mr-1.5"></i>
+                            <span>测试连接</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OCR说明 -->
+            <div class="bg-yellow-50 rounded-lg p-4 text-sm text-yellow-800">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-yellow-600"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p>OCR服务用于自动提取图片中的文本，支持中英文和多种语言识别。</p>
+                        <p class="mt-2">处理大型图片时可能需要较长时间，建议适当增加超时设置。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 按钮组 -->
+    <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+        <button type="button" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            重置
+        </button>
+        <button type="button" class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            保存设置
+        </button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('settingsTabLoaded', function(e) {
+        if (e.detail.tab === 'search-ai') {
+            console.log('搜索与AI服务配置标签页已加载');
+            
+            // 初始化相似度阈值滑块
+            const similaritySlider = document.getElementById('similarity-threshold-slider');
+            const similarityValue = document.getElementById('similarity-threshold-value');
+            
+            if (similaritySlider && similarityValue) {
+                similaritySlider.addEventListener('input', function() {
+                    similarityValue.textContent = this.value;
+                });
+            }
+            
+            // 初始化Top-K滑块
+            const topKSlider = document.getElementById('top-k-slider');
+            const topKValue = document.getElementById('top-k-value');
+            
+            if (topKSlider && topKValue) {
+                topKSlider.addEventListener('input', function() {
+                    topKValue.textContent = this.value;
+                });
+            }
+            
+            // 初始化温度滑块
+            const temperatureSlider = document.getElementById('temperature-slider');
+            const temperatureValue = document.getElementById('temperature-value');
+            
+            if (temperatureSlider && temperatureValue) {
+                temperatureSlider.addEventListener('input', function() {
+                    temperatureValue.textContent = this.value;
+                });
+            }
+            
+            // 处理Ollama服务启用状态
+            const enableOllama = document.getElementById('enable-ollama');
+            const ollamaConfig = document.getElementById('ollama-config');
+            
+            if (enableOllama && ollamaConfig) {
+                enableOllama.addEventListener('change', function() {
+                    // 启用或禁用Ollama配置区域
+                    const isEnabled = this.checked;
+                    ollamaConfig.classList.toggle('opacity-50', !isEnabled);
+                    
+                    // 启用或禁用所有输入字段
+                    const inputs = ollamaConfig.querySelectorAll('input, select, button');
+                    inputs.forEach(input => {
+                        input.disabled = !isEnabled;
+                    });
+                });
+            }
+            
+            // 处理测试连接按钮点击
+            const testConnectionBtn = document.querySelector('button:has(i.fa-sync-alt)');
+            if (testConnectionBtn) {
+                testConnectionBtn.addEventListener('click', function() {
+                    // 显示连接测试中
+                    const originalText = this.querySelector('span').textContent;
+                    this.querySelector('span').textContent = '测试中...';
+                    this.disabled = true;
+                    
+                    // 模拟测试过程
+                    setTimeout(() => {
+                        // 恢复按钮状态
+                        this.querySelector('span').textContent = originalText;
+                        this.disabled = false;
+                        
+                        // 显示测试结果
+                        alert('OCR服务连接测试成功！\n响应时间: 328ms');
+                    }, 1000);
+                });
+            }
+        }
+    });
+</script> 
