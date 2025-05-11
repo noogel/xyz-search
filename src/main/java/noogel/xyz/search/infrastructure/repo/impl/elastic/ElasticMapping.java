@@ -45,7 +45,8 @@ public class ElasticMapping {
         documentMap.put("content", Property
                 .of(p -> p.text(TextProperty.of(i -> i
                     .index(true)
-                    .analyzer("ik_smart")
+                    .analyzer("ik_max_word") 
+                    .searchAnalyzer("ik_smart")
                     .termVector(TermVectorOption.WithPositionsOffsets)))));
         documentMap.put("contentHash", Property
                 .of(p -> p.keyword(KeywordProperty.of(i -> i.index(true)))));

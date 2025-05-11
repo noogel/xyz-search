@@ -32,10 +32,13 @@ import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.BoundaryScanner;
 import co.elastic.clients.elasticsearch.core.search.Highlight;
 import co.elastic.clients.elasticsearch.core.search.HighlightField;
+import co.elastic.clients.elasticsearch.core.search.HighlighterEncoder;
 import co.elastic.clients.elasticsearch.core.search.HighlighterFragmenter;
 import co.elastic.clients.elasticsearch.core.search.HighlighterOrder;
+import co.elastic.clients.elasticsearch.core.search.HighlighterTagsSchema;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
@@ -147,43 +150,54 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
     @Nullable
     public ResourceHighlightHitsDto searchByResId(String resId, @Nullable String text) {
         try {
-            BoolQuery.Builder builder = new BoolQuery.Builder();
-
-            // 使用与主搜索相同的复杂查询逻辑，提高一致性和准确性
-            if (!StringUtils.isEmpty(text)) {
-                // 使用优化的复合查询构建器
-                BoolQuery.Builder textQuery = getComplexQuery(text);
-                builder.should(textQuery.build()._toQuery());
-            }
-
-            Query redId = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
-            builder.must(redId);
-
             // 改进的高亮配置
             Highlight highlight = Highlight.of(t -> t
                     // 高亮内容字段
-                    .fields("content", HighlightField.of(k -> k.type("unified") // 使用统一高亮器，更适合中文
-                            .fragmentSize(350) // 增加片段大小，提供更多上下文
-                            .numberOfFragments(20) // 增加片段数量，确保捕获更多相关片段
-                            .fragmentOffset(150) // 增加片段偏移量，保证更多上下文
+                    .fields("content", HighlightField.of(k -> k
+                            .type("fvh") // 使用Fast Vector Highlighter，更适合精确短语匹配和复杂查询
+                            .fragmentSize(300) // 调整片段大小为更合适的长度
+                            .numberOfFragments(25) // 增加片段数量，确保捕获所有相关内容
+                            .fragmentOffset(100) // 调整片段偏移量
                             .preTags("<em>") // 高亮开始标签
                             .postTags("</em>") // 高亮结束标签
-                            .fragmenter(HighlighterFragmenter.Span) // 使用Span分段器更精确
+                            .fragmenter(HighlighterFragmenter.Span) // 使用Span分段器
                             .order(HighlighterOrder.Score) // 按相关性排序片段
-                            .noMatchSize(200) // 如果没有匹配，返回的文本大小
+                            .noMatchSize(150) // 如果没有匹配，返回的文本大小
                             .requireFieldMatch(false) // 不要求字段匹配，可以匹配多个字段
+                            .phraseLimit(50) // 限制检查的短语数量，提高性能
+                            .boundaryScanner(BoundaryScanner.Sentence) // 使用句子作为边界，更自然
+                            .boundaryScannerLocale("zh_CN") // 支持中文边界识别
+                            // 创建一个全新的查询对象来避免重用builder
+                            .highlightQuery(createHighlightQuery(resId, text))
                     ))
-                    // 增加标题字段的高亮
-                    .fields("resTitle", HighlightField
-                            .of(k -> k.type("unified").preTags("<em>").postTags("</em>").numberOfFragments(0) // 0表示不分片，返回完整字段
-                            ))
-                    // 增加文件名的高亮
-                    .fields("resName", HighlightField
-                            .of(k -> k.type("unified").preTags("<em>").postTags("</em>").numberOfFragments(0) // 0表示不分片，返回完整字段
-                            )));
+                    // 标题字段高亮优化
+                    .fields("resTitle", HighlightField.of(k -> k
+                            .type("fvh")
+                            .preTags("<em>")
+                            .postTags("</em>")
+                            .numberOfFragments(0) // 0表示不分片，返回完整字段
+                            .requireFieldMatch(true) // 标题需精确匹配
+                            .forceSource(true) // 强制使用源字段，提高准确性
+                    ))
+                    // 文件名高亮优化
+                    .fields("resName", HighlightField.of(k -> k
+                            .type("fvh")
+                            .preTags("<em>")
+                            .postTags("</em>")
+                            .numberOfFragments(0) // 0表示不分片，返回完整字段
+                            .requireFieldMatch(true) // 文件名需精确匹配
+                            .forceSource(true) // 强制使用源字段，提高准确性
+                    ))
+                    // 全局高亮设置
+                    .encoder(HighlighterEncoder.Html) // HTML编码高亮片段，防止XSS
+                    .tagsSchema(HighlighterTagsSchema.Styled) // 使用预定义的标签样式
+            );
 
+            // 创建新的搜索请求，重新构建查询而不是复用builder
             SearchRequest searchRequest = SearchRequest
-                    .of(s -> s.index(getIndexName()).query(q -> q.bool(t -> builder)).highlight(highlight)
+                    .of(s -> s.index(getIndexName())
+                            .query(createSearchQuery(resId, text))
+                            .highlight(highlight)
                             // 使用全量源字段，确保所有字段都可用于高亮
                             .source(SourceConfig.of(sc -> sc.filter(f -> f.includes("*")))));
 
@@ -220,6 +234,38 @@ public class ElasticSearchRepoImpl implements FullTextSearchRepo {
             log.error("findByResId err", ex);
         }
         return null;
+    }
+
+    /**
+     * 为高亮创建新的查询对象，避免重用builder
+     */
+    private Query createHighlightQuery(String resId, String text) {
+        BoolQuery.Builder builder = new BoolQuery.Builder();
+        // 使用与主搜索相同的复杂查询逻辑，提高一致性和准确性
+        if (!StringUtils.isEmpty(text)) {
+            // 使用优化的复合查询构建器
+            BoolQuery.Builder textQuery = getComplexQuery(text);
+            builder.should(textQuery.build()._toQuery());
+        }
+        Query idQuery = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
+        builder.must(idQuery);
+        return builder.build()._toQuery();
+    }
+
+    /**
+     * 为搜索创建新的查询对象，避免重用builder
+     */
+    private Query createSearchQuery(String resId, String text) {
+        BoolQuery.Builder builder = new BoolQuery.Builder();
+        // 使用与主搜索相同的复杂查询逻辑，提高一致性和准确性
+        if (!StringUtils.isEmpty(text)) {
+            // 使用优化的复合查询构建器
+            BoolQuery.Builder textQuery = getComplexQuery(text);
+            builder.should(textQuery.build()._toQuery());
+        }
+        Query idQuery = TermQuery.of(m -> m.field("resId").value(resId))._toQuery();
+        builder.must(idQuery);
+        return builder.build()._toQuery();
     }
 
     @Override
