@@ -49,7 +49,7 @@ public class WordExtensionPointServiceImpl extends AbstractExtensionPointService
                 return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", sb.toString())));
             }
         } catch (OLE2NotOfficeXmlFileException e) {
-            log.warn("处理 office 文件失败 {}", file.getAbsoluteFile(), e);
+            log.warn("处理 office 文件失败,跳过 {}", file.getAbsoluteFile(), e);
             return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", "")));
         } catch (Exception e) {
             log.error("处理 office 文件失败", e);

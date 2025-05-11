@@ -54,7 +54,7 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
             }
         } catch (Exception e) {
             if (e instanceof InvalidPasswordException) {
-                log.warn("parsePdf InvalidPasswordException {}", inputFile.getAbsoluteFile(), e);
+                log.warn("parsePdf InvalidPasswordException skip {}", inputFile.getAbsoluteFile(), e);
                 resp.add(ChapterDto.of(null, ""));
             } else {
                 log.error("parsePdf error {}", inputFile.getAbsoluteFile(), e);
