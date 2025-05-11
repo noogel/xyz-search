@@ -62,7 +62,7 @@ public class ElasticSearchQueryBuilder {
 
     /**
      * 构建文本搜索查询
-     * 优化查询结构，降低复杂度
+     * 优化查询结构，提高全字符匹配权重
      * 
      * @param searchQuery 搜索查询字符串
      * @return 优化后的查询构建器
@@ -78,17 +78,36 @@ public class ElasticSearchQueryBuilder {
         // 创建主查询结构
         BoolQuery.Builder mainQuery = new BoolQuery.Builder();
         
-        // 1. 精确短语匹配 - 高权重但不强制要求
+        // 1. 精确短语匹配 - 显著提高权重
         mainQuery.should(
             MatchPhraseQuery.of(m -> m
                 .field("content")
                 .query(cleanQuery)
                 .slop(0)
-                .boost(10.0f))
+                .boost(25.0f))  // 大幅提高全字符匹配权重，从10.0提升到25.0
             ._toQuery()
         );
         
-        // 2. 近似短语匹配 - 中等权重
+        // 2. 标题和资源名称的精确匹配 - 高权重
+        mainQuery.should(
+            MatchPhraseQuery.of(m -> m
+                .field("resTitle")
+                .query(cleanQuery)
+                .slop(0)
+                .boost(20.0f))
+            ._toQuery()
+        );
+        
+        mainQuery.should(
+            MatchPhraseQuery.of(m -> m
+                .field("resName")
+                .query(cleanQuery)
+                .slop(0)
+                .boost(18.0f))
+            ._toQuery()
+        );
+        
+        // 3. 近似短语匹配 - 中等权重
         mainQuery.should(
             MatchPhraseQuery.of(m -> m
                 .field("content")
@@ -98,7 +117,7 @@ public class ElasticSearchQueryBuilder {
             ._toQuery()
         );
         
-        // 3. 多字段匹配 - 确保基本召回率
+        // 4. 多字段匹配 - 确保基本召回率
         mainQuery.should(
             MultiMatchQuery.of(m -> m
                 .query(cleanQuery)
@@ -110,12 +129,26 @@ public class ElasticSearchQueryBuilder {
             ._toQuery()
         );
         
-        // 4. 处理长查询的分段匹配
+        // 5. 处理长查询的分段匹配
         if (cleanQuery.length() > 10) {
             String[] parts = splitQuery(cleanQuery);
             for (String part : parts) {
                 if (part.length() > 3) { // 只处理有意义的片段
                     float partBoost = 2.0f + Math.min(part.length() / 2.0f, 3.0f); // 动态权重（2.0-5.0）
+                    
+                    // 为片段添加精确匹配
+                    if (part.length() > 5) { // 对较长片段添加高权重精确匹配
+                        mainQuery.should(
+                            MatchPhraseQuery.of(m -> m
+                                .field("content")
+                                .query(part)
+                                .slop(0)
+                                .boost(partBoost * 2.0f)) // 精确匹配加倍权重
+                            ._toQuery()
+                        );
+                    }
+                    
+                    // 普通片段匹配
                     mainQuery.should(
                         MatchPhraseQuery.of(m -> m
                             .field("content")
@@ -128,7 +161,7 @@ public class ElasticSearchQueryBuilder {
             }
         }
         
-        // 5. 文档大小感知（轻量级实现）
+        // 6. 文档大小感知（轻量级实现）
         // 大文档需要更精确的匹配
         BoolQuery.Builder largeDocQuery = new BoolQuery.Builder();
         largeDocQuery.filter(RangeQuery.of(r -> r.number(n -> n.field("contentSize").gt(LARGE_DOC_SIZE)))._toQuery());
