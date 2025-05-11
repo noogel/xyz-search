@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.2.3
+
+功能优化：
+
+* 优化 elasticsearch 搜索准确性
+
 ## v1.2.2
 
 新增功能：

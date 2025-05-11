@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/license-GPL%203.0-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Docker Pulls](https://img.shields.io/docker/pulls/noogel/xyz-search.svg?style=flat-square)](https://hub.docker.com/r/noogel/xyz-search)
-[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg?style=flat-square)](https://github.com/noogel/xyz-search/releases)
+[![Version](https://img.shields.io/badge/version-1.2.3-blue.svg?style=flat-square)](https://github.com/noogel/xyz-search/releases)
 
 **新一代智能文档检索系统 | 让知识管理更高效、更智能**
 </div>
