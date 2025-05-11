@@ -19,7 +19,8 @@ public class ElasticMapping {
         documentMap.put("resDir", Property
                 .of(p -> p.text(TextProperty.of(i -> i
                     .index(true)
-                    .analyzer("path_tokenizer")))));
+                    .analyzer("path_tokenizer")
+                    .termVector(TermVectorOption.WithPositionsOffsets)))));
         documentMap.put("resName", Property
                 .of(p -> p.text(TextProperty.of(i -> i
                     .index(true)
