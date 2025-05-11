@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.springframework.stereotype.Service;
@@ -29,9 +30,7 @@ public class WordExtensionPointServiceImpl extends AbstractExtensionPointService
     private final FileProcessClassEnum fileClass = FileProcessClassEnum.OFFICE;
 
     @Getter
-    private final Set<FileExtEnum> supportParseFileExtension = Set.of(
-            FileExtEnum.DOC, FileExtEnum.DOCX
-    );
+    private final Set<FileExtEnum> supportParseFileExtension = Set.of(FileExtEnum.DOC, FileExtEnum.DOCX);
 
     @Nullable
     @Override
@@ -49,9 +48,12 @@ public class WordExtensionPointServiceImpl extends AbstractExtensionPointService
                 }
                 return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", sb.toString())));
             }
+        } catch (OLE2NotOfficeXmlFileException e) {
+            log.warn("处理 office 文件失败,跳过 {}", file.getAbsoluteFile(), e);
+            return FileResContentDto.of(Collections.singletonList(ChapterDto.of("", "")));
         } catch (Exception e) {
-            log.error("添加批注失败", e);
-            throw ExceptionCode.RUNTIME_ERROR.throwExc("添加批注失败");
+            log.error("处理 office 文件失败", e);
+            throw ExceptionCode.RUNTIME_ERROR.throwExc("处理 office 文件失败");
         }
     }
 }

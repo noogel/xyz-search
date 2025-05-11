@@ -54,10 +54,12 @@ public class PDFExtensionPointServiceImpl extends AbstractExtensionPointService 
             }
         } catch (Exception e) {
             if (e instanceof InvalidPasswordException) {
-                log.warn("parsePdf InvalidPasswordException {}", inputFile.getAbsoluteFile());
-                resp.add(ChapterDto.of(null, e.getMessage()));
+                log.warn("parsePdf InvalidPasswordException skip {}", inputFile.getAbsoluteFile(), e);
+                resp.add(ChapterDto.of(null, ""));
+            } else {
+                log.error("parsePdf error {}", inputFile.getAbsoluteFile(), e);
+                throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
             }
-            throw ExceptionCode.FILE_ACCESS_ERROR.throwExc(e);
         }
         // PDF 全为空，需要重置
         if (resp.size() > 1 && resp.stream().allMatch(t -> StringUtils.isBlank(t.getContent()))) {
